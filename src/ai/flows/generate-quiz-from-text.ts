@@ -21,14 +21,22 @@ export type GenerateQuizFromTextOutput = GenerateQuizQuestionsOutput;
 
 
 export async function generateQuizFromText(input: GenerateQuizFromTextInput): Promise<GenerateQuizFromTextOutput> {
-    console.log("Simulating AI response due to persistent API key issues.");
+    console.log("Simulating a more logical AI response from text to avoid API key issues.");
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const fakeQuestions = Array.from({ length: input.numberOfQuestions || 5 }, (_, i) => ({
-      text: `This is a simulated question ${i + 1} from the provided text content.`,
-      options: ["Option 1", "Option 2", "Option 3", "Correct Answer"],
-      answer: "Correct Answer",
-    }));
+    const numQuestions = input.numberOfQuestions || 5;
+    // A very basic way to get "keywords" - split text and get some longer words.
+    const words = input.textContent.split(/\s+/).filter(w => w.length > 5);
+    const keywords = [...new Set(words)].slice(0, numQuestions); // Get unique words
+
+    const fakeQuestions = Array.from({ length: numQuestions }, (_, i) => {
+        const keyword = keywords[i] || `concept ${i + 1}`;
+        return {
+          text: `Based on the provided text, what is the significance of "${keyword}"?`,
+          options: ["Plausible Answer A", "Plausible Answer B", "Correct Answer based on text", "Plausible Answer D"],
+          answer: "Correct Answer based on text",
+        };
+    });
 
     return { questions: fakeQuestions };
 }

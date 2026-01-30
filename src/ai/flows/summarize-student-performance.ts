@@ -32,10 +32,24 @@ export type SummarizeStudentPerformanceOutput = z.infer<
 export async function summarizeStudentPerformance(
   input: SummarizeStudentPerformanceInput
 ): Promise<SummarizeStudentPerformanceOutput> {
-  console.log("Simulating AI response due to persistent API key issues.");
+  console.log("Simulating a more logical AI summary to avoid API key issues.");
   await new Promise(resolve => setTimeout(resolve, 500));
 
-  const summary = `This is a simulated performance summary for ${input.studentName}. They scored ${input.score} out of ${input.maxScore}. They need to improve on: ${input.areasForImprovement}. Keep up the great work!`;
+  const percentage = (input.score / input.maxScore) * 100;
+  let performanceTier = "a good effort";
+  let encouragement = "Keep practicing and you'll master it!";
+
+  if (percentage >= 90) {
+    performanceTier = "an excellent performance";
+    encouragement = "Fantastic work! Keep up the great momentum.";
+  } else if (percentage >= 75) {
+    performanceTier = "a strong performance";
+    encouragement = "You're doing great! A little more focus will get you to the top.";
+  }
+
+  const summary = `${input.studentName} demonstrated ${performanceTier} on the "${input.quizName}" quiz, scoring ${input.score} out of ${input.maxScore}.
+A key area for improvement is: ${input.areasForImprovement}.
+${encouragement}`;
   
   return { summary };
 }
