@@ -11,14 +11,9 @@ const useDoc = <T,>(path: string | null, id: string | null) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db || !path) {
-        setLoading(false);
-        setData(null);
-        return;
-    }
-    
-    // If we don't have an ID, we're not done loading.
-    if (!id) {
+    // We can't fetch a document if we don't have the database, path, or id.
+    // In this case, we are in a loading state.
+    if (!db || !path || !id) {
         setLoading(true);
         setData(null);
         return;
