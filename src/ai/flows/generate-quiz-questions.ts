@@ -20,13 +20,13 @@ const GenerateQuizQuestionsInputSchema = z.object({
 });
 export type GenerateQuizQuestionsInput = z.infer<typeof GenerateQuizQuestionsInputSchema>;
 
-const QuestionSchema = z.object({
+export const QuestionSchema = z.object({
   text: z.string().describe('The question text.'),
   options: z.array(z.string()).describe('An array of 4 possible answers for the question.'),
   answer: z.string().describe('The correct answer from the options array.'),
 });
 
-const GenerateQuizQuestionsOutputSchema = z.object({
+export const GenerateQuizQuestionsOutputSchema = z.object({
   questions: z.array(QuestionSchema).describe('An array of generated quiz questions.'),
 });
 export type GenerateQuizQuestionsOutput = z.infer<typeof GenerateQuizQuestionsOutputSchema>;
