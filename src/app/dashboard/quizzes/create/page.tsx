@@ -40,8 +40,13 @@ const contentFormSchema = formSchema.extend({
 });
 type ContentFormValues = z.infer<typeof contentFormSchema>;
 
+const manualFormSchema = z.object({
+  manualContent: z.string().min(1, 'Please enter at least one question.'),
+});
+
 
 export default function CreateQuizPage() {
+  const [activeTab, setActiveTab] = useState('topic');
   const [generatedQuestions, setGeneratedQuestions] = useState<AIQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -60,6 +65,7 @@ export default function CreateQuizPage() {
     numberOfQuestions: 5,
     duration: 10,
   });
+  const [manualContent, setManualContent] = useState('');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -143,16 +149,69 @@ export default function CreateQuizPage() {
     }
   }
 
+  function parseManualQuestions(content: string): AIQuestion[] {
+    const questions: AIQuestion[] = [];
+    const questionBlocks = content.trim().split('---');
+
+    for (const block of questionBlocks) {
+        if (block.trim() === '') continue;
+
+        const lines = block.trim().split('\n');
+        const questionTextLine = lines.find(line => line.trim().toUpperCase().startsWith('Q:'));
+        if (!questionTextLine) continue;
+
+        const question: AIQuestion = {
+            text: questionTextLine.substring(2).trim(),
+            options: [],
+            answer: '',
+        };
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine.toUpperCase().startsWith('*A:')) {
+                const answer = trimmedLine.substring(3).trim();
+                question.answer = answer;
+                question.options.push(answer);
+            } else if (trimmedLine.toUpperCase().startsWith('A:') || trimmedLine.toUpperCase().startsWith('O:')) {
+                 question.options.push(trimmedLine.substring(2).trim());
+            }
+        }
+        
+        if (question.text && question.options.length > 1 && question.answer) {
+             questions.push(question);
+        }
+    }
+    return questions;
+  }
+
   async function handleSaveQuiz() {
     if (!user) {
       toast({ variant: 'destructive', title: 'You must be logged in to save a quiz.' });
       return;
     }
-    if (generatedQuestions.length === 0) {
-      toast({ variant: 'destructive', title: 'Please generate questions before saving.' });
+    
+    let questionsToSave: AIQuestion[] = [];
+    let detailsToSave = quizDetails;
+
+    if (activeTab === 'manual') {
+        const formValues = form.getValues();
+        detailsToSave = { ...formValues, numberOfQuestions: 0, questionType: 'MCQ' };
+        questionsToSave = parseManualQuestions(manualContent);
+        if(questionsToSave.length === 0) {
+            toast({ variant: 'destructive', title: 'Invalid Format', description: 'Could not find any valid questions in the manual entry. Please check the format.' });
+            return;
+        }
+    } else {
+        questionsToSave = generatedQuestions;
+        if (activeTab === 'topic') detailsToSave = form.getValues();
+        if (activeTab === 'content') detailsToSave = contentForm.getValues();
+    }
+    
+    if (questionsToSave.length === 0) {
+      toast({ variant: 'destructive', title: 'Please generate or enter questions before saving.' });
       return;
     }
-    if (!quizDetails || !quizDetails.title) {
+    if (!detailsToSave || !detailsToSave.title) {
       toast({ variant: 'destructive', title: 'Please ensure quiz details are filled out before saving.' });
       return;
     }
@@ -160,8 +219,8 @@ export default function CreateQuizPage() {
     setIsSaving(true);
 
     const quizData = {
-      ...quizDetails,
-      questions: generatedQuestions,
+      ...detailsToSave,
+      questions: questionsToSave,
       createdBy: user.uid,
       createdAt: serverTimestamp(),
       status: 'Draft',
@@ -192,10 +251,11 @@ export default function CreateQuizPage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-1">
-        <Tabs defaultValue="topic" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="topic" className="w-full" onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="topic">From Topic</TabsTrigger>
             <TabsTrigger value="content">From Content</TabsTrigger>
+            <TabsTrigger value="manual">Manual Entry</TabsTrigger>
           </TabsList>
           <TabsContent value="topic">
             <Card>
@@ -286,9 +346,9 @@ export default function CreateQuizPage() {
                     <FormField control={contentForm.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl> <Input placeholder="e.g., Biology" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={contentForm.control} name="textContent" render={({ field }) => ( <FormItem> <FormLabel>Your Content</FormLabel> <FormControl> <Textarea placeholder="Paste your lesson notes, an article, or any text here..." className="min-h-[150px]" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                     <FormItem>
-                      <FormLabel>Or Upload a File</FormLabel>
+                      <FormLabel>Or Upload a File (PDF/DOCX)</FormLabel>
                       <FormControl>
-                        <Input type="file" disabled title="PDF, DOCX, and TXT upload coming soon!"/>
+                        <Input type="file" disabled title="PDF and DOCX upload coming soon!"/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -307,7 +367,7 @@ export default function CreateQuizPage() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue/>
+                                  <SelectValue placeholder="Select difficulty" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -357,16 +417,61 @@ export default function CreateQuizPage() {
               </CardContent>
             </Card>
           </TabsContent>
+           <TabsContent value="manual">
+            <Card>
+              <CardHeader>
+                <CardTitle>Manual Question Entry</CardTitle>
+                <CardDescription>
+                    Enter quiz details in the "From Topic" tab, then type your questions below.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                 <div className="p-3 bg-muted/50 rounded-lg border border-dashed text-xs text-muted-foreground">
+                    <p className="font-bold mb-1">Formatting Instructions:</p>
+                    <p>• Start each question with `Q:`</p>
+                    <p>• Mark the correct answer with `*A:`</p>
+                    <p>• Mark other options with `O:`</p>
+                    <p>• Separate each question block with `---`</p>
+                    <p className="mt-2 font-bold">Example:</p>
+                    <pre className="mt-1">
+Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of France?{'\n'}*A: Paris{'\n'}O: London
+                    </pre>
+                </div>
+                 <Textarea
+                    placeholder="Enter your questions here following the format rules..."
+                    className="min-h-[250px] font-mono text-sm"
+                    value={manualContent}
+                    onChange={(e) => setManualContent(e.target.value)}
+                  />
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
       <div className="lg:col-span-2">
         <Card className="min-h-full">
           <CardHeader>
-            <CardTitle>Generated Questions</CardTitle>
-            <CardDescription>
-              Review the AI-generated questions below. You can edit them before saving the quiz.
-            </CardDescription>
+            <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle>Generated Questions</CardTitle>
+                    <CardDescription>
+                    Review the questions below. You can edit them before saving the quiz.
+                    </CardDescription>
+                </div>
+                 {activeTab !== 'manual' && generatedQuestions.length > 0 && (
+                    <Button onClick={handleSaveQuiz} disabled={isSaving || isLoading}>
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save AI Quiz
+                    </Button>
+                 )}
+                 {activeTab === 'manual' && (
+                    <Button onClick={handleSaveQuiz} disabled={isSaving}>
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Manual Quiz
+                    </Button>
+                 )}
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading && (
@@ -377,7 +482,8 @@ export default function CreateQuizPage() {
             )}
             {!isLoading && generatedQuestions.length === 0 && (
               <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-                <p className="text-muted-foreground">Your generated questions will appear here.</p>
+                <p className="text-muted-foreground">Generated or manually parsed questions will appear here.</p>
+                <p className="text-sm text-muted-foreground mt-1">Fill out a form on the left to begin.</p>
               </div>
             )}
             {generatedQuestions.length > 0 && (
@@ -395,16 +501,10 @@ export default function CreateQuizPage() {
               </div>
             )}
           </CardContent>
-          {generatedQuestions.length > 0 && (
-            <CardFooter>
-              <Button onClick={handleSaveQuiz} disabled={isSaving || isLoading}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Quiz
-              </Button>
-            </CardFooter>
-          )}
         </Card>
       </div>
     </div>
   );
 }
+
+    
