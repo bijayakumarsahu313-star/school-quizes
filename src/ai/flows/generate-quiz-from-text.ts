@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { GenerateQuizQuestionsOutput, GenerateQuizQuestionsOutputSchema } from './generate-quiz-questions';
+import { GenerateQuizQuestionsOutput, GenerateQuizQuestionsOutputSchema } from '@/ai/schemas/quiz-schemas';
 
 const GenerateQuizFromTextInputSchema = z.object({
   textContent: z.string().describe('The text content to generate the quiz from.'),
