@@ -126,11 +126,11 @@ export default function StudentQuizzesPage() {
 
     const getSubjectIcon = (subject: string) => {
         const s = subject.toLowerCase();
-        if (s.includes('math')) return <Calculator className="h-6 w-6 text-accent-foreground" />;
-        if (s.includes('social') || s.includes('history')) return <Landmark className="h-6 w-6 text-accent-foreground" />;
-        if (s.includes('science') || s.includes('biology') || s.includes('physics') || s.includes('chemistry')) return <FlaskConical className="h-6 w-6 text-accent-foreground" />;
-        if (s.includes('english')) return <BookText className="h-6 w-6 text-accent-foreground" />;
-        return <BrainCircuit className="h-6 w-6 text-accent-foreground" />;
+        if (s.includes('math')) return <Calculator className="h-6 w-6 text-primary" />;
+        if (s.includes('social') || s.includes('history')) return <Landmark className="h-6 w-6 text-primary" />;
+        if (s.includes('science') || s.includes('biology') || s.includes('physics') || s.includes('chemistry')) return <FlaskConical className="h-6 w-6 text-primary" />;
+        if (s.includes('english')) return <BookText className="h-6 w-6 text-primary" />;
+        return <BrainCircuit className="h-6 w-6 text-primary" />;
     };
 
     const isLoading = userLoading || profileLoading || loadingQuizzes;
@@ -195,10 +195,10 @@ export default function StudentQuizzesPage() {
                             quizzes.map((quiz) => {
                                 const Icon = getSubjectIcon(quiz.subject);
                                 return (
-                                    <Card key={quiz.id} className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col">
+                                    <Card key={quiz.id} className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col group">
                                         <CardHeader className="p-0">
-                                            <div className="bg-muted p-4 flex items-center gap-4">
-                                                <div className="bg-accent/20 p-3 rounded-md">
+                                            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-4 flex items-center gap-4">
+                                                <div className="bg-background p-3 rounded-md shadow-sm">
                                                     {Icon}
                                                 </div>
                                                 <div>

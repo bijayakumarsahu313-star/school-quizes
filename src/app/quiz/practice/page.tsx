@@ -165,10 +165,10 @@ export default function PracticeQuizPage() {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/50 p-4">
-            <Card className="w-full max-w-lg text-center p-6">
+            <Card className={cn("w-full max-w-lg text-center p-6 shadow-xl border-2", isSuccess ? "border-green-400" : "border-border")}>
                 <CardHeader>
                      <div className={`mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br ${isSuccess ? 'from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50' : 'from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50'} mb-4`}>
-                        <Trophy className={`w-12 h-12 ${isSuccess ? 'text-green-600' : 'text-blue-600'}`} />
+                        <Trophy className={`w-16 h-16 ${isSuccess ? 'text-green-600' : 'text-blue-600'}`} />
                     </div>
                     <CardTitle className="text-3xl">Practice Completed!</CardTitle>
                     <CardDescription>{isSuccess ? "Outstanding performance! You nailed it." : "Good effort! Keep practicing."}</CardDescription>
@@ -215,7 +215,7 @@ export default function PracticeQuizPage() {
                 <Progress value={progress} className="w-full mt-2" />
             </CardHeader>
             <CardContent>
-                <p className="text-lg font-semibold mb-6">{currentQuestion.text}</p>
+                <p className="text-xl font-semibold mb-6">{currentQuestion.text}</p>
                 <RadioGroup
                     value={selectedAnswers[currentQuestionIndex] || ""}
                     onValueChange={handleAnswerSelect}
@@ -226,9 +226,9 @@ export default function PracticeQuizPage() {
                             key={i}
                             htmlFor={`option-${i}`}
                             className={cn(
-                                "flex items-center space-x-4 p-4 rounded-lg border-2 transition-all cursor-pointer",
-                                "border-muted bg-background hover:bg-muted/50",
-                                selectedAnswers[currentQuestionIndex] === option && "border-primary bg-primary/10"
+                                "flex items-center space-x-4 p-5 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md",
+                                "border-border bg-background hover:border-primary/50",
+                                selectedAnswers[currentQuestionIndex] === option && "border-primary bg-primary/10 shadow-md"
                             )}
                         >
                              <RadioGroupItem value={option} id={`option-${i}`} className="h-5 w-5" />

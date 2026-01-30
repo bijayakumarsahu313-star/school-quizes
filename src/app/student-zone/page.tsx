@@ -7,6 +7,33 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Gamepad2, Award, LineChart, BrainCircuit } from "lucide-react";
 
 export default function StudentZonePage() {
+  const menuItems = [
+    {
+      href: "/student-zone/quizzes",
+      icon: Gamepad2,
+      title: "Take a Quiz",
+      description: "Browse and take quizzes assigned by your teachers.",
+    },
+    {
+      href: "/student-zone/generate-quiz",
+      icon: BrainCircuit,
+      title: "Practice Quiz",
+      description: "Generate a custom quiz on any topic to test your knowledge.",
+    },
+    {
+      href: "/student-zone/badges",
+      icon: Award,
+      title: "Your Badges",
+      description: "Check out all the cool badges you've earned.",
+    },
+    {
+      href: "/student-zone/progress",
+      icon: LineChart,
+      title: "Track Progress",
+      description: "Watch yourself grow and see how you improve over time.",
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -21,53 +48,22 @@ export default function StudentZonePage() {
           </Button>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16 max-w-6xl mx-auto">
-            <Link href="/student-zone/quizzes" className="block h-full group">
-              <Card className="h-full transition-all duration-300 group-hover:bg-primary/90 group-hover:text-primary-foreground group-hover:border-primary">
-                <CardContent className="p-6 text-center">
-                  <Gamepad2 className="h-12 w-12 text-accent mx-auto mb-4 transition-colors group-hover:text-primary-foreground" />
-                  <h3 className="text-xl font-semibold">Take a Quiz</h3>
-                  <p className="text-muted-foreground mt-2 transition-colors group-hover:text-primary-foreground/80">
-                    Browse and take quizzes assigned by your teachers.
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Link href="/student-zone/generate-quiz" className="block h-full group">
-              <Card className="h-full transition-all duration-300 group-hover:bg-primary/90 group-hover:text-primary-foreground group-hover:border-primary">
-                <CardContent className="p-6 text-center">
-                  <BrainCircuit className="h-12 w-12 text-accent mx-auto mb-4 transition-colors group-hover:text-primary-foreground" />
-                  <h3 className="text-xl font-semibold">Practice Quiz</h3>
-                  <p className="text-muted-foreground mt-2 transition-colors group-hover:text-primary-foreground/80">
-                    Generate a custom quiz on any topic to test your knowledge.
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/student-zone/badges" className="block h-full group">
-              <Card className="h-full transition-all duration-300 group-hover:bg-primary/90 group-hover:text-primary-foreground group-hover:border-primary">
-                <CardContent className="p-6 text-center">
-                  <Award className="h-12 w-12 text-accent mx-auto mb-4 transition-colors group-hover:text-primary-foreground" />
-                  <h3 className="text-xl font-semibold">Your Badges</h3>
-                  <p className="text-muted-foreground mt-2 transition-colors group-hover:text-primary-foreground/80">
-                    Check out all the cool badges you've earned.
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/student-zone/progress" className="block h-full group">
-              <Card className="h-full transition-all duration-300 group-hover:bg-primary/90 group-hover:text-primary-foreground group-hover:border-primary">
-                <CardContent className="p-6 text-center">
-                  <LineChart className="h-12 w-12 text-accent mx-auto mb-4 transition-colors group-hover:text-primary-foreground" />
-                  <h3 className="text-xl font-semibold">Track Progress</h3>
-                  <p className="text-muted-foreground mt-2 transition-colors group-hover:text-primary-foreground/80">
-                    Watch yourself grow and see how you improve over time.
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link href={item.href} key={item.title} className="block h-full">
+                  <Card className="h-full text-card-foreground bg-card transition-all duration-300 hover:border-primary hover:shadow-lg hover:-translate-y-1 group">
+                    <CardContent className="p-6 text-center">
+                      <Icon className="h-12 w-12 text-primary mx-auto mb-4 transition-transform group-hover:scale-110" />
+                      <h3 className="text-xl font-semibold">{item.title}</h3>
+                      <p className="text-muted-foreground mt-2">
+                        {item.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </main>
