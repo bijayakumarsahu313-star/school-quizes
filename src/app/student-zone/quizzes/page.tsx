@@ -95,19 +95,28 @@ export default function StudentQuizzesPage() {
             if (!profileLoading && !userLoading) setLoadingQuizzes(false);
             return;
         }
+        if (!firestore) return;
 
         setLoadingQuizzes(true);
         const fetchQuizzes = async () => {
-            const q = query(
-                collection(firestore, 'quizzes'),
-                where('status', '==', 'Published'),
-                where('classLevel', '==', userProfile.classLevel)
-            );
+            try {
+                const q = query(
+                    collection(firestore, 'quizzes'),
+                    where('classLevel', '==', userProfile.classLevel)
+                );
 
-            const querySnapshot = await getDocs(q);
-            const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
-            setQuizzes(fetchedQuizzes);
-            setLoadingQuizzes(false);
+                const querySnapshot = await getDocs(q);
+                const fetchedQuizzes = querySnapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() } as Quiz))
+                    .filter(quiz => quiz.status === 'Published');
+                
+                setQuizzes(fetchedQuizzes);
+            } catch (error) {
+                console.error("Failed to fetch quizzes:", error);
+                setQuizzes([]);
+            } finally {
+                setLoadingQuizzes(false);
+            }
         }
 
         fetchQuizzes();
@@ -134,7 +143,7 @@ export default function StudentQuizzesPage() {
                                 <p className="text-muted-foreground">
                                     Showing quizzes for <span className="font-bold text-foreground">Class {userProfile.classLevel}</span>
                                 </p>
-                                <ChangeClassDialog user={user} />
+                                {user && <ChangeClassDialog user={user} />}
                             </>
                         )}
                         {(userLoading || profileLoading) && !userProfile?.classLevel && <Skeleton className="h-8 w-48" />}
