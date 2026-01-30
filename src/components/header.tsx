@@ -28,10 +28,10 @@ export function Header() {
         </nav>
         <div className="ml-auto flex items-center gap-4">
           <Button variant="ghost" asChild>
-            <Link href="/dashboard">Login</Link>
+            <Link href="/auth/login">Login</Link>
           </Button>
           <Button asChild>
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/auth/signup">Sign Up</Link>
           </Button>
         </div>
       </div>
