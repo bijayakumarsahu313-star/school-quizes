@@ -22,5 +22,10 @@ service cloud.firestore {
       allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/quizzes/$(quizId)).data.createdBy == request.auth.uid);
       allow create: if request.auth != null && request.auth.uid == userId;
     }
+
+    match /schoolInquiries/{inquiryId} {
+      allow create: if true; // Anyone can submit an inquiry
+      allow read, update, delete: if false; // To be managed by admins/backend
+    }
   }
 }

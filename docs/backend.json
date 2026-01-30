@@ -129,6 +129,22 @@
         }
       },
       "required": ["quizId", "userId", "studentName", "score", "completedAt"]
+    },
+    "SchoolInquiry": {
+      "title": "School Inquiry",
+      "description": "Represents a sales inquiry from a school.",
+      "type": "object",
+      "properties": {
+        "schoolName": { "type": "string" },
+        "schoolAddress": { "type": "string" },
+        "board": { "type": "string" },
+        "principalName": { "type": "string" },
+        "contactName": { "type": "string" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "contactPhone": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["schoolName", "schoolAddress", "board", "principalName", "contactName", "contactEmail", "submittedAt"]
     }
   },
   "auth": {
@@ -146,6 +162,10 @@
     "/quizzes/{quizId}/results/{resultId}": {
       "schema": { "$ref": "#/entities/QuizResult" },
       "description": "Stores the results for each student who took the quiz. The resultId is the student's UID."
+    },
+    "/schoolInquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/SchoolInquiry" },
+      "description": "Stores sales inquiries from schools interested in the School Plan."
     }
   }
 }

@@ -1,5 +1,6 @@
 
 
+
 export type UserProfile = {
   uid: string;
   id?: string;
@@ -60,6 +61,19 @@ export type QuizResult = {
   quizTitle?: string;
   quizSubject?: string;
 }
+
+export type SchoolInquiry = {
+  id?: string;
+  schoolName: string;
+  schoolAddress: string;
+  board: string;
+  principalName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string;
+  submittedAt: any; // Firestore timestamp
+};
+
 
 export const students: Student[] = [
   { id: '1', name: 'Aarav Sharma', classLevel: 10, avatar: 'https://picsum.photos/seed/s1/40/40', averageScore: 85, quizzesCompleted: 12 },

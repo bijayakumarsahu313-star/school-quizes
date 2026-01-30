@@ -1,9 +1,13 @@
+
+'use client';
+
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { SchoolInquiryDialog } from "@/components/school-inquiry-dialog";
 
 const freeFeatures = [
   "Up to 3 quizzes per month",
@@ -112,9 +116,9 @@ export default function PricingPage() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button asChild className="w-full" variant="secondary">
-                  <Link href="/contact">Contact Sales</Link>
-                </Button>
+                <SchoolInquiryDialog>
+                  <Button className="w-full" variant="secondary">Contact Sales</Button>
+                </SchoolInquiryDialog>
               </CardFooter>
             </Card>
           </div>
