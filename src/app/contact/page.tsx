@@ -25,11 +25,11 @@ export default function ContactPage() {
               <div className="space-y-4 text-muted-foreground">
                 <p className="flex items-center">
                   <Mail className="w-5 h-5 mr-3 text-primary" />
-                  <span>support@quizwhiz.academy</span>
+                  <span>bisweswarsahu834@gmail.com</span>
                 </p>
                 <p className="flex items-center">
                   <Phone className="w-5 h-5 mr-3 text-primary" />
-                  <span>+1 (555) 123-4567</span>
+                  <span>8770779458</span>
                 </p>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Logo } from '@/components/logo';
+import { ColorSwitcher } from './color-switcher';
 
 export function Footer() {
   return (
@@ -11,17 +12,20 @@ export function Footer() {
             © {new Date().getFullYear()} QuizWhiz Academy. All rights reserved.
           </p>
         </div>
-        <nav className="flex gap-4 sm:gap-6">
-          <Link href="/about" className="text-sm hover:underline">
-            About
-          </Link>
-          <Link href="/contact" className="text-sm hover:underline">
-            Contact
-          </Link>
-          <Link href="/pricing" className="text-sm hover:underline">
-            Pricing
-          </Link>
-        </nav>
+        <div className="flex items-center gap-4">
+          <nav className="flex gap-4 sm:gap-6">
+            <Link href="/about" className="text-sm hover:underline">
+              About
+            </Link>
+            <Link href="/contact" className="text-sm hover:underline">
+              Contact
+            </Link>
+            <Link href="/pricing" className="text-sm hover:underline">
+              Pricing
+            </Link>
+          </nav>
+          <ColorSwitcher />
+        </div>
       </div>
     </footer>
   );
