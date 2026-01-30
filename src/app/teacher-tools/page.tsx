@@ -10,21 +10,25 @@ const tools = [
     icon: <BrainCircuit className="h-10 w-10 text-primary" />,
     title: "AI-Assisted Question Generation",
     description: "Save time by generating curriculum-aligned questions in seconds.",
+    href: "/dashboard/quizzes/create",
   },
   {
     icon: <BookOpen className="h-10 w-10 text-primary" />,
     title: "Extensive Question Bank",
     description: "Access and customize a vast library of questions across all subjects.",
+    href: "/dashboard/quizzes",
   },
   {
     icon: <Target className="h-10 w-10 text-primary" />,
     title: "Auto-Grading & Instant Results",
     description: "Get immediate feedback on student performance without manual grading.",
+    href: "/dashboard/analytics",
   },
   {
     icon: <PieChart className="h-10 w-10 text-primary" />,
     title: "Reports & Analytics",
     description: "Track progress and identify learning gaps with our powerful analytics.",
+    href: "/dashboard/analytics",
   },
 ];
 
@@ -45,17 +49,19 @@ export default function TeacherToolsPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {tools.map((tool) => (
-              <Card key={tool.title} className="text-center">
-                <CardHeader>
-                  <div className="mx-auto bg-primary/10 rounded-full p-3 w-fit">
-                    {tool.icon}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <h3 className="text-lg font-semibold mb-2">{tool.title}</h3>
-                  <p className="text-muted-foreground text-sm">{tool.description}</p>
-                </CardContent>
-              </Card>
+              <Link href={tool.href} key={tool.title} className="block h-full">
+                <Card className="text-center h-full hover:border-primary transition-colors">
+                  <CardHeader>
+                    <div className="mx-auto bg-primary/10 rounded-full p-3 w-fit">
+                      {tool.icon}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <h3 className="text-lg font-semibold mb-2">{tool.title}</h3>
+                    <p className="text-muted-foreground text-sm">{tool.description}</p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
