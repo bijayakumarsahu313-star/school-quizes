@@ -39,12 +39,6 @@ const FirebaseProviderInternal = ({
 }) => {
   const firebase = useFirebaseApp();
 
-  if (!firebase) {
-    // Render nothing until Firebase is initialized on the client.
-    // This prevents children from trying to access context that isn't ready yet.
-    return null;
-  }
-
   return (
     <FirebaseContext.Provider value={firebase}>
       <FirebaseAuthProvider>
