@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -315,9 +314,12 @@ export default function QuizPage() {
                     </div>
                 )}
             </CardContent>
-             <div className="p-6 pt-4 flex justify-end">
+             <div className="p-6 pt-4 flex justify-end gap-4">
                 {answerStatus === 'unanswered' ? (
-                    <Button onClick={handleSubmitAnswer} disabled={!selectedAnswers[currentQuestionIndex]}>Submit</Button>
+                    <>
+                        <Button variant="ghost" onClick={handleNextQuestion}>Skip</Button>
+                        <Button onClick={handleSubmitAnswer} disabled={!selectedAnswers[currentQuestionIndex]}>Submit</Button>
+                    </>
                 ) : currentQuestionIndex < shuffledQuestions.length - 1 ? (
                     <Button onClick={handleNextQuestion}>Next Question</Button>
                 ) : (
@@ -346,4 +348,3 @@ export default function QuizPage() {
     </div>
   );
 }
-
