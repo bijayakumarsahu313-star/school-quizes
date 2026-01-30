@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -52,7 +53,7 @@ ${input.textContent}
         output: {
             schema: GenerateQuizQuestionsOutputSchema,
         },
-        model: 'gemini-1.5-flash-latest',
+        model: 'gemini-1.5-flash',
     });
 
     const output = response.output;

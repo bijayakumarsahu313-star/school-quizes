@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Summarizes a student's performance on a quiz.
@@ -53,7 +54,7 @@ export async function summarizeStudentPerformance(
     output: {
         schema: SummarizeStudentPerformanceOutputSchema,
     },
-    model: 'gemini-1.5-flash-latest',
+    model: 'gemini-1.5-flash',
   });
 
   const output = response.output;
