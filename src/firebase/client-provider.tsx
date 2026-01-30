@@ -32,8 +32,8 @@ export function FirebaseClientProvider({
   const [firebase, setFirebase] = useState<FirebaseContextValue | null>(null);
 
   useEffect(() => {
-    // Initialize Firebase and store the app instance in state if config is present.
-    if (firebaseConfig?.projectId) {
+    // Initialize Firebase and store the app instance in state if config is present and valid.
+    if (firebaseConfig?.projectId && firebaseConfig.projectId !== 'PROJECT_ID') {
       const { app, auth, firestore } = initializeFirebase();
       setFirebase({ app, auth, firestore });
     }

@@ -5,7 +5,7 @@ import type { FirebaseApp } from 'firebase/app';
 import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
 
-import { initializeFirebase } from '@/firebase/index';
+import { initializeFirebase } from '@/firebase/init';
 import { firebaseConfig } from './config';
 
 interface FirebaseContextValue {
@@ -24,20 +24,26 @@ export const FirebaseProvider = ({
   const [firebase, setFirebase] = useState<FirebaseContextValue | null>(null);
 
   useEffect(() => {
-    if (firebaseConfig?.projectId) {
-      const { app, auth, firestore } = initializeFirebase();
-      setFirebase({ app, auth, firestore });
+    // Check for a valid project ID before attempting to initialize.
+    // The placeholder value is 'PROJECT_ID'.
+    if (firebaseConfig?.projectId && firebaseConfig.projectId !== 'PROJECT_ID') {
+      try {
+        const { app, auth, firestore } = initializeFirebase();
+        setFirebase({ app, auth, firestore });
+      } catch (error) {
+        console.error("Firebase initialization failed:", error);
+      }
     } else {
-        console.error("Firebase config not found. App cannot be initialized.");
+        console.error("Firebase config is missing or contains placeholder values. App cannot be initialized.");
     }
   }, []);
 
   const value = useMemo(() => firebase, [firebase]);
 
-  // If Firebase is not initialized, don't render children to prevent hooks
-  // from being called before Firebase context is ready.
+  // If Firebase is not initialized, we don't render the children.
+  // This prevents hooks from being called before the Firebase context is ready.
   if (!value) {
-    return null; // Or a loading spinner
+    return null; // You can replace this with a loading spinner component.
   }
 
   return (
