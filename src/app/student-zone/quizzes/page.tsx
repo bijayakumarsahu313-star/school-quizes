@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Play, Pencil } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Play, Pencil, Calculator, Landmark, FlaskConical, BookText, BrainCircuit } from "lucide-react";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import type { Quiz, UserProfile } from "@/lib/data";
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
@@ -123,7 +124,25 @@ export default function StudentQuizzesPage() {
 
     }, [firestore, userProfile, profileLoading, userLoading]);
 
+    const getSubjectIcon = (subject: string) => {
+        const s = subject.toLowerCase();
+        if (s.includes('math')) return <Calculator className="h-6 w-6 text-accent-foreground" />;
+        if (s.includes('social') || s.includes('history')) return <Landmark className="h-6 w-6 text-accent-foreground" />;
+        if (s.includes('science') || s.includes('biology') || s.includes('physics') || s.includes('chemistry')) return <FlaskConical className="h-6 w-6 text-accent-foreground" />;
+        if (s.includes('english')) return <BookText className="h-6 w-6 text-accent-foreground" />;
+        return <BrainCircuit className="h-6 w-6 text-accent-foreground" />;
+    };
+
     const isLoading = userLoading || profileLoading || loadingQuizzes;
+
+    const difficultyBadgeVariant = (difficulty: 'easy' | 'medium' | 'hard') => {
+        switch (difficulty) {
+            case 'easy': return 'default';
+            case 'medium': return 'secondary';
+            case 'hard': return 'destructive';
+            default: return 'outline';
+        }
+    }
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -152,45 +171,58 @@ export default function StudentQuizzesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {isLoading ? (
                             Array.from({ length: 3 }).map((_, i) => (
-                                <Card key={i}>
-                                    <CardHeader>
-                                        <Skeleton className="h-6 w-3/4" />
-                                        <Skeleton className="h-4 w-1/2" />
-                                    </CardHeader>
-                                    <CardContent>
-                                         <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                            <Skeleton className="h-4 w-20" />
-                                            <Skeleton className="h-4 w-20" />
+                                <Card key={i} className="overflow-hidden">
+                                     <CardHeader className="p-0">
+                                        <div className="bg-muted p-4 flex items-center gap-4">
+                                            <Skeleton className="h-14 w-14 rounded-md" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-6 w-40" />
+                                                <Skeleton className="h-4 w-24" />
+                                            </div>
                                         </div>
-                                    </CardContent>
-                                    <div className="p-6 pt-0">
+                                    </CardHeader>
+                                    <CardContent className="p-6 space-y-4">
+                                         <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                            <Skeleton className="h-5 w-16" />
+                                            <Skeleton className="h-4 w-24" />
+                                            <Skeleton className="h-4 w-24" />
+                                        </div>
                                        <Skeleton className="h-10 w-full" />
-                                    </div>
+                                    </CardContent>
                                 </Card>
                             ))
                         ) : quizzes.length > 0 ? (
-                            quizzes.map((quiz) => (
-                                <Card key={quiz.id}>
-                                    <CardHeader>
-                                        <CardTitle>{quiz.title}</CardTitle>
-                                        <CardDescription>{quiz.subject}</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                            <span>{quiz.questions.length} Questions</span>
-                                            <span>{quiz.duration} minutes</span>
-                                        </div>
-                                    </CardContent>
-                                    <div className="p-6 pt-0">
-                                        <Button asChild className="w-full">
-                                            <Link href={`/quiz/${quiz.id}`}>
-                                                <Play className="mr-2 h-4 w-4" />
-                                                Take Quiz
-                                            </Link>
-                                        </Button>
-                                    </div>
-                                </Card>
-                            ))
+                            quizzes.map((quiz) => {
+                                const Icon = getSubjectIcon(quiz.subject);
+                                return (
+                                    <Card key={quiz.id} className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col">
+                                        <CardHeader className="p-0">
+                                            <div className="bg-muted p-4 flex items-center gap-4">
+                                                <div className="bg-accent/20 p-3 rounded-md">
+                                                    {Icon}
+                                                </div>
+                                                <div>
+                                                    <CardTitle className="leading-tight">{quiz.title}</CardTitle>
+                                                    <CardDescription>{quiz.subject}</CardDescription>
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="p-6 flex flex-col flex-1">
+                                             <div className="flex-grow flex justify-between items-center text-sm text-muted-foreground mb-4">
+                                                <Badge variant={difficultyBadgeVariant(quiz.difficulty)} className="capitalize">{quiz.difficulty}</Badge>
+                                                <span>{quiz.questions.length} Questions</span>
+                                                <span>{quiz.duration} min</span>
+                                            </div>
+                                            <Button asChild className="w-full mt-auto">
+                                                <Link href={`/quiz/${quiz.id}`}>
+                                                    <Play className="mr-2 h-4 w-4" />
+                                                    Take Quiz
+                                                </Link>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })
                         ) : (
                             <div className="col-span-full text-center py-12">
                                 <p className="text-muted-foreground text-lg">No quizzes found for your class.</p>

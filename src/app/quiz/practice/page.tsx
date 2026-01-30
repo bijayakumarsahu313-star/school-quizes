@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -9,7 +10,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Clock } from 'lucide-react';
+import { Clock, Trophy } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Helper function to shuffle an array
 function shuffle(array: any[]) {
@@ -158,16 +160,32 @@ export default function PracticeQuizPage() {
   }
   
   if (isFinished) {
+    const isSuccess = score >= 80;
+    const correctAnswersCount = Math.round(score / 100 * shuffledQuestions.length);
+
     return (
-        <div className="flex items-center justify-center min-h-screen bg-muted">
-            <Card className="w-full max-w-lg text-center">
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/50 p-4">
+            <Card className="w-full max-w-lg text-center p-6">
                 <CardHeader>
-                    <CardTitle>Practice Quiz Completed!</CardTitle>
-                    <CardDescription>You have successfully submitted the quiz.</CardDescription>
+                     <div className={`mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br ${isSuccess ? 'from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50' : 'from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50'} mb-4`}>
+                        <Trophy className={`w-12 h-12 ${isSuccess ? 'text-green-600' : 'text-blue-600'}`} />
+                    </div>
+                    <CardTitle className="text-3xl">Practice Completed!</CardTitle>
+                    <CardDescription>{isSuccess ? "Outstanding performance! You nailed it." : "Good effort! Keep practicing."}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-lg mb-2">Your Score:</p>
-                    <p className="text-6xl font-bold text-primary">{score.toFixed(0)}%</p>
+                    <p className="text-lg mb-2 text-muted-foreground">Your Score:</p>
+                    <p className={`text-7xl font-bold ${isSuccess ? 'text-green-600' : 'text-primary'}`}>{score.toFixed(0)}%</p>
+                    <div className="mt-6 text-muted-foreground grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-muted rounded-lg">
+                            <p className="text-sm">Questions</p>
+                            <p className="text-2xl font-bold text-foreground">{shuffledQuestions.length}</p>
+                        </div>
+                         <div className="p-3 bg-muted rounded-lg">
+                            <p className="text-sm">Correct Answers</p>
+                            <p className="text-2xl font-bold text-foreground">{correctAnswersCount}</p>
+                        </div>
+                    </div>
                      <Button onClick={() => router.push('/student-zone')} className="mt-8">
                         Back to Student Zone
                     </Button>
@@ -181,7 +199,7 @@ export default function PracticeQuizPage() {
   const progress = ((currentQuestionIndex + 1) / shuffledQuestions.length) * 100;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-muted p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900/50 p-4">
         <Card className="w-full max-w-2xl">
             <CardHeader>
                 <CardTitle className="flex justify-between items-center">
@@ -204,10 +222,18 @@ export default function PracticeQuizPage() {
                     className="space-y-4"
                 >
                     {currentQuestion.options.map((option, i) => (
-                        <div key={i} className="flex items-center space-x-3 p-3 rounded-lg border border-border has-[[data-state=checked]]:border-primary">
-                             <RadioGroupItem value={option} id={`option-${i}`} />
-                             <Label htmlFor={`option-${i}`} className="text-base font-normal flex-1 cursor-pointer">{option}</Label>
-                        </div>
+                         <Label
+                            key={i}
+                            htmlFor={`option-${i}`}
+                            className={cn(
+                                "flex items-center space-x-4 p-4 rounded-lg border-2 transition-all cursor-pointer",
+                                "border-muted bg-background hover:bg-muted/50",
+                                selectedAnswers[currentQuestionIndex] === option && "border-primary bg-primary/10"
+                            )}
+                        >
+                             <RadioGroupItem value={option} id={`option-${i}`} className="h-5 w-5" />
+                             <span className="text-base font-medium flex-1">{option}</span>
+                        </Label>
                     ))}
                 </RadioGroup>
             </CardContent>
