@@ -36,6 +36,9 @@ export default function StudentZonePage() {
                 <p className="text-muted-foreground mt-2">
                   Show off your skills and collect rewards for your hard work.
                 </p>
+                <Button asChild variant="link" className="mt-2">
+                  <Link href="/student-zone/badges">View Your Badges</Link>
+                </Button>
               </CardContent>
             </Card>
             <Card>
