@@ -220,18 +220,18 @@ export default function CreateQuizPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Difficulty</FormLabel>
+                          <FormControl>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select difficulty" />
-                                </SelectTrigger>
-                              </FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select difficulty" />
+                              </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="easy">Easy</SelectItem>
                                 <SelectItem value="medium">Medium</SelectItem>
                                 <SelectItem value="hard">Hard</SelectItem>
                               </SelectContent>
                             </Select>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -242,12 +242,11 @@ export default function CreateQuizPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Question Type</FormLabel>
+                          <FormControl>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select question type" />
-                                </SelectTrigger>
-                              </FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select question type" />
+                              </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="MCQ">MCQ</SelectItem>
                                 <SelectItem value="True/False">True/False</SelectItem>
@@ -256,6 +255,7 @@ export default function CreateQuizPage() {
                                 <SelectItem value="Image-based questions">Image-based</SelectItem>
                               </SelectContent>
                             </Select>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -304,18 +304,18 @@ export default function CreateQuizPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Difficulty</FormLabel>
+                            <FormControl>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue/>
-                                  </SelectTrigger>
-                                </FormControl>
+                                <SelectTrigger>
+                                  <SelectValue/>
+                                </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="easy">Easy</SelectItem>
                                   <SelectItem value="medium">Medium</SelectItem>
                                   <SelectItem value="hard">Hard</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -329,12 +329,11 @@ export default function CreateQuizPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Question Type</FormLabel>
+                              <FormControl>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select question type" />
                                   </SelectTrigger>
-                                  </FormControl>
                                   <SelectContent>
                                     <SelectItem value="MCQ">MCQ</SelectItem>
                                     <SelectItem value="True/False">True/False</SelectItem>
@@ -343,6 +342,7 @@ export default function CreateQuizPage() {
                                     <SelectItem value="Image-based questions">Image-based</SelectItem>
                                   </SelectContent>
                                 </Select>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
