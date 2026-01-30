@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 
 import { useFirestore } from '@/firebase/firestore/provider';
 
-const useCollection = <T,>(path: string | null, field?: string, value?: string) => {
+const useCollection = <T,>(path: string | null, field?: string, value?: any) => {
   const db = useFirestore();
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +32,7 @@ const useCollection = <T,>(path: string | null, field?: string, value?: string) 
     }
     
     let q: Query<DocumentData>;
-    if (field && value) {
+    if (field && value !== undefined) {
       q = query(collection(db, path), where(field, '==', value));
     } else {
       q = query(collection(db, path));

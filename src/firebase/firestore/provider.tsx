@@ -5,9 +5,7 @@ import { createContext, useContext } from 'react';
 
 import { useFirebase } from '@/firebase/provider';
 
-const FirebaseFirestoreContext = createContext<Firestore | undefined>(
-  undefined
-);
+const FirebaseFirestoreContext = createContext<Firestore | null>(null);
 
 export const FirebaseFirestoreProvider = ({
   children,
@@ -16,7 +14,7 @@ export const FirebaseFirestoreProvider = ({
 }) => {
   const firebase = useFirebase();
   return (
-    <FirebaseFirestoreContext.Provider value={firebase?.firestore}>
+    <FirebaseFirestoreContext.Provider value={firebase?.firestore ?? null}>
       {children}
     </FirebaseFirestoreContext.Provider>
   );

@@ -18,9 +18,7 @@ interface FirebaseContextValue {
   firestore: Firestore;
 }
 
-const FirebaseContext = createContext<FirebaseContextValue | null | undefined>(
-  undefined
-);
+const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
 export const FirebaseProvider = ({
   children,

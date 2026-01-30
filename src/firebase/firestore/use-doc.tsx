@@ -5,14 +5,15 @@ import { useEffect, useState } from 'react';
 
 import { useFirestore } from '@/firebase/firestore/provider';
 
-const useDoc = <T,>(path: string, id: string) => {
+const useDoc = <T,>(path: string | null, id: string | null) => {
   const db = useFirestore();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db) {
+    if (!db || !path || !id) {
         setLoading(false);
+        setData(null);
         return;
     }
     const docRef = doc(db, path, id);
@@ -23,6 +24,10 @@ const useDoc = <T,>(path: string, id: string) => {
         setData(null);
       }
       setLoading(false);
+    }, (error) => {
+        console.error("Error fetching document: ", error);
+        setData(null);
+        setLoading(false);
     });
 
     return () => unsubscribe();

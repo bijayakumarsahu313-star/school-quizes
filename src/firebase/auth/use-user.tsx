@@ -12,7 +12,7 @@ const useUser = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
+    if (auth === null) {
       setLoading(false);
       return;
     }
