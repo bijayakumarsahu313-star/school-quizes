@@ -4,38 +4,34 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 
-import { useAuth } from '@/firebase/auth/provider';
+import { useFirebase } from '@/firebase/provider';
 
 const useUser = () => {
-  const auth = useAuth();
+  const firebase = useFirebase();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (auth === null) {
-      // Firebase Auth is not yet initialized. We are in a loading state.
-      // We will wait for the auth object to be available.
+    if (firebase?.auth) {
+      const unsubscribe = onAuthStateChanged(
+        firebase.auth,
+        (user) => {
+          setUser(user);
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Auth state change error:', error);
+          setUser(null);
+          setLoading(false);
+        }
+      );
+      return () => unsubscribe();
+    } else {
+      // Firebase is not ready yet. We are in a loading state.
       setLoading(true);
-      return;
+      setUser(null);
     }
-
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        // Auth state has been determined.
-        setUser(user);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Auth state change error:', error);
-        setUser(null);
-        setLoading(false);
-      }
-    );
-
-    // Cleanup the listener on unmount.
-    return () => unsubscribe();
-  }, [auth]);
+  }, [firebase]);
 
   return { user, loading };
 };
