@@ -2,23 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Logo } from '@/components/logo';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const formSchema = z.object({
   role: z.enum(['student', 'teacher']),
@@ -63,6 +63,8 @@ export default function SignupPage() {
   const { toast } = useToast();
   const auth = useAuth();
   const firestore = useFirestore();
+  const authImage = PlaceHolderImages.find((img) => img.id === "auth-signup");
+
 
   const boards = [
     'CBSE', 'ICSE', 'IB', 'IGCSE', 'Maharashtra State Board', 'Tamil Nadu Board of Secondary Education', 'West Bengal Board of Secondary Education', 'UP Board', 'Other',
@@ -206,152 +208,165 @@ export default function SignupPage() {
 
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-4 py-8">
-        <Logo />
-        <Card className="mx-auto w-full max-w-sm">
-        <CardHeader>
-            <CardTitle className="text-xl">Sign Up</CardTitle>
-            <CardDescription>Enter your information to create an account</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-                <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Are you a?</FormLabel>
-                            <FormControl>
-                                <RadioGroup
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                className="flex gap-4 pt-2"
-                                >
-                                <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                    <RadioGroupItem value="student" />
-                                    </FormControl>
-                                    <Label>Student</Label>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                    <RadioGroupItem value="teacher" />
-                                    </FormControl>
-                                    <Label>Teacher</Label>
-                                </FormItem>
-                                </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField control={form.control} name="fullName" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Max Robinson" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}/>
-
-                <FormField control={form.control} name="email" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                            <Input type="email" placeholder="m@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}/>
-
-                <FormField control={form.control} name="school" render={({ field }) => (
-                     <FormItem>
-                        <FormLabel>School</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Springfield High School" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}/>
-
-                {role === 'student' && (
-                <>
-                    <FormField control={form.control} name="classLevel" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Class</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="10" {...field} value={field.value ?? ''} onChange={e => field.onChange(parseInt(e.target.value, 10) || '')} />
-                            </FormControl>
-                             <FormMessage />
-                        </FormItem>
-                    )}/>
-                    <FormField control={form.control} name="board" render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Board</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+    <>
+        <div className="flex items-center justify-center py-12">
+            <div className="mx-auto grid w-[400px] gap-6">
+                <div className="grid gap-2 text-center">
+                <h1 className="text-3xl font-bold">Sign Up</h1>
+                <p className="text-balance text-muted-foreground">
+                    Enter your information to create an account
+                </p>
+                </div>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+                    <FormField
+                        control={form.control}
+                        name="role"
+                        render={({ field }) => (
+                            <FormItem className="space-y-3">
+                                <FormLabel>I am a...</FormLabel>
                                 <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select your board" />
-                                    </SelectTrigger>
+                                    <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="flex flex-col space-y-1"
+                                    >
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                        <RadioGroupItem value="student" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">Student</FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                        <RadioGroupItem value="teacher" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">Teacher</FormLabel>
+                                    </FormItem>
+                                    </RadioGroup>
                                 </FormControl>
-                                <SelectContent>
-                                    {boards.map((board) => (
-                                    <SelectItem key={board} value={board}>
-                                        {board}
-                                    </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}/>
-                </>
-                )}
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                {role === 'teacher' && (
-                    <FormField control={form.control} name="subject" render={({ field }) => (
+                    <FormField control={form.control} name="fullName" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Subject</FormLabel>
+                            <FormLabel>Full Name</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g., Physics, History" {...field} value={field.value ?? ''} />
+                                <Input placeholder="Max Robinson" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}/>
-                )}
 
-                <FormField control={form.control} name="password" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                            <Input type="password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}/>
+                    <FormField control={form.control} name="email" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="m@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
 
-                <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create an account
-                </Button>
+                    <FormField control={form.control} name="school" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>School</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Springfield High School" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
 
-                <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isLoading}>
-                     {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Sign up with Google
-                </Button>
-            </form>
-            </Form>
-            <div className="mt-4 text-center text-sm">
-                Already have an account?{' '}
-                <Link href="/auth/login" className="underline">
-                    Login
-                </Link>
+                    {role === 'student' && (
+                    <>
+                        <FormField control={form.control} name="classLevel" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Class</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="10" {...field} value={field.value ?? ''} onChange={e => field.onChange(parseInt(e.target.value, 10) || '')} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                        <FormField control={form.control} name="board" render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Board</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select your board" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {boards.map((board) => (
+                                        <SelectItem key={board} value={board}>
+                                            {board}
+                                        </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}/>
+                    </>
+                    )}
+
+                    {role === 'teacher' && (
+                        <FormField control={form.control} name="subject" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Subject</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., Physics, History" {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                    )}
+
+                    <FormField control={form.control} name="password" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                                <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
+
+                    <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Create an account
+                    </Button>
+
+                    <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isLoading}>
+                        {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Sign up with Google
+                    </Button>
+                </form>
+                </Form>
+                <div className="mt-4 text-center text-sm">
+                    Already have an account?{' '}
+                    <Link href="/auth/login" className="underline">
+                        Login
+                    </Link>
+                </div>
             </div>
-        </CardContent>
-        </Card>
-    </div>
+        </div>
+      <div className="hidden bg-muted lg:block">
+        {authImage && (
+            <Image
+                src={authImage.imageUrl}
+                alt={authImage.description}
+                width="1920"
+                height="1080"
+                className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+                data-ai-hint={authImage.imageHint}
+            />
+        )}
+      </div>
+    </>
   );
 }

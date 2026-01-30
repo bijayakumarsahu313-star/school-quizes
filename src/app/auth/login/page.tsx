@@ -1,16 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Logo } from '@/components/logo';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
@@ -18,6 +17,7 @@ import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 
 import { doc, getDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import type { UserProfile } from '@/lib/data';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -31,6 +31,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const auth = useAuth();
   const firestore = useFirestore();
+  const authImage = PlaceHolderImages.find((img) => img.id === "auth-login");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,7 +51,6 @@ export default function LoginPage() {
         router.push('/student-zone');
       }
     } else {
-      // If profile doesn't exist, maybe they didn't finish signup.
       router.push('/auth/signup'); 
     }
   };
@@ -97,7 +97,6 @@ export default function LoginPage() {
          });
          await handleRedirect(user.uid);
       } else {
-        // This is a first-time Google sign-in for this user, they need to complete their profile.
         toast({
             title: 'Welcome!',
             description: 'Please complete your profile to continue.',
@@ -125,15 +124,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-4">
-        <Logo />
-        <Card className="mx-auto w-full max-w-sm">
-        <CardHeader>
-            <CardTitle className="text-2xl">Login</CardTitle>
-            <CardDescription>Enter your email below to login to your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Form {...form}>
+    <>
+      <div className="flex items-center justify-center py-12">
+        <div className="mx-auto grid w-[350px] gap-6">
+          <div className="grid gap-2 text-center">
+            <h1 className="text-3xl font-bold">Login</h1>
+            <p className="text-balance text-muted-foreground">
+              Enter your email below to login to your account
+            </p>
+          </div>
+           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
                 <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
@@ -147,7 +147,12 @@ export default function LoginPage() {
 
                 <FormField control={form.control} name="password" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <div className="flex items-center">
+                            <FormLabel>Password</FormLabel>
+                            <Link href="#" className="ml-auto inline-block text-sm underline">
+                                Forgot your password?
+                            </Link>
+                        </div>
                         <FormControl>
                             <Input type="password" {...field} />
                         </FormControl>
@@ -160,30 +165,33 @@ export default function LoginPage() {
                     Login
                 </Button>
             </form>
-            </Form>
+          </Form>
 
-            <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-            </div>
-
-            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isLoading}>
-                {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Login with Google
-            </Button>
-            
-            <div className="mt-4 text-center text-sm">
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isLoading}>
+              {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Login with Google
+          </Button>
+          
+          <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className="underline">
                 Sign up
             </Link>
-            </div>
-        </CardContent>
-        </Card>
-    </div>
+          </div>
+        </div>
+      </div>
+      <div className="hidden bg-muted lg:block">
+        {authImage && (
+          <Image
+            src={authImage.imageUrl}
+            alt={authImage.description}
+            width="1920"
+            height="1080"
+            className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+            data-ai-hint={authImage.imageHint}
+          />
+        )}
+      </div>
+    </>
   );
 }

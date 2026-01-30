@@ -29,6 +29,18 @@
       "description": "A world map used for an image-based geography question.",
       "imageUrl": "https://images.unsplash.com/photo-1524661135-423995f22d0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3b3JsZCUyMG1hcHxlbnwwfHx8fDE3Njk3MTk2NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "world map"
+    },
+    {
+      "id": "auth-login",
+      "description": "A vibrant, abstract image representing education and technology, suitable for a login screen background.",
+      "imageUrl": "https://images.unsplash.com/photo-1536248611999-40b730bd0365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxsZWFybmluZyUyMHRlY2hub2xvZ3l8ZW58MHx8fHwxNzcwMDgzMzA5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "learning technology"
+    },
+    {
+      "id": "auth-signup",
+      "description": "An inspiring image of students collaborating, perfect for a signup page background.",
+      "imageUrl": "https://images.unsplash.com/photo-1542744095-fcf48d80b4fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzdHVkZW50cyUyMGNvbGxhYm9yYXRpbmd8ZW58MHx8fHwxNzcwMDgzMjk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "students collaborating"
     }
   ]
 }
