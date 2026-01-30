@@ -15,13 +15,14 @@ const GenerateQuizFromTextInputSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']).describe('The difficulty level of the quiz questions.'),
   questionType: z.enum(['MCQ', 'True/False', 'Fill in the Blanks', 'Match the Following', 'Image-based questions']).optional().describe('The types of questions you want in the quiz'),
   numberOfQuestions: z.number().int().min(1).max(20).optional().describe('The number of questions to generate.'),
+  board: z.string().optional().describe('The educational board (e.g., CBSE, ICSE).'),
 });
 export type GenerateQuizFromTextInput = z.infer<typeof GenerateQuizFromTextInputSchema>;
 export type GenerateQuizFromTextOutput = GenerateQuizQuestionsOutput;
 
 
 export async function generateQuizFromText(input: GenerateQuizFromTextInput): Promise<GenerateQuizFromTextOutput> {
-    console.log("Simulating a more logical AI response from text to avoid API key issues.");
+    console.log("Simulating a more logical AI response from text to avoid API key issues, now considering board:", input.board);
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const numQuestions = input.numberOfQuestions || 5;
@@ -32,7 +33,7 @@ export async function generateQuizFromText(input: GenerateQuizFromTextInput): Pr
     const fakeQuestions = Array.from({ length: numQuestions }, (_, i) => {
         const keyword = keywords[i] || `concept ${i + 1}`;
         return {
-          text: `Based on the provided text, what is the significance of "${keyword}"?`,
+          text: `Based on the provided text for the ${input.board || 'General'} syllabus, what is the significance of "${keyword}"?`,
           options: ["Plausible Answer A", "Plausible Answer B", "Correct Answer based on text", "Plausible Answer D"],
           answer: "Correct Answer based on text",
         };

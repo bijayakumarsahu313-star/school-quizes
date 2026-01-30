@@ -1,6 +1,7 @@
 
 
 
+
 export type UserProfile = {
   uid: string;
   id?: string;
@@ -47,6 +48,7 @@ export type Quiz = {
   status: 'Draft' | 'Published';
   duration: number; // Duration in minutes
   averageScore?: number;
+  board?: string;
 };
 
 export type QuizResult = {

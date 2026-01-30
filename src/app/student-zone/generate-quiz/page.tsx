@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,7 +16,8 @@ import { Loader2, Wand2, Play } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import type { Quiz } from '@/lib/data';
+import type { Quiz, UserProfile } from '@/lib/data';
+import { useUser, useDoc } from '@/firebase';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -35,6 +36,8 @@ export default function StudentGenerateQuizPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [quizSettings, setQuizSettings] = useState<FormValues | null>(null);
   const { toast } = useToast();
+  const { user } = useUser();
+  const { data: userProfile } = useDoc<UserProfile>(user ? 'users' : null, user?.uid);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -48,11 +51,21 @@ export default function StudentGenerateQuizPage() {
     },
   });
 
+  useEffect(() => {
+    if (userProfile?.classLevel) {
+        form.setValue('classLevel', userProfile.classLevel);
+    }
+  }, [userProfile, form]);
+
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     setGeneratedQuestions([]);
     try {
-      const result = await generateQuizQuestions({ ...values, questionType: 'MCQ' });
+      const result = await generateQuizQuestions({ 
+          ...values, 
+          questionType: 'MCQ',
+          board: userProfile?.board
+      });
       setGeneratedQuestions(result.questions);
       setQuizSettings(values);
       toast({
@@ -79,6 +92,7 @@ export default function StudentGenerateQuizPage() {
       title: quizSettings.title,
       subject: quizSettings.subject,
       classLevel: quizSettings.classLevel,
+      board: userProfile?.board,
       numberOfQuestions: quizSettings.numberOfQuestions,
       duration: quizSettings.duration,
       questions: generatedQuestions,

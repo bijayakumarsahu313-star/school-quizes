@@ -16,6 +16,7 @@ const GenerateQuizQuestionsInputSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']).describe('The difficulty level of the quiz questions.'),
   questionType: z.enum(['MCQ', 'True/False', 'Fill in the Blanks', 'Match the Following', 'Image-based questions']).optional().describe('The types of questions you want in the quiz'),
   numberOfQuestions: z.number().int().min(1).max(20).optional().describe('The number of questions to generate.'),
+  board: z.string().optional().describe('The educational board (e.g., CBSE, ICSE).'),
 });
 export type GenerateQuizQuestionsInput = z.infer<typeof GenerateQuizQuestionsInputSchema>;
 
@@ -53,7 +54,7 @@ function shuffleArray(array: any[]) {
 }
 
 export async function generateQuizQuestions(input: GenerateQuizQuestionsInput): Promise<GenerateQuizQuestionsOutput> {
-    console.log("Simulating a more logical AI response to avoid API key issues.");
+    console.log("Simulating a more logical AI response to avoid API key issues, now considering board:", input.board);
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const subjectKey = input.subject.toLowerCase();
@@ -77,7 +78,7 @@ export async function generateQuizQuestions(input: GenerateQuizQuestionsInput): 
 
     // Fallback to a generic but improved simulation
     const fakeQuestions = Array.from({ length: numQuestions }, (_, i) => ({
-      text: `What is a key concept in ${input.subject} related to difficulty level '${input.difficulty}'? (Question ${i + 1})`,
+      text: `For a ${input.board || 'General'} syllabus, what is a key concept in ${input.subject} for class ${input.classLevel} at difficulty level '${input.difficulty}'? (Question ${i + 1})`,
       options: ["Logical Option 1", "Logical Option 2", "The Correct Logical Answer", "Logical Option 4"],
       answer: "The Correct Logical Answer",
     }));

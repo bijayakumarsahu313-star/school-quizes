@@ -75,6 +75,7 @@
         "title": { "type": "string" },
         "subject": { "type": "string" },
         "classLevel": { "type": "number" },
+        "board": { "type": "string" },
         "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
         "questionType": { "type": "string" },
         "numberOfQuestions": { "type": "number" },
