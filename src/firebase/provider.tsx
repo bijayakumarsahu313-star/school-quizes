@@ -1,12 +1,11 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 
-import { initializeFirebase } from '@/firebase/init';
-import { firebaseConfig } from './config';
+import { firebaseConfig } from '@/firebase/config';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 interface FirebaseContextValue {
@@ -17,21 +16,19 @@ interface FirebaseContextValue {
 
 const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
-export const FirebaseProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export function FirebaseProvider({ children }: { children: ReactNode }) {
   const [firebaseInstance, setFirebaseInstance] = useState<FirebaseContextValue | null>(null);
 
   useEffect(() => {
     // This effect runs only on the client, after hydration is complete.
     try {
       if (firebaseConfig?.projectId && firebaseConfig.projectId !== 'PROJECT_ID') {
-        const instance = initializeFirebase();
-        setFirebaseInstance(instance);
+        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        const auth = getAuth(app);
+        const firestore = getFirestore(app);
+        setFirebaseInstance({ app, auth, firestore });
       } else {
-        console.warn(
+        console.error(
           'Firebase config is missing or contains placeholder values. Firebase will not be initialized.'
         );
       }
@@ -56,12 +53,11 @@ export const FirebaseProvider = ({
   );
 };
 
-
 // Hooks below will only be called once the provider has a value.
 export const useFirebase = (): FirebaseContextValue => {
   const context = useContext(FirebaseContext);
   if (!context) {
-    throw new Error('useFirebase must be used within a FirebaseProvider.');
+    throw new Error('useFirebase must be used within a FirebaseProvider. This might happen if Firebase fails to initialize.');
   }
   return context;
 };
