@@ -41,7 +41,6 @@ export default function LoginPage() {
   });
   
   const handleRedirect = async (uid: string) => {
-    if (!firestore) return;
     const userDoc = await getDoc(doc(firestore, 'users', uid));
     if (userDoc.exists()) {
       const userProfile = userDoc.data() as UserProfile;
@@ -57,7 +56,6 @@ export default function LoginPage() {
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!auth) return;
     setIsLoading(true);
 
     try {
@@ -82,7 +80,6 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth || !firestore) return;
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
 

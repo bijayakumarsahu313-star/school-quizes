@@ -90,7 +90,6 @@ export default function SignupPage() {
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!auth || !firestore) return;
     setIsLoading(true);
 
     try {
@@ -140,8 +139,6 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth || !firestore) return;
-    
     const result = await form.trigger(['role', 'school', 'classLevel', 'board', 'subject']);
     if (!result) {
         toast({

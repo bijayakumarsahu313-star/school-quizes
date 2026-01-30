@@ -32,7 +32,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !firestore) return;
+    if (!user) return;
 
     const fetchAllResults = async () => {
       setLoading(true);

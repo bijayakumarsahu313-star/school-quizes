@@ -24,7 +24,7 @@ function ChangeClassDialog({ user }: { user: any }) {
     const [newClass, setNewClass] = useState('');
 
     const handleSave = async () => {
-        if (!user || !newClass || !firestore) return;
+        if (!user || !newClass) return;
         const classLevel = parseInt(newClass, 10);
         if (isNaN(classLevel) || classLevel < 1 || classLevel > 12) {
             toast({
@@ -91,7 +91,8 @@ export default function StudentQuizzesPage() {
     const firestore = useFirestore();
 
     useEffect(() => {
-        if (profileLoading || !firestore || !userProfile?.classLevel) {
+        if (profileLoading || !userProfile?.classLevel) {
+            if (!profileLoading && !userLoading) setLoadingQuizzes(false);
             return;
         }
 
@@ -111,7 +112,7 @@ export default function StudentQuizzesPage() {
 
         fetchQuizzes();
 
-    }, [firestore, userProfile, profileLoading]);
+    }, [firestore, userProfile, profileLoading, userLoading]);
 
     const isLoading = userLoading || profileLoading || loadingQuizzes;
 
@@ -128,7 +129,7 @@ export default function StudentQuizzesPage() {
                     </div>
 
                     <div className="flex justify-center mb-12 items-center gap-4">
-                        {userProfile && (
+                        {userProfile && userProfile.classLevel && (
                             <>
                                 <p className="text-muted-foreground">
                                     Showing quizzes for <span className="font-bold text-foreground">Class {userProfile.classLevel}</span>
@@ -136,7 +137,7 @@ export default function StudentQuizzesPage() {
                                 <ChangeClassDialog user={user} />
                             </>
                         )}
-                        {(userLoading || profileLoading) && <Skeleton className="h-8 w-48" />}
+                        {(userLoading || profileLoading) && !userProfile?.classLevel && <Skeleton className="h-8 w-48" />}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -148,8 +149,14 @@ export default function StudentQuizzesPage() {
                                         <Skeleton className="h-4 w-1/2" />
                                     </CardHeader>
                                     <CardContent>
-                                        <Skeleton className="h-8 w-full" />
+                                         <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                            <Skeleton className="h-4 w-20" />
+                                            <Skeleton className="h-4 w-20" />
+                                        </div>
                                     </CardContent>
+                                    <div className="p-6 pt-0">
+                                       <Skeleton className="h-10 w-full" />
+                                    </div>
                                 </Card>
                             ))
                         ) : quizzes.length > 0 ? (
@@ -188,4 +195,3 @@ export default function StudentQuizzesPage() {
         </div>
     );
 }
-

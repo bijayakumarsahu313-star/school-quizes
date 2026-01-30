@@ -22,7 +22,6 @@ export default function QuizzesPage() {
   );
 
   const togglePublishStatus = async (quiz: Quiz) => {
-    if (!firestore) return;
     const newStatus = quiz.status === 'Published' ? 'Draft' : 'Published';
     const quizRef = doc(firestore, 'quizzes', quiz.id);
     try {

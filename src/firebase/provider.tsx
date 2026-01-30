@@ -25,8 +25,6 @@ export const FirebaseProvider = ({
   const [firebase, setFirebase] = useState<FirebaseContextValue | null>(null);
 
   useEffect(() => {
-    // Check for a valid project ID before attempting to initialize.
-    // The placeholder value is 'PROJECT_ID'.
     if (firebaseConfig?.projectId && firebaseConfig.projectId !== 'PROJECT_ID') {
       try {
         const { app, auth, firestore } = initializeFirebase();
@@ -41,33 +39,37 @@ export const FirebaseProvider = ({
 
   const value = useMemo(() => firebase, [firebase]);
 
+  // By returning null (or a loading component), we prevent children from rendering
+  // until Firebase is initialized, thus preventing race conditions.
+  if (!value) {
+    return null;
+  }
+
   return (
     <FirebaseContext.Provider value={value}>
-        {process.env.NODE_ENV === 'development' && value && <FirebaseErrorListener />}
+        {process.env.NODE_ENV === 'development' && <FirebaseErrorListener />}
         {children}
     </FirebaseContext.Provider>
   );
 };
 
-// This hook returns the entire Firebase context value, which can be null during initialization.
-export const useFirebase = () => {
-    return useContext(FirebaseContext);
+// Hooks below will only be called once the provider has a value.
+export const useFirebase = (): FirebaseContextValue => {
+    const context = useContext(FirebaseContext);
+    if (!context) {
+        throw new Error('useFirebase must be used within a FirebaseProvider.');
+    }
+    return context;
 };
 
-// This hook returns the Auth instance, or null if Firebase is not yet initialized.
-export const useAuth = (): Auth | null => {
-    const firebase = useFirebase();
-    return firebase ? firebase.auth : null;
+export const useAuth = (): Auth => {
+    return useFirebase().auth;
 };
 
-// This hook returns the Firestore instance, or null if Firebase is not yet initialized.
-export const useFirestore = (): Firestore | null => {
-    const firebase = useFirebase();
-    return firebase ? firebase.firestore : null;
+export const useFirestore = (): Firestore => {
+    return useFirebase().firestore;
 };
 
-// This hook returns the FirebaseApp instance, or null if Firebase is not yet initialized.
-export const useFirebaseApp = (): FirebaseApp | null => {
-    const firebase = useFirebase();
-    return firebase ? firebase.app : null;
+export const useFirebaseApp = (): FirebaseApp => {
+    return useFirebase().app;
 };
