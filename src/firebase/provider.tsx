@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -25,21 +25,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
         const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
         const auth = getAuth(app);
         const firestore = getFirestore(app);
-        
-        // Use onAuthStateChanged as a readiness check.
-        // It fires once the auth service is initialized.
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            // Set the instance only on the first run.
-            if (!firebaseInstance) {
-                setFirebaseInstance({ app, auth, firestore });
-            }
-            // Unsubscribe to avoid memory leaks. The useUser hook has its own listener.
-            unsubscribe();
-        }, (error) => {
-            console.error("Firebase auth readiness check failed:", error);
-            unsubscribe();
-        });
-        
+        setFirebaseInstance({ app, auth, firestore });
       } else {
         console.error(
           'Firebase config is missing or contains placeholder values. Firebase will not be initialized.'
@@ -48,12 +34,12 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Firebase initialization failed:', error);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on client mount. `firebaseInstance` is intentionally omitted from deps.
+  }, []);
 
-  // Render nothing until the onAuthStateChanged listener has fired and set the instance.
-  // This prevents hydration mismatches and race conditions.
+  // Render a loading state or nothing until Firebase is initialized.
+  // This prevents child components from attempting to use Firebase services too early.
   if (!firebaseInstance) {
+    // You could return a full-page loader here if desired
     return null;
   }
 
