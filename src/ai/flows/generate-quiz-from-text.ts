@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -8,10 +7,10 @@
  * - GenerateQuizFromTextInput - The input type for the function.
  * - GenerateQuizFromTextOutput - The return type for the function.
  */
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
-import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
+import { z } from 'genkit';
 import { GenerateQuizQuestionsOutput, GenerateQuizQuestionsOutputSchema } from '@/ai/schemas/quiz-schemas';
+import { ai } from '@/ai/genkit';
 
 const GenerateQuizFromTextInputSchema = z.object({
   textContent: z.string().describe('The text content to generate the quiz from.'),
@@ -24,14 +23,6 @@ export type GenerateQuizFromTextOutput = GenerateQuizQuestionsOutput;
 
 
 export async function generateQuizFromText(input: GenerateQuizFromTextInput): Promise<GenerateQuizFromTextOutput> {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set in the server environment.");
-    }
-    const ai = genkit({
-        plugins: [googleAI({apiKey})],
-    });
-
     const promptText = `You are an expert quiz question generator for school students.
 
 You will generate quiz questions based on the provided text content.

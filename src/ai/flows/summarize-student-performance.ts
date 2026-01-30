@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Summarizes a student's performance on a quiz.
@@ -8,14 +7,14 @@
  * - SummarizeStudentPerformanceOutput - The return type for the summarizeStudentPerformance function.
  */
 
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
-import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
+import { z } from 'genkit';
+import { ai } from '@/ai/genkit';
 
 const SummarizeStudentPerformanceInputSchema = z.object({
   studentName: z.string().describe('The name of the student.'),
   quizName: z.string().describe('The name of the quiz.'),
-  score: z.number().describe('The student\u2019s score on the quiz.'),
+  score: z.number().describe('The student’s score on the quiz.'),
   maxScore: z.number().describe('The maximum possible score on the quiz.'),
   areasForImprovement: z
     .string()
@@ -35,14 +34,6 @@ export type SummarizeStudentPerformanceOutput = z.infer<
 export async function summarizeStudentPerformance(
   input: SummarizeStudentPerformanceInput
 ): Promise<SummarizeStudentPerformanceOutput> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set in the server environment.");
-  }
-  const ai = genkit({
-      plugins: [googleAI({apiKey})],
-  });
-
   const promptText = `Summarize the performance of ${input.studentName} on the ${input.quizName} quiz.
 
   ${input.studentName} scored ${input.score} out of a possible ${input.maxScore} points.
