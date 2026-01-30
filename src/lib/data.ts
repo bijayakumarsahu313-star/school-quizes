@@ -7,6 +7,12 @@ export type Student = {
   quizzesCompleted: number;
 };
 
+export type Question = {
+  text: string;
+  options: string[];
+  answer: string;
+};
+
 export type Quiz = {
   id: string;
   title: string;
@@ -15,6 +21,7 @@ export type Quiz = {
   numberOfQuestions: number;
   averageScore: number;
   status: 'Draft' | 'Published';
+  questions: Question[];
 };
 
 export const students: Student[] = [
@@ -26,11 +33,67 @@ export const students: Student[] = [
 ];
 
 export const quizzes: Quiz[] = [
-  { id: '1', title: 'Algebra Basics', subject: 'Math', class: '8', numberOfQuestions: 15, averageScore: 82, status: 'Published' },
-  { id: '2', title: 'Indian Independence Movement', subject: 'Social Studies', class: '10', numberOfQuestions: 20, averageScore: 88, status: 'Published' },
-  { id: '3', title: 'Cell Biology', subject: 'Science', class: '9', numberOfQuestions: 25, averageScore: 76, status: 'Published' },
-  { id: '4', title: 'Shakespeare\'s Sonnets', subject: 'English', class: '11', numberOfQuestions: 10, averageScore: 91, status: 'Draft' },
-  { id: '5', title: 'Chemical Reactions', subject: 'Science', class: '10', numberOfQuestions: 15, averageScore: 85, status: 'Published' },
+  { 
+    id: '1', 
+    title: 'Algebra Basics', 
+    subject: 'Math', 
+    class: '8', 
+    numberOfQuestions: 2, 
+    averageScore: 82, 
+    status: 'Published',
+    questions: [
+        {
+            text: "What is the value of x in the equation 2x + 3 = 7?",
+            options: ["1", "2", "3", "4"],
+            answer: "2"
+        },
+        {
+            text: "Simplify the expression: 3(x + 4) - 2x",
+            options: ["x + 12", "5x + 12", "x - 4", "x + 4"],
+            answer: "x + 12"
+        }
+    ]
+  },
+  { 
+    id: '2', 
+    title: 'Indian Independence Movement', 
+    subject: 'Social Studies', 
+    class: '10', 
+    numberOfQuestions: 2, 
+    averageScore: 88, 
+    status: 'Published',
+    questions: [
+        { text: "When did India get its independence?", options: ["1945", "1947", "1950", "1942"], answer: "1947"},
+        { text: "Who was the first Prime Minister of India?", options: ["Mahatma Gandhi", "Sardar Patel", "Jawaharlal Nehru", "B. R. Ambedkar"], answer: "Jawaharlal Nehru"}
+    ]
+  },
+  { 
+    id: '3', 
+    title: 'Cell Biology', 
+    subject: 'Science', 
+    class: '9', 
+    numberOfQuestions: 2, 
+    averageScore: 76, 
+    status: 'Published',
+    questions: [
+        { text: "What is the powerhouse of the cell?", options: ["Nucleus", "Ribosome", "Mitochondrion", "Chloroplast"], answer: "Mitochondrion"},
+        { text: "Which organelle is responsible for photosynthesis?", options: ["Mitochondrion", "Chloroplast", "Vacuole", "Golgi apparatus"], answer: "Chloroplast"}
+    ]
+  },
+  { id: '4', title: 'Shakespeare\'s Sonnets', subject: 'English', class: '11', numberOfQuestions: 10, averageScore: 91, status: 'Draft', questions: [] },
+  { 
+    id: '5', 
+    title: 'Chemical Reactions', 
+    subject: 'Science', 
+    class: '10', 
+    numberOfQuestions: 2, 
+    averageScore: 85, 
+    status: 'Published',
+    questions: [
+        { text: "What is the chemical formula for water?", options: ["H2O2", "CO2", "H2O", "O2"], answer: "H2O"},
+        { text: "What is produced when an acid reacts with a base?", options: ["Salt and Water", "Gas", "Oxygen", "Hydrogen"], answer: "Salt and Water"}
+    ]
+  },
 ];
 
 export const performanceData = [

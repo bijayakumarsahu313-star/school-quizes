@@ -56,7 +56,18 @@
         "numberOfQuestions": { "type": "number" },
         "questions": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "options": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "answer": { "type": "string" }
+            },
+            "required": ["text", "options", "answer"]
+          }
         },
         "createdBy": {
           "type": "string",

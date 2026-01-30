@@ -29,13 +29,13 @@ export default function StudentQuizzesPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between items-center text-sm text-muted-foreground">
-                    <span>{quiz.numberOfQuestions} Questions</span>
+                    <span>{quiz.questions.length} Questions</span>
                     <span>Avg. Score: {quiz.averageScore}%</span>
                   </div>
                 </CardContent>
                 <div className="p-6 pt-0">
                     <Button asChild className="w-full">
-                        <Link href="#">
+                        <Link href={`/quiz/${quiz.id}`}>
                             <Play className="mr-2 h-4 w-4" />
                             Take Quiz
                         </Link>
