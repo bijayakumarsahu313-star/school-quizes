@@ -39,6 +39,12 @@ const FirebaseProviderInternal = ({
 }) => {
   const firebase = useFirebaseApp();
 
+  // If Firebase is not initialized, don't render children.
+  // This prevents hooks from being called before Firebase context is ready.
+  if (!firebase) {
+    return null;
+  }
+
   return (
     <FirebaseContext.Provider value={firebase}>
       <FirebaseAuthProvider>
