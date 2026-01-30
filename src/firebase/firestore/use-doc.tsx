@@ -11,11 +11,19 @@ const useDoc = <T,>(path: string | null, id: string | null) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db || !path || !id) {
+    if (!db || !path) {
         setLoading(false);
         setData(null);
         return;
     }
+    
+    // If we don't have an ID, we're not done loading.
+    if (!id) {
+        setLoading(true);
+        setData(null);
+        return;
+    }
+
     const docRef = doc(db, path, id);
     const unsubscribe = onSnapshot(docRef, (doc) => {
       if (doc.exists()) {
