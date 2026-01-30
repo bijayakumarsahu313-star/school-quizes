@@ -35,42 +35,39 @@ export const FirebaseProvider = ({
         console.error("Firebase initialization failed:", error);
       }
     } else {
-        console.error("Firebase config is missing or contains placeholder values. App cannot be initialized.");
+        console.warn("Firebase config is missing or contains placeholder values. Firebase will not be initialized.");
     }
   }, []);
 
   const value = useMemo(() => firebase, [firebase]);
 
-  // If Firebase is not initialized, we don't render the children.
-  // This prevents hooks from being called before the Firebase context is ready.
-  if (!value) {
-    return null; // You can replace this with a loading spinner component.
-  }
-
   return (
     <FirebaseContext.Provider value={value}>
-        {process.env.NODE_ENV === 'development' && <FirebaseErrorListener />}
+        {process.env.NODE_ENV === 'development' && value && <FirebaseErrorListener />}
         {children}
     </FirebaseContext.Provider>
   );
 };
 
+// This hook returns the entire Firebase context value, which can be null during initialization.
 export const useFirebase = () => {
-    const context = useContext(FirebaseContext);
-    if (!context) {
-        throw new Error('useFirebase must be used within a FirebaseProvider');
-    }
-    return context;
+    return useContext(FirebaseContext);
 };
 
-export const useAuth = () => {
-    return useFirebase().auth;
+// This hook returns the Auth instance, or null if Firebase is not yet initialized.
+export const useAuth = (): Auth | null => {
+    const firebase = useFirebase();
+    return firebase ? firebase.auth : null;
 };
 
-export const useFirestore = () => {
-    return useFirebase().firestore;
+// This hook returns the Firestore instance, or null if Firebase is not yet initialized.
+export const useFirestore = (): Firestore | null => {
+    const firebase = useFirebase();
+    return firebase ? firebase.firestore : null;
 };
 
-export const useFirebaseApp = () => {
-    return useFirebase().app;
+// This hook returns the FirebaseApp instance, or null if Firebase is not yet initialized.
+export const useFirebaseApp = (): FirebaseApp | null => {
+    const firebase = useFirebase();
+    return firebase ? firebase.app : null;
 };
