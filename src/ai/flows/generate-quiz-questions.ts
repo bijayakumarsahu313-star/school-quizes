@@ -20,10 +20,18 @@ const GenerateQuizQuestionsInputSchema = z.object({
 });
 export type GenerateQuizQuestionsInput = z.infer<typeof GenerateQuizQuestionsInputSchema>;
 
+const QuestionSchema = z.object({
+  text: z.string().describe('The question text.'),
+  options: z.array(z.string()).describe('An array of 4 possible answers for the question.'),
+  answer: z.string().describe('The correct answer from the options array.'),
+});
+
 const GenerateQuizQuestionsOutputSchema = z.object({
-  questions: z.array(z.string()).describe('An array of generated quiz questions.'),
+  questions: z.array(QuestionSchema).describe('An array of generated quiz questions.'),
 });
 export type GenerateQuizQuestionsOutput = z.infer<typeof GenerateQuizQuestionsOutputSchema>;
+export type AIQuestion = z.infer<typeof QuestionSchema>;
+
 
 export async function generateQuizQuestions(input: GenerateQuizQuestionsInput): Promise<GenerateQuizQuestionsOutput> {
   return generateQuizQuestionsFlow(input);
@@ -35,7 +43,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateQuizQuestionsOutputSchema},
   prompt: `You are an expert quiz question generator for school students.
 
-You will generate quiz questions for the following subject, class level, and difficulty level:
+You will generate quiz questions for the following subject, class level, and difficulty level.
 
 Subject: {{{subject}}}
 Class Level: {{{classLevel}}}
@@ -49,8 +57,7 @@ Question Type: {{{questionType}}}
 Number of Questions: {{{numberOfQuestions}}}
 {{/if}}
 
-Please provide the quiz questions in an array format.
-
+Please generate the questions and provide them in the required structured JSON format. For each question, provide a 'text' field for the question, an 'options' array with 4 multiple-choice options, and an 'answer' field with the correct option.
 `,
 });
 

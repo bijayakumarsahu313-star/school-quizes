@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { generateQuizQuestions } from '@/ai/flows/generate-quiz-questions';
+import { generateQuizQuestions, AIQuestion } from '@/ai/flows/generate-quiz-questions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -24,7 +24,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateQuizPage() {
-  const [generatedQuestions, setGeneratedQuestions] = useState<string[]>([]);
+  const [generatedQuestions, setGeneratedQuestions] = useState<AIQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -197,7 +197,12 @@ export default function CreateQuizPage() {
               <div className="space-y-4">
                 {generatedQuestions.map((q, index) => (
                   <div key={index} className="p-4 border rounded-lg bg-muted/50">
-                    <p><strong>Q{index + 1}:</strong> {q}</p>
+                    <p><strong>Q{index + 1}:</strong> {q.text}</p>
+                    <div className="pl-4 mt-2 space-y-1 text-sm text-muted-foreground">
+                      {q.options.map((opt, i) => (
+                        <p key={i} className={opt === q.answer ? 'text-green-600 font-bold' : ''}>- {opt}</p>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>

@@ -3,7 +3,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gamepad2, Award, LineChart } from "lucide-react";
+import { Gamepad2, Award, LineChart, BrainCircuit } from "lucide-react";
 
 export default function StudentZonePage() {
   return (
@@ -19,37 +19,48 @@ export default function StudentZonePage() {
             <Link href="/student-zone/quizzes">Take a Quiz</Link>
           </Button>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16 max-w-6xl mx-auto">
             <Link href="/student-zone/quizzes" className="block h-full">
               <Card className="h-full hover:border-primary transition-colors">
-                <CardContent className="p-6">
+                <CardContent className="p-6 text-center">
                   <Gamepad2 className="h-12 w-12 text-accent mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold">Gamified Quizzes</h3>
+                  <h3 className="text-xl font-semibold">Take a Quiz</h3>
                   <p className="text-muted-foreground mt-2">
-                    Learning is a game. Play, compete, and conquer your subjects!
+                    Browse and take quizzes assigned by your teachers.
                   </p>
                 </CardContent>
               </Card>
             </Link>
             
-            <Card className="h-full">
-              <CardContent className="p-6">
-                <Award className="h-12 w-12 text-accent mx-auto mb-4" />
-                <h3 className="text-xl font-semibold">Earn Badges & Points</h3>
-                <p className="text-muted-foreground mt-2">
-                  Show off your skills and collect rewards for your hard work.
-                </p>
-                <Button asChild variant="link" className="mt-2">
-                  <Link href="/student-zone/badges">View Your Badges</Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <Link href="/student-zone/generate-quiz" className="block h-full">
+              <Card className="h-full hover:border-primary transition-colors">
+                <CardContent className="p-6 text-center">
+                  <BrainCircuit className="h-12 w-12 text-accent mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold">Practice Quiz</h3>
+                  <p className="text-muted-foreground mt-2">
+                    Generate a custom quiz on any topic to test your knowledge.
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/student-zone/badges" className="block h-full">
+              <Card className="h-full hover:border-primary transition-colors">
+                <CardContent className="p-6 text-center">
+                  <Award className="h-12 w-12 text-accent mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold">Your Badges</h3>
+                  <p className="text-muted-foreground mt-2">
+                    Check out all the cool badges you've earned.
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
 
             <Link href="/student-zone/progress" className="block h-full">
               <Card className="h-full hover:border-primary transition-colors">
-                <CardContent className="p-6">
+                <CardContent className="p-6 text-center">
                   <LineChart className="h-12 w-12 text-accent mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold">Track Your Progress</h3>
+                  <h3 className="text-xl font-semibold">Track Progress</h3>
                   <p className="text-muted-foreground mt-2">
                     Watch yourself grow and see how you improve over time.
                   </p>
