@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -11,7 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { GenerateQuizQuestionsOutputSchema, QuestionSchema } from '@/ai/schemas/quiz-schemas';
+import { GenerateQuizQuestionsOutput, GenerateQuizQuestionsOutputSchema, QuestionSchema } from '@/ai/schemas/quiz-schemas';
 
 const GenerateQuizQuestionsInputSchema = z.object({
   subject: z.string().describe('The subject of the quiz questions.'),
@@ -27,41 +26,32 @@ export type GenerateQuizQuestionsOutput = z.infer<typeof GenerateQuizQuestionsOu
 
 
 export async function generateQuizQuestions(input: GenerateQuizQuestionsInput): Promise<GenerateQuizQuestionsOutput> {
-  return generateQuizQuestionsFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateQuizQuestionsPrompt',
-  input: {schema: GenerateQuizQuestionsInputSchema},
-  output: {schema: GenerateQuizQuestionsOutputSchema},
-  prompt: `You are an expert quiz question generator for school students.
+    const promptText = `You are an expert quiz question generator for school students.
 
 You will generate quiz questions for the following subject, class level, and difficulty level.
 
-Subject: {{{subject}}}
-Class Level: {{{classLevel}}}
-Difficulty: {{{difficulty}}}
-
-{{#if questionType}}
-Question Type: {{{questionType}}}
-{{/if}}
-
-{{#if numberOfQuestions}}
-Number of Questions: {{{numberOfQuestions}}}
-{{/if}}
+Subject: ${input.subject}
+Class Level: ${input.classLevel}
+Difficulty: ${input.difficulty}
+${input.questionType ? `Question Type: ${input.questionType}` : ''}
+${input.numberOfQuestions ? `Number of Questions: ${input.numberOfQuestions}` : ''}
 
 Please generate the questions and provide them in the required structured JSON format. For each question, provide a 'text' field for the question, an 'options' array with 4 multiple-choice options, and an 'answer' field with the correct option.
-`,
-});
+`;
 
-const generateQuizQuestionsFlow = ai.defineFlow(
-  {
-    name: 'generateQuizQuestionsFlow',
-    inputSchema: GenerateQuizQuestionsInputSchema,
-    outputSchema: GenerateQuizQuestionsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
+    const response = await ai.generate({
+        prompt: promptText,
+        output: {
+            schema: GenerateQuizQuestionsOutputSchema,
+        },
+        model: 'googleai/gemini-2.5-flash',
+    });
+
+    const output = response.output;
+
+    if (!output) {
+        throw new Error("AI failed to generate quiz questions.");
+    }
+
+    return output;
+}

@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -24,42 +23,35 @@ export type GenerateQuizFromTextOutput = GenerateQuizQuestionsOutput;
 
 
 export async function generateQuizFromText(input: GenerateQuizFromTextInput): Promise<GenerateQuizFromTextOutput> {
-  return generateQuizFromTextFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateQuizFromTextPrompt',
-  input: {schema: GenerateQuizFromTextInputSchema},
-  output: {schema: GenerateQuizQuestionsOutputSchema},
-  prompt: `You are an expert quiz question generator for school students.
+    const promptText = `You are an expert quiz question generator for school students.
 
 You will generate quiz questions based on the provided text content.
 
-Difficulty: {{{difficulty}}}
-{{#if questionType}}
-Question Type: {{{questionType}}}
-{{/if}}
-{{#if numberOfQuestions}}
-Number of Questions: {{{numberOfQuestions}}}
-{{/if}}
+Difficulty: ${input.difficulty}
+${input.questionType ? `Question Type: ${input.questionType}` : ''}
+${input.numberOfQuestions ? `Number of Questions: ${input.numberOfQuestions}` : ''}
 
 Please generate the questions from the following text content and provide them in the required structured JSON format. For each question, provide a 'text' field for the question, an 'options' array with 4 multiple-choice options, and an 'answer' field with the correct option. Make sure the questions are directly related to the provided text.
 
 Text Content:
 ---
-{{{textContent}}}
+${input.textContent}
 ---
-`,
-});
+`;
 
-const generateQuizFromTextFlow = ai.defineFlow(
-  {
-    name: 'generateQuizFromTextFlow',
-    inputSchema: GenerateQuizFromTextInputSchema,
-    outputSchema: GenerateQuizQuestionsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
+    const response = await ai.generate({
+        prompt: promptText,
+        output: {
+            schema: GenerateQuizQuestionsOutputSchema,
+        },
+        model: 'googleai/gemini-2.5-flash',
+    });
+
+    const output = response.output;
+
+    if (!output) {
+        throw new Error("AI failed to generate quiz questions from text.");
+    }
+
+    return output;
+}

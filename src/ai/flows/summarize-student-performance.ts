@@ -33,28 +33,25 @@ export type SummarizeStudentPerformanceOutput = z.infer<
 export async function summarizeStudentPerformance(
   input: SummarizeStudentPerformanceInput
 ): Promise<SummarizeStudentPerformanceOutput> {
-  return summarizeStudentPerformanceFlow(input);
-}
+  const promptText = `Summarize the performance of ${input.studentName} on the ${input.quizName} quiz.
 
-const prompt = ai.definePrompt({
-  name: 'summarizeStudentPerformancePrompt',
-  input: {schema: SummarizeStudentPerformanceInputSchema},
-  output: {schema: SummarizeStudentPerformanceOutputSchema},
-  prompt: `Summarize the performance of {{studentName}} on the {{quizName}} quiz.
+  ${input.studentName} scored ${input.score} out of a possible ${input.maxScore} points.
 
-  {{studentName}} scored {{score}} out of a possible {{maxScore}} points.
+  Areas for improvement: ${input.areasForImprovement}`;
 
-  Areas for improvement: {{areasForImprovement}}`,
-});
+  const response = await ai.generate({
+    prompt: promptText,
+    output: {
+        schema: SummarizeStudentPerformanceOutputSchema,
+    },
+    model: 'googleai/gemini-2.5-flash',
+  });
 
-const summarizeStudentPerformanceFlow = ai.defineFlow(
-  {
-    name: 'summarizeStudentPerformanceFlow',
-    inputSchema: SummarizeStudentPerformanceInputSchema,
-    outputSchema: SummarizeStudentPerformanceOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  const output = response.output;
+
+  if (!output) {
+      throw new Error("AI failed to summarize student performance.");
   }
-);
+  
+  return output;
+}
