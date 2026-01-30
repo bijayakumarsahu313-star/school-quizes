@@ -18,7 +18,7 @@ interface FirebaseContextValue {
   firestore: Firestore;
 }
 
-const FirebaseContext = createContext<FirebaseContextValue | undefined>(
+const FirebaseContext = createContext<FirebaseContextValue | null | undefined>(
   undefined
 );
 
@@ -40,10 +40,6 @@ const FirebaseProviderInternal = ({
   children: React.ReactNode;
 }) => {
   const firebase = useFirebaseApp();
-
-  if (!firebase) {
-    return null;
-  }
 
   return (
     <FirebaseContext.Provider value={firebase}>
