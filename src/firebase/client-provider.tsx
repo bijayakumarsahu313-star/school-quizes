@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -13,6 +12,7 @@ import { Auth } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
 
 import { initializeFirebase } from '@/firebase';
+import { firebaseConfig } from './config';
 
 interface FirebaseContextValue {
   app: FirebaseApp;
@@ -21,9 +21,7 @@ interface FirebaseContextValue {
 }
 
 // Create a context to hold the Firebase app instance.
-const FirebaseClientContext = createContext<FirebaseContextValue | undefined>(
-  undefined
-);
+const FirebaseClientContext = createContext<FirebaseContextValue | null>(null);
 
 // Create a provider component that initializes Firebase on the client-side.
 export function FirebaseClientProvider({
@@ -34,16 +32,18 @@ export function FirebaseClientProvider({
   const [firebase, setFirebase] = useState<FirebaseContextValue | null>(null);
 
   useEffect(() => {
-    // Initialize Firebase and store the app instance in state.
-    const { app, auth, firestore } = initializeFirebase();
-    setFirebase({ app, auth, firestore });
+    // Initialize Firebase and store the app instance in state if config is present.
+    if (firebaseConfig?.projectId) {
+      const { app, auth, firestore } = initializeFirebase();
+      setFirebase({ app, auth, firestore });
+    }
   }, []);
 
   // Use useMemo to prevent re-rendering of the provider value.
   const value = useMemo(() => firebase, [firebase]);
 
   return (
-    <FirebaseClientContext.Provider value={value!}>
+    <FirebaseClientContext.Provider value={value}>
       {children}
     </FirebaseClientContext.Provider>
   );
@@ -51,11 +51,5 @@ export function FirebaseClientProvider({
 
 // Create a hook to access the Firebase app instance.
 export const useFirebaseApp = () => {
-  const context = useContext(FirebaseClientContext);
-  if (context === undefined) {
-    throw new Error(
-      'useFirebaseApp must be used within a FirebaseClientProvider'
-    );
-  }
-  return context;
+  return useContext(FirebaseClientContext);
 };

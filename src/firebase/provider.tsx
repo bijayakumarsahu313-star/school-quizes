@@ -40,9 +40,11 @@ const FirebaseProviderInternal = ({
   children: React.ReactNode;
 }) => {
   const firebase = useFirebaseApp();
+
   if (!firebase) {
-    return null;
+    return <>{children}</>;
   }
+
   const { app, auth, firestore } = firebase;
   return (
     <FirebaseContext.Provider value={{ app, auth, firestore }}>
