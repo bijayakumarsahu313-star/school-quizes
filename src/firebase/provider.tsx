@@ -7,6 +7,7 @@ import type { Firestore } from 'firebase/firestore';
 
 import { initializeFirebase } from '@/firebase/init';
 import { firebaseConfig } from './config';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 interface FirebaseContextValue {
   app: FirebaseApp;
@@ -48,6 +49,7 @@ export const FirebaseProvider = ({
 
   return (
     <FirebaseContext.Provider value={value}>
+        {process.env.NODE_ENV === 'development' && <FirebaseErrorListener />}
         {children}
     </FirebaseContext.Provider>
   );

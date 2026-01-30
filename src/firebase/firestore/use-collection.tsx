@@ -11,6 +11,8 @@ import {
 import { useEffect, useState } from 'react';
 
 import { useFirestore } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const useCollection = <T,>(path: string | null, field?: string, value?: any) => {
   const db = useFirestore();
@@ -18,7 +20,7 @@ const useCollection = <T,>(path: string | null, field?: string, value?: any) => 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!path) {
+    if (!db || !path) {
       setLoading(false);
       setData([]);
       return;
@@ -46,8 +48,12 @@ const useCollection = <T,>(path: string | null, field?: string, value?: any) => 
       });
       setData(results);
       setLoading(false);
-    }, (error) => {
-        console.error("Error fetching collection: ", error);
+    }, async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: path,
+          operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
         setData([]);
         setLoading(false);
     });

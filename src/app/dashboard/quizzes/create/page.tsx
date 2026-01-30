@@ -19,6 +19,8 @@ import { useUser, useFirestore } from '@/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -152,33 +154,34 @@ export default function CreateQuizPage() {
 
     setIsSaving(true);
 
-    try {
-      const quizData = {
-        ...quizDetails,
-        questions: generatedQuestions,
-        createdBy: user.uid,
-        createdAt: serverTimestamp(),
-        status: 'Draft',
-      };
+    const quizData = {
+      ...quizDetails,
+      questions: generatedQuestions,
+      createdBy: user.uid,
+      createdAt: serverTimestamp(),
+      status: 'Draft',
+    };
 
-      const quizzesCollection = collection(firestore, 'quizzes');
-      await addDoc(quizzesCollection, quizData);
-
-      toast({
-        title: 'Quiz Saved!',
-        description: 'Your quiz has been saved as a draft.',
+    const quizzesCollection = collection(firestore, 'quizzes');
+    addDoc(quizzesCollection, quizData)
+      .then(() => {
+        toast({
+          title: 'Quiz Saved!',
+          description: 'Your quiz has been saved as a draft.',
+        });
+        router.push('/dashboard/quizzes');
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: quizzesCollection.path,
+          operation: 'create',
+          requestResourceData: quizData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsSaving(false);
       });
-      router.push('/dashboard/quizzes');
-    } catch (error) {
-      console.error('Error saving quiz: ', error);
-      toast({
-        variant: 'destructive',
-        title: 'Save Failed',
-        description: 'There was an error saving your quiz. Please try again.',
-      });
-    } finally {
-      setIsSaving(false);
-    }
   }
 
   return (

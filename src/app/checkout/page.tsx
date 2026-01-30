@@ -13,6 +13,8 @@ import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { add } from 'date-fns';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const USD_TO_INR_RATE = 83; // Approximate conversion rate
 
@@ -70,33 +72,39 @@ function CheckoutComponent() {
     
     setIsProcessing(true);
 
-    try {
-        const userRef = doc(firestore, 'users', user.uid);
-        const planDuration = planId === 'pro-monthly' ? { months: 1 } : { years: 1 };
-        const expiryDate = add(new Date(), planDuration);
+    const userRef = doc(firestore, 'users', user.uid);
+    const planDuration = planId === 'pro-monthly' ? { months: 1 } : { years: 1 };
+    const expiryDate = add(new Date(), planDuration);
+    const updatedData = {
+        plan: 'pro',
+        planType: planId === 'pro-monthly' ? 'monthly' : 'yearly',
+        planExpires: expiryDate,
+    };
 
-        await updateDoc(userRef, {
-            plan: 'pro',
-            planType: planId === 'pro-monthly' ? 'monthly' : 'yearly',
-            planExpires: expiryDate,
+    updateDoc(userRef, updatedData)
+        .then(() => {
+            toast({
+                title: 'Purchase Successful!',
+                description: 'Your Pro plan is now active.',
+            });
+            router.push('/dashboard');
+        })
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userRef.path,
+                operation: 'update',
+                requestResourceData: updatedData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            toast({
+                variant: 'destructive',
+                title: 'An error occurred',
+                description: 'Could not update your plan. Please contact support.',
+            });
+        })
+        .finally(() => {
+            setIsProcessing(false);
         });
-
-        toast({
-            title: 'Purchase Successful!',
-            description: 'Your Pro plan is now active.',
-        });
-        router.push('/dashboard');
-
-    } catch (error) {
-        console.error("Error updating user plan:", error);
-        toast({
-            variant: 'destructive',
-            title: 'An error occurred',
-            description: 'Could not update your plan. Please contact support.',
-        });
-    } finally {
-        setIsProcessing(false);
-    }
   };
 
   return (

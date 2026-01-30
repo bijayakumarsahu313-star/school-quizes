@@ -13,3 +13,7 @@ export { FirebaseProvider, useFirebase, useAuth, useFirestore, useFirebaseApp } 
 export { useUser } from '@/firebase/auth/use-user';
 export { useDoc } from '@/firebase/firestore/use-doc';
 export { useCollection } from '@/firebase/firestore/use-collection';
+
+// Error handling
+export { errorEmitter } from '@/firebase/error-emitter';
+export { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';

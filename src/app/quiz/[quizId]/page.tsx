@@ -10,9 +10,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Clock } from 'lucide-react';
+import { Clock, Loader2 } from 'lucide-react';
 import { useDoc, useUser, useFirestore } from '@/firebase';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 // Helper function to shuffle an array
 function shuffle(array: any[]) {
@@ -132,15 +134,20 @@ export default function QuizPage() {
       answers: selectedAnswers,
     };
 
-    try {
-      const resultRef = doc(firestore, 'quizzes', quiz.id, 'results', user.uid);
-      await setDoc(resultRef, resultData);
-    } catch (error) {
-      console.error("Failed to save quiz result:", error);
-      // Optionally show a toast to the user
-    }
-
-    setIsFinished(true);
+    const resultRef = doc(firestore, 'quizzes', quiz.id, 'results', user.uid);
+    setDoc(resultRef, resultData)
+      .then(() => {
+        setIsFinished(true);
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: resultRef.path,
+          operation: 'create',
+          requestResourceData: resultData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSubmitting(false);
+      });
   }, [isSubmitting, selectedAnswers, shuffledQuestions, user, quiz, firestore]);
 
 

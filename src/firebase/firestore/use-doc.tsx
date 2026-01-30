@@ -4,6 +4,8 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import { useFirestore } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const useDoc = <T,>(path: string | null, id: string | null) => {
   const db = useFirestore();
@@ -13,7 +15,7 @@ const useDoc = <T,>(path: string | null, id: string | null) => {
   useEffect(() => {
     // We can't fetch a document if we don't have the path or id.
     // In this case, we are in a loading state.
-    if (!path || !id) {
+    if (!db || !path || !id) {
         setLoading(true);
         setData(null);
         return;
@@ -27,8 +29,12 @@ const useDoc = <T,>(path: string | null, id: string | null) => {
         setData(null);
       }
       setLoading(false);
-    }, (error) => {
-        console.error("Error fetching document: ", error);
+    }, async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
         setData(null);
         setLoading(false);
     });
