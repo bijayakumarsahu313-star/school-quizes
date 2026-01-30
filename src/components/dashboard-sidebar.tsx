@@ -53,7 +53,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useUser();
   const { data: quizzesData, loading: quizzesLoading } = useCollection<Quiz>(
-    user ? 'quizzes' : null,
+    'quizzes',
     'createdBy',
     user?.uid
   );

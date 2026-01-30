@@ -1,4 +1,15 @@
 
+export type UserProfile = {
+  uid: string;
+  email: string;
+  fullName: string;
+  role: 'student' | 'teacher';
+  school: string;
+  classLevel?: number;
+  board?: string;
+  subject?: string;
+};
+
 export type Student = {
   id: string;
   name: string;

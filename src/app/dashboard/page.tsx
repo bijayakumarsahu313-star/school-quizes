@@ -12,7 +12,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,14 +21,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   Bar,
   BarChart,
   ResponsiveContainer,
@@ -37,13 +28,25 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
-import { students, quizzes, performanceData } from '@/lib/data';
+import { performanceData, students as mockStudents } from '@/lib/data';
+import { useUser, useCollection } from '@/firebase';
+import type { Quiz, UserProfile } from '@/lib/data';
+
 
 export default function Dashboard() {
-  const totalStudents = students.length;
-  const totalQuizzes = quizzes.length;
+  const { user } = useUser();
+  const { data: quizzes, loading: quizzesLoading } = useCollection<Quiz>('quizzes', 'createdBy', user?.uid);
+  const { data: students, loading: studentsLoading } = useCollection<UserProfile>('users', 'role', 'student');
+
+  const totalStudents = studentsLoading ? '...' : students.length;
+  const totalQuizzes = quizzesLoading ? '...' : (quizzes?.length ?? 0);
+  const publishedQuizzes = quizzes ? quizzes.filter(q => q.status === 'Published').length : 0;
+  
+  // Note: Average score is still using mock logic as real-time calculation is complex.
   const averageScore =
-    quizzes.reduce((acc, q) => acc + q.averageScore, 0) / quizzes.length;
+    quizzes && quizzes.length > 0 
+      ? quizzes.reduce((acc, q) => acc + (q.averageScore || 0), 0) / quizzes.length 
+      : 75; // fallback mock value
 
   return (
     <div className="flex flex-col gap-8">
@@ -65,7 +68,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{totalStudents}</div>
             <p className="text-xs text-muted-foreground">
-              in 3 active classes
+              across all schools
             </p>
           </CardContent>
         </Card>
@@ -77,7 +80,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{totalQuizzes}</div>
             <p className="text-xs text-muted-foreground">
-              {quizzes.filter(q => q.status === 'Published').length} published
+              {quizzesLoading ? '...' : publishedQuizzes} published
             </p>
           </CardContent>
         </Card>
@@ -89,7 +92,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{averageScore.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
-              +2.1% from last month
+              (demo data)
             </p>
           </CardContent>
         </Card>
@@ -98,7 +101,7 @@ export default function Dashboard() {
         <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle>Recent Quiz Performance</CardTitle>
-            <CardDescription>Average scores over the last 6 months.</CardDescription>
+            <CardDescription>Average scores over the last 6 months (demo data).</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -116,7 +119,7 @@ export default function Dashboard() {
             <div className="grid gap-2">
               <CardTitle>Top Students</CardTitle>
               <CardDescription>
-                Students with the highest average scores.
+                (demo data)
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
@@ -127,7 +130,7 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent className="grid gap-8">
-            {students
+            {mockStudents
               .sort((a, b) => b.averageScore - a.averageScore)
               .slice(0, 4)
               .map((student) => (

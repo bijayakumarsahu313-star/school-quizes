@@ -11,7 +11,7 @@ import type { Quiz } from '@/lib/data';
 export default function QuizzesPage() {
   const { user } = useUser();
   const { data: quizzes, loading } = useCollection<Quiz>(
-    user ? 'quizzes' : null,
+    'quizzes',
     'createdBy',
     user?.uid
   );

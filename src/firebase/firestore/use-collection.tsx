@@ -19,6 +19,14 @@ const useCollection = <T,>(path: string | null, field?: string, value?: string) 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // A field is specified but the value is not yet available, so we wait.
+    // Firestore's 'where' clause throws an error if the value is undefined.
+    if (field && value === undefined) {
+      setData([]);
+      setLoading(true); // We are waiting for the value.
+      return;
+    }
+
     if (!path) {
       setData([]);
       setLoading(false);
@@ -41,6 +49,7 @@ const useCollection = <T,>(path: string | null, field?: string, value?: string) 
       setLoading(false);
     }, (error) => {
         console.error("Error fetching collection: ", error);
+        setData([]);
         setLoading(false);
     });
 
