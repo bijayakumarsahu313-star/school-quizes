@@ -38,21 +38,31 @@ export async function summarizeStudentPerformance(
 
   ${input.studentName} scored ${input.score} out of a possible ${input.maxScore} points.
 
-  Areas for improvement: ${input.areasForImprovement}`;
+  Areas for improvement: ${input.areasForImprovement}
+
+  Please provide the summary in a structured JSON format. Your entire response must be ONLY the JSON object, with no other text or formatting.
+  The JSON object should conform to this structure:
+  {
+    "summary": "string"
+  }
+  `;
 
   const response = await ai.generate({
     prompt: promptText,
-    output: {
-        schema: SummarizeStudentPerformanceOutputSchema,
-    },
     model: googleAI.model('gemini-pro'),
+    config: {
+        responseMimeType: "application/json",
+    },
   });
 
-  const output = response.output;
-
-  if (!output) {
-      throw new Error("AI failed to summarize student performance.");
-  }
+  const jsonString = response.text;
   
-  return output;
+  try {
+      const parsedJson = JSON.parse(jsonString);
+      const validatedData = SummarizeStudentPerformanceOutputSchema.parse(parsedJson);
+      return validatedData;
+  } catch (error) {
+      console.error("Failed to parse or validate AI response:", error);
+      throw new Error("AI returned an invalid response format. Please try generating again.");
+  }
 }

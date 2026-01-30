@@ -31,7 +31,19 @@ Difficulty: ${input.difficulty}
 ${input.questionType ? `Question Type: ${input.questionType}` : ''}
 ${input.numberOfQuestions ? `Number of Questions: ${input.numberOfQuestions}` : ''}
 
-Please generate the questions from the following text content and provide them in the required structured JSON format. For each question, provide a 'text' field for the question, an 'options' array with 4 multiple-choice options, and an 'answer' field with the correct option. Make sure the questions are directly related to the provided text.
+Please generate the questions from the following text content and provide them in a structured JSON format. For each question, provide a 'text' field for the question, an 'options' array with 4 multiple-choice options, and an 'answer' field with the correct option. Make sure the questions are directly related to the provided text.
+
+Your entire response must be ONLY the JSON object, with no other text or formatting.
+The JSON object should conform to this structure:
+{
+  "questions": [
+    {
+      "text": "string",
+      "options": ["string", "string", "string", "string"],
+      "answer": "string"
+    }
+  ]
+}
 
 Text Content:
 ---
@@ -41,17 +53,20 @@ ${input.textContent}
 
     const response = await ai.generate({
         prompt: promptText,
-        output: {
-            schema: GenerateQuizQuestionsOutputSchema,
-        },
         model: googleAI.model('gemini-pro'),
+        config: {
+            responseMimeType: "application/json",
+        },
     });
 
-    const output = response.output;
-
-    if (!output) {
-        throw new Error("AI failed to generate quiz questions from text.");
+    const jsonString = response.text;
+    
+    try {
+        const parsedJson = JSON.parse(jsonString);
+        const validatedData = GenerateQuizQuestionsOutputSchema.parse(parsedJson);
+        return validatedData;
+    } catch (error) {
+        console.error("Failed to parse or validate AI response:", error);
+        throw new Error("AI returned an invalid response format. Please try generating again.");
     }
-
-    return output;
 }
