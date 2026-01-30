@@ -120,17 +120,17 @@ export function SchoolInquiryDialog({ children }: { children: React.ReactNode })
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField control={form.control} name="schoolName" render={({ field }) => ( <FormItem> <FormLabel>School Name</FormLabel> <FormControl> <Input placeholder="e.g., Springfield International School" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                <FormField control={form.control} name="schoolAddress" render={({ field }) => ( <FormItem> <FormLabel>School Address</FormLabel> <FormControl> <Textarea placeholder="Full school address" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                <FormField control={form.control} name="schoolName" render={({ field }) => ( <FormItem><FormLabel>School Name</FormLabel><FormControl><Input placeholder="e.g., Springfield International School" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                <FormField control={form.control} name="schoolAddress" render={({ field }) => ( <FormItem><FormLabel>School Address</FormLabel><FormControl><Textarea placeholder="Full school address" {...field} /></FormControl><FormMessage /></FormItem> )} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="board" render={({ field }) => ( <FormItem> <FormLabel>Board (CBSE, ICSE, etc.)</FormLabel> <FormControl> <Input placeholder="e.g., CBSE" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="principalName" render={({ field }) => ( <FormItem> <FormLabel>Principal's Name</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="board" render={({ field }) => ( <FormItem><FormLabel>Board (CBSE, ICSE, etc.)</FormLabel><FormControl><Input placeholder="e.g., CBSE" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="principalName" render={({ field }) => ( <FormItem><FormLabel>Principal's Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="contactName" render={({ field }) => ( <FormItem> <FormLabel>Your Name</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                     <FormField control={form.control} name="contactEmail" render={({ field }) => ( <FormItem> <FormLabel>Your Email</FormLabel> <FormControl> <Input type="email" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="contactName" render={({ field }) => ( <FormItem><FormLabel>Your Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                     <FormField control={form.control} name="contactEmail" render={({ field }) => ( <FormItem><FormLabel>Your Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </div>
-                 <FormField control={form.control} name="contactPhone" render={({ field }) => ( <FormItem> <FormLabel>Your Phone Number (Optional)</FormLabel> <FormControl> <Input type="tel" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                 <FormField control={form.control} name="contactPhone" render={({ field }) => ( <FormItem><FormLabel>Your Phone Number (Optional)</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem> )} />
 
                 <DialogFooter>
                   <Button type="submit" disabled={isSubmitting}>
