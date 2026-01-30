@@ -12,13 +12,21 @@ const freeFeatures = [
   "Access to public question bank",
 ];
 
+const proFeatures = [
+  "Up to 50 quizzes per month",
+  "AI question generation (200/month)",
+  "Standard analytics",
+  "Save & Edit quizzes",
+  "Priority email support",
+];
+
 const schoolFeatures = [
   "Unlimited quizzes",
   "Unlimited AI question generation",
   "Advanced analytics and reports",
   "Custom curriculum support",
   "School-wide student management",
-  "Priority support",
+  "Dedicated account manager",
 ];
 
 export default function PricingPage() {
@@ -33,7 +41,7 @@ export default function PricingPage() {
               Choose the plan that's right for you or your school.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
             <Card>
               <CardHeader>
                 <CardTitle>Free Plan</CardTitle>
@@ -51,13 +59,40 @@ export default function PricingPage() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button asChild className="w-full">
+                <Button asChild className="w-full" variant="secondary">
                   <Link href="/dashboard">Get Started</Link>
                 </Button>
               </CardFooter>
             </Card>
 
-            <Card className="border-primary">
+            <Card className="border-primary shadow-lg">
+              <CardHeader>
+                <CardTitle>Pro Plan</CardTitle>
+                <CardDescription>For the dedicated educator.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-baseline">
+                    <span className="text-4xl font-bold">$5</span>
+                    <span className="text-lg font-normal text-muted-foreground">/month</span>
+                </div>
+                <p className="text-sm text-muted-foreground">or $50 billed annually</p>
+                <ul className="space-y-2">
+                  {proFeatures.map((feature) => (
+                    <li key={feature} className="flex items-center">
+                      <Check className="h-5 w-5 text-green-500 mr-2" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button asChild className="w-full">
+                  <Link href="/dashboard">Go Pro</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            <Card>
               <CardHeader>
                 <CardTitle>School Plan</CardTitle>
                 <CardDescription>For schools and institutions looking for a complete solution.</CardDescription>
@@ -74,7 +109,7 @@ export default function PricingPage() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button asChild className="w-full" variant="default">
+                <Button asChild className="w-full" variant="secondary">
                   <Link href="/contact">Contact Sales</Link>
                 </Button>
               </CardFooter>
