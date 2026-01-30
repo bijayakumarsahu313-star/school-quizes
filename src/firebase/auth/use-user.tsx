@@ -12,19 +12,33 @@ const useUser = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
+    // If the auth context is not yet available, we are in a loading state.
+    if (!auth) {
+      setLoading(true);
+      setUser(null);
+      return;
+    }
+
+    // Auth is available, so we set up the listener.
+    // The listener will immediately fire with the current auth state.
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        // We have received the auth state.
         setUser(user);
         setLoading(false);
-      });
+      },
+      (error) => {
+        // Handle potential errors from the listener itself.
+        console.error('Auth state change error:', error);
+        setUser(null);
+        setLoading(false);
+      }
+    );
 
-      return () => unsubscribe();
-    } else {
-      // If auth is null, we are still in the process of initializing.
-      // The loading state remains true until the auth object is available.
-      setLoading(true);
-    }
-  }, [auth]);
+    // Cleanup the listener on unmount.
+    return () => unsubscribe();
+  }, [auth]); // This effect re-runs whenever the auth object changes.
 
   return { user, loading };
 };
