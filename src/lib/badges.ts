@@ -1,48 +1,61 @@
-import React from 'react';
 import { Award, Medal, Star, Trophy } from "lucide-react";
 
-export type Badge = {
+export type BadgeInfo = {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  iconName: 'Medal' | 'Award' | 'Star' | 'Trophy';
+  iconColor: string;
 };
 
-export const badges: Badge[] = [
+export const badgeInfos: BadgeInfo[] = [
   {
     id: "1",
     title: "First Quiz",
     description: "Completed your first quiz.",
-    icon: <Medal className="h-12 w-12 text-yellow-500" />,
+    iconName: 'Medal',
+    iconColor: 'text-yellow-500'
   },
   {
     id: "2",
     title: "Math Whiz",
     description: "Scored 90% or higher on a Math quiz.",
-    icon: <Award className="h-12 w-12 text-blue-500" />,
+    iconName: 'Award',
+    iconColor: 'text-blue-500'
   },
   {
     id: "3",
     title: "Science Star",
     description: "Scored 90% or higher on a Science quiz.",
-    icon: <Star className="h-12 w-12 text-green-500" />,
+    iconName: 'Star',
+    iconColor: 'text-green-500'
   },
   {
     id: "4",
     title: "Quiz Master",
     description: "Completed 10 quizzes.",
-    icon: <Trophy className="h-12 w-12 text-purple-500" />,
+    iconName: 'Trophy',
+    iconColor: 'text-purple-500'
   },
   {
     id: "5",
     title: "Perfect Score",
     description: "Achieved a perfect score on any quiz.",
-    icon: <Medal className="h-12 w-12 text-red-500" />,
+    iconName: 'Medal',
+    iconColor: 'text-red-500'
   },
   {
     id: "6",
     title: "Top Performer",
     description: "Ranked #1 in a class quiz.",
-    icon: <Trophy className="h-12 w-12 text-orange-500" />,
+    iconName: 'Trophy',
+    iconColor: 'text-orange-500'
   },
 ];
+
+export const iconMap = {
+    Medal,
+    Award,
+    Star,
+    Trophy,
+};
