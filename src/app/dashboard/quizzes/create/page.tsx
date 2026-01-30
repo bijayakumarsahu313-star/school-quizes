@@ -214,8 +214,52 @@ export default function CreateQuizPage() {
                       <FormField control={form.control} name="classLevel" render={({ field }) => ( <FormItem> <FormLabel>Class Level</FormLabel> <FormControl> <Input type="number" min="1" max="12" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                       <FormField control={form.control} name="board" render={({ field }) => ( <FormItem> <FormLabel>Board (Optional)</FormLabel> <FormControl> <Input placeholder="e.g., CBSE" {...field} value={field.value ?? ''}/> </FormControl> <FormMessage /> </FormItem> )}/>
                     </div>
-                    <FormField control={form.control} name="difficulty" render={({ field }) => ( <FormItem> <FormLabel>Difficulty</FormLabel> <Select onValueChange={field.onChange} defaultValue={field.value}> <FormControl> <SelectTrigger> <SelectValue placeholder="Select difficulty" /> </SelectTrigger> </FormControl> <SelectContent> <SelectItem value="easy">Easy</SelectItem> <SelectItem value="medium">Medium</SelectItem> <SelectItem value="hard">Hard</SelectItem> </SelectContent> </Select> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="questionType" render={({ field }) => ( <FormItem> <FormLabel>Question Type</FormLabel> <Select onValueChange={field.onChange} defaultValue={field.value}> <FormControl> <SelectTrigger> <SelectValue placeholder="Select question type" /> </SelectTrigger> </FormControl> <SelectContent> <SelectItem value="MCQ">MCQ</SelectItem> <SelectItem value="True/False">True/False</SelectItem> <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem> <SelectItem value="Match the Following">Match the Following</SelectItem> <SelectItem value="Image-based questions">Image-based</SelectItem> </SelectContent> </Select> <FormMessage /> </FormItem> )}/>
+                    <FormField
+                      control={form.control}
+                      name="difficulty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Difficulty</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select difficulty" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="easy">Easy</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="hard">Hard</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Question Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select question type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="MCQ">MCQ</SelectItem>
+                                <SelectItem value="True/False">True/False</SelectItem>
+                                <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
+                                <SelectItem value="Match the Following">Match the Following</SelectItem>
+                                <SelectItem value="Image-based questions">Image-based</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField control={form.control} name="numberOfQuestions" render={({ field }) => ( <FormItem> <FormLabel>Number of Questions</FormLabel> <FormControl> <Input type="number" min="1" max="20" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Duration (minutes)</FormLabel> <FormControl> <Input type="number" min="1" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                     <Button type="submit" className="w-full" disabled={isLoading}>
@@ -254,11 +298,55 @@ export default function CreateQuizPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <FormField control={contentForm.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Duration (min)</FormLabel> <FormControl> <Input type="number" min="1" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={contentForm.control} name="difficulty" render={({ field }) => ( <FormItem> <FormLabel>Difficulty</FormLabel> <Select onValueChange={field.onChange} defaultValue={field.value}> <FormControl> <SelectTrigger> <SelectValue/> </SelectTrigger> </FormControl> <SelectContent> <SelectItem value="easy">Easy</SelectItem> <SelectItem value="medium">Medium</SelectItem> <SelectItem value="hard">Hard</SelectItem> </SelectContent> </Select> <FormMessage /> </FormItem> )}/>
+                      <FormField
+                        control={contentForm.control}
+                        name="difficulty"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Difficulty</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue/>
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="easy">Easy</SelectItem>
+                                  <SelectItem value="medium">Medium</SelectItem>
+                                  <SelectItem value="hard">Hard</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                      <div className="grid grid-cols-2 gap-4">
                        <FormField control={contentForm.control} name="numberOfQuestions" render={({ field }) => ( <FormItem> <FormLabel>Questions</FormLabel> <FormControl> <Input type="number" min="1" max="20" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                       <FormField control={contentForm.control} name="questionType" render={({ field }) => ( <FormItem> <FormLabel>Question Type</FormLabel> <Select onValueChange={field.onChange} defaultValue={field.value}> <FormControl> <SelectTrigger> <SelectValue placeholder="Select question type" /> </SelectTrigger> </FormControl> <SelectContent> <SelectItem value="MCQ">MCQ</SelectItem> <SelectItem value="True/False">True/False</SelectItem> <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem> <SelectItem value="Match the Following">Match the Following</SelectItem> <SelectItem value="Image-based questions">Image-based</SelectItem> </SelectContent> </Select> <FormMessage /> </FormItem> )}/>
+                       <FormField
+                          control={contentForm.control}
+                          name="questionType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Question Type</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select question type" />
+                                  </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="MCQ">MCQ</SelectItem>
+                                    <SelectItem value="True/False">True/False</SelectItem>
+                                    <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
+                                    <SelectItem value="Match the Following">Match the Following</SelectItem>
+                                    <SelectItem value="Image-based questions">Image-based</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Wand2 className="mr-2 h-4 w-4" /> )}
