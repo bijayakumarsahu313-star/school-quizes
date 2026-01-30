@@ -279,7 +279,7 @@ export default function SignupPage() {
                         <FormItem>
                             <FormLabel>Class</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="10" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || '')} />
+                                <Input type="number" placeholder="10" {...field} value={field.value ?? ''} onChange={e => field.onChange(parseInt(e.target.value, 10) || '')} />
                             </FormControl>
                              <FormMessage />
                         </FormItem>
@@ -312,7 +312,7 @@ export default function SignupPage() {
                         <FormItem>
                             <FormLabel>Subject</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g., Physics, History" {...field} />
+                                <Input placeholder="e.g., Physics, History" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
