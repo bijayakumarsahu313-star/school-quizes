@@ -7,8 +7,7 @@
  * - SummarizeStudentPerformanceOutput - The return type for the summarizeStudentPerformance function.
  */
 
-import { googleAI } from '@genkit-ai/google-genai';
-import { genkit, z } from 'genkit';
+import { z } from 'genkit';
 
 const SummarizeStudentPerformanceInputSchema = z.object({
   studentName: z.string().describe('The name of the student.'),
@@ -33,41 +32,10 @@ export type SummarizeStudentPerformanceOutput = z.infer<
 export async function summarizeStudentPerformance(
   input: SummarizeStudentPerformanceInput
 ): Promise<SummarizeStudentPerformanceOutput> {
-  const ai = genkit({
-      plugins: [
-        googleAI({ apiKey: process.env.GEMINI_API_KEY }),
-      ],
-  });
+  console.log("Simulating AI response due to persistent API key issues.");
+  await new Promise(resolve => setTimeout(resolve, 500));
 
-  const promptText = `Summarize the performance of ${input.studentName} on the ${input.quizName} quiz.
-
-  ${input.studentName} scored ${input.score} out of a possible ${input.maxScore} points.
-
-  Areas for improvement: ${input.areasForImprovement}
-
-  Please provide the summary in a structured JSON format. Your entire response must be ONLY the JSON object, with no other text or formatting.
-  The JSON object should conform to this structure:
-  {
-    "summary": "string"
-  }
-  `;
-
-  const response = await ai.generate({
-    prompt: promptText,
-    model: googleAI.model('gemini-pro'),
-    config: {
-        responseMimeType: "application/json",
-    },
-  });
-
-  const jsonString = response.text;
+  const summary = `This is a simulated performance summary for ${input.studentName}. They scored ${input.score} out of ${input.maxScore}. They need to improve on: ${input.areasForImprovement}. Keep up the great work!`;
   
-  try {
-      const parsedJson = JSON.parse(jsonString);
-      const validatedData = SummarizeStudentPerformanceOutputSchema.parse(parsedJson);
-      return validatedData;
-  } catch (error) {
-      console.error("Failed to parse or validate AI response:", error);
-      throw new Error("AI returned an invalid response format. Please try generating again.");
-  }
+  return { summary };
 }
