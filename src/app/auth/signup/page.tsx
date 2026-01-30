@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -190,11 +189,19 @@ export default function SignupPage() {
 
     } catch (error: any) {
       console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Google Sign-In Failed',
-        description: error.message || 'Could not sign in with Google. Please try again.',
-      });
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        toast({
+          variant: 'destructive',
+          title: 'Account Already Exists',
+          description: "This email is already in use. Please go to the login page and use your original sign-in method.",
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Google Sign-Up Failed',
+          description: error.message || 'Could not sign up with Google. Please try again.',
+        });
+      }
     } finally {
       setIsGoogleLoading(false);
     }
