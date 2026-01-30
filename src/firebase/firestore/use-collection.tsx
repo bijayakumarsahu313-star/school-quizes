@@ -10,7 +10,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-import { useFirestore } from '@/firebase/firestore/provider';
+import { useFirestore } from '@/firebase';
 
 const useCollection = <T,>(path: string | null, field?: string, value?: any) => {
   const db = useFirestore();
@@ -18,8 +18,9 @@ const useCollection = <T,>(path: string | null, field?: string, value?: any) => 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db || !path) {
+    if (!path) {
       setLoading(false);
+      setData([]);
       return;
     }
 

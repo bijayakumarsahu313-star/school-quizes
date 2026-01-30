@@ -1,16 +1,12 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { FirebaseApp } from 'firebase/app';
 import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
 
-import {
-  FirebaseClientProvider,
-  useFirebaseApp,
-} from '@/firebase/client-provider';
-import { FirebaseAuthProvider } from '@/firebase/auth/provider';
-import { FirebaseFirestoreProvider } from '@/firebase/firestore/provider';
+import { initializeFirebase } from '@/firebase/index';
+import { firebaseConfig } from './config';
 
 interface FirebaseContextValue {
   app: FirebaseApp;
@@ -25,35 +21,48 @@ export const FirebaseProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  return (
-    <FirebaseClientProvider>
-      <FirebaseProviderInternal>{children}</FirebaseProviderInternal>
-    </FirebaseClientProvider>
-  );
-};
+  const [firebase, setFirebase] = useState<FirebaseContextValue | null>(null);
 
-const FirebaseProviderInternal = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const firebase = useFirebaseApp();
+  useEffect(() => {
+    if (firebaseConfig?.projectId) {
+      const { app, auth, firestore } = initializeFirebase();
+      setFirebase({ app, auth, firestore });
+    } else {
+        console.error("Firebase config not found. App cannot be initialized.");
+    }
+  }, []);
 
-  // If Firebase is not initialized, don't render children.
-  // This prevents hooks from being called before Firebase context is ready.
-  if (!firebase) {
-    return null;
+  const value = useMemo(() => firebase, [firebase]);
+
+  // If Firebase is not initialized, don't render children to prevent hooks
+  // from being called before Firebase context is ready.
+  if (!value) {
+    return null; // Or a loading spinner
   }
 
   return (
-    <FirebaseContext.Provider value={firebase}>
-      <FirebaseAuthProvider>
-        <FirebaseFirestoreProvider>{children}</FirebaseFirestoreProvider>
-      </FirebaseAuthProvider>
+    <FirebaseContext.Provider value={value}>
+        {children}
     </FirebaseContext.Provider>
   );
 };
 
 export const useFirebase = () => {
-  return useContext(FirebaseContext);
+    const context = useContext(FirebaseContext);
+    if (!context) {
+        throw new Error('useFirebase must be used within a FirebaseProvider');
+    }
+    return context;
+};
+
+export const useAuth = () => {
+    return useFirebase().auth;
+};
+
+export const useFirestore = () => {
+    return useFirebase().firestore;
+};
+
+export const useFirebaseApp = () => {
+    return useFirebase().app;
 };

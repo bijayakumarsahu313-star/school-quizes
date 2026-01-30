@@ -8,14 +8,8 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 import { firebaseConfig as clientFirebaseConfig } from '@/firebase/config';
 
 // Re-export components and hooks for easy importing.
-export { FirebaseProvider, useFirebase } from '@/firebase/provider';
-export {
-  FirebaseClientProvider,
-  useFirebaseApp,
-} from '@/firebase/client-provider';
-export { useAuth } from '@/firebase/auth/provider';
+export { FirebaseProvider, useFirebase, useAuth, useFirestore, useFirebaseApp } from '@/firebase/provider';
 export { useUser } from '@/firebase/auth/use-user';
-export { useFirestore } from '@/firebase/firestore/provider';
 export { useDoc } from '@/firebase/firestore/use-doc';
 export { useCollection } from '@/firebase/firestore/use-collection';
 

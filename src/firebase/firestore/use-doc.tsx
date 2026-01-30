@@ -3,7 +3,7 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-import { useFirestore } from '@/firebase/firestore/provider';
+import { useFirestore } from '@/firebase';
 
 const useDoc = <T,>(path: string | null, id: string | null) => {
   const db = useFirestore();
@@ -11,9 +11,9 @@ const useDoc = <T,>(path: string | null, id: string | null) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // We can't fetch a document if we don't have the database, path, or id.
+    // We can't fetch a document if we don't have the path or id.
     // In this case, we are in a loading state.
-    if (!db || !path || !id) {
+    if (!path || !id) {
         setLoading(true);
         setData(null);
         return;
