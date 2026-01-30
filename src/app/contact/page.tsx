@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from "react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -5,9 +8,41 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Loader2, Check } from "lucide-react";
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting || isSent) return;
+
+    setIsSubmitting(true);
+
+    // Simulate sending message
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    setIsSubmitting(false);
+    setIsSent(true);
+    setFormData({ name: '', email: '', subject: '', message: '' }); // Clear form
+
+    setTimeout(() => {
+      setIsSent(false);
+    }, 3000); // Revert button state after 3 seconds
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -35,26 +70,40 @@ export default function ContactPage() {
             </div>
             <Card>
               <CardContent className="p-6">
-                <form className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Your Name" />
+                      <Input id="name" placeholder="Your Name" value={formData.name} onChange={handleChange} required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="Your Email" />
+                      <Input id="email" type="email" placeholder="Your Email" value={formData.email} onChange={handleChange} required />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="Subject" />
+                    <Input id="subject" placeholder="Subject" value={formData.subject} onChange={handleChange} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
-                    <Textarea id="message" placeholder="Your Message" />
+                    <Textarea id="message" placeholder="Your Message" value={formData.message} onChange={handleChange} required />
                   </div>
-                  <Button type="submit" className="w-full">Send Message</Button>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || isSent}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : isSent ? (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        Message Sent!
+                      </>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </Button>
                 </form>
               </CardContent>
             </Card>
