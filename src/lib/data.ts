@@ -1,6 +1,7 @@
 
 export type UserProfile = {
   uid: string;
+  id?: string;
   email: string;
   fullName: string;
   role: 'student' | 'teacher';
@@ -16,7 +17,7 @@ export type UserProfile = {
 export type Student = {
   id: string;
   name: string;
-  class: string;
+  classLevel: number;
   avatar: string;
   averageScore: number;
   quizzesCompleted: number;
@@ -53,14 +54,16 @@ export type QuizResult = {
   score: number;
   completedAt: any; // Firestore Timestamp
   answers: Record<number, string>;
+  quizTitle?: string;
+  quizSubject?: string;
 }
 
 export const students: Student[] = [
-  { id: '1', name: 'Aarav Sharma', class: '10A', avatar: 'https://picsum.photos/seed/s1/40/40', averageScore: 85, quizzesCompleted: 12 },
-  { id: '2', name: 'Priya Patel', class: '10A', avatar: 'https://picsum.photos/seed/s2/40/40', averageScore: 92, quizzesCompleted: 15 },
-  { id: '3', name: 'Rohan Gupta', class: '9B', avatar: 'https://picsum.photos/seed/s3/40/40', averageScore: 78, quizzesCompleted: 10 },
-  { id: '4', name: 'Sneha Reddy', class: '11C', avatar: 'https://picsum.photos/seed/s4/40/40', averageScore: 88, quizzesCompleted: 14 },
-  { id: '5', name: 'Vikram Singh', class: '12A', avatar: 'https://picsum.photos/seed/s5/40/40', averageScore: 95, quizzesCompleted: 18 },
+  { id: '1', name: 'Aarav Sharma', classLevel: 10, avatar: 'https://picsum.photos/seed/s1/40/40', averageScore: 85, quizzesCompleted: 12 },
+  { id: '2', name: 'Priya Patel', classLevel: 10, avatar: 'https://picsum.photos/seed/s2/40/40', averageScore: 92, quizzesCompleted: 15 },
+  { id: '3', name: 'Rohan Gupta', classLevel: 9, avatar: 'https://picsum.photos/seed/s3/40/40', averageScore: 78, quizzesCompleted: 10 },
+  { id: '4', name: 'Sneha Reddy', classLevel: 11, avatar: 'https://picsum.photos/seed/s4/40/40', averageScore: 88, quizzesCompleted: 14 },
+  { id: '5', name: 'Vikram Singh', classLevel: 12, avatar: 'https://picsum.photos/seed/s5/40/40', averageScore: 95, quizzesCompleted: 18 },
 ];
 
 export const quizzes: Quiz[] = [

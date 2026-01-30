@@ -144,7 +144,7 @@ export default function Dashboard() {
                       {student.name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Class {student.class}
+                      Class {student.classLevel}
                     </p>
                   </div>
                   <div className="ml-auto font-medium">{student.averageScore}%</div>

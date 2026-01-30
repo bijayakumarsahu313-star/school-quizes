@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import {
@@ -20,39 +20,133 @@ import {
   Tooltip,
   Legend
 } from 'recharts';
-import { performanceData, quizzes, students } from '@/lib/data';
 import { Badge } from "@/components/ui/badge";
-
-const student = students[0]; // Assuming we are showing progress for the first student for demonstration
-
-type SubjectDataType = {
-    name: string;
-    averageScore: number;
-};
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import type { Quiz, QuizResult, UserProfile } from '@/lib/data';
+import { getDocs, collection, query, where, doc, getDoc, Timestamp } from 'firebase/firestore';
+import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProgressPage() {
-    const [subjectData, setSubjectData] = useState<SubjectDataType[]>([]);
+    const { user } = useUser();
+    const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(user ? 'users' : null, user ? user.uid : null);
+    const [results, setResults] = useState<QuizResult[]>([]);
+    const [loading, setLoading] = useState(true);
+    const firestore = useFirestore();
 
     useEffect(() => {
-        const studentPerformanceBySubject = quizzes
-            .filter(q => q.status === 'Published')
-            .reduce((acc, quiz) => {
-            if (!acc[quiz.subject]) {
-                acc[quiz.subject] = { name: quiz.subject, scores: [], count: 0 };
-            }
-            // Mocking student's score to be around the average for demo
-            const studentScore = Math.max(0, Math.min(100, quiz.averageScore + (Math.random() - 0.5) * 10));
-            acc[quiz.subject].scores.push(studentScore);
-            acc[quiz.subject].count++;
-            return acc;
-        }, {} as Record<string, {name: string, scores: number[], count: number}>);
+        if (!user || !firestore) return;
 
-        const newSubjectData = Object.values(studentPerformanceBySubject).map(subject => ({
-            name: subject.name,
-            averageScore: subject.scores.reduce((a, b) => a + b, 0) / subject.count,
+        setLoading(true);
+        const fetchResults = async () => {
+            try {
+                // 1. Fetch all published quizzes to get their details
+                const quizzesQuery = query(collection(firestore, 'quizzes'), where('status', '==', 'Published'));
+                const quizSnap = await getDocs(quizzesQuery);
+                const quizzesMap = new Map<string, Quiz>();
+                quizSnap.forEach(doc => quizzesMap.set(doc.id, { id: doc.id, ...doc.data() } as Quiz));
+
+                // 2. Construct promises to fetch the user's result for each quiz
+                const resultPromises = Array.from(quizzesMap.keys()).map(quizId =>
+                    getDoc(doc(firestore, `quizzes/${quizId}/results/${user.uid}`))
+                );
+                
+                const resultSnaps = await Promise.all(resultPromises);
+
+                // 3. Filter out non-existent results and combine with quiz details
+                const userResults = resultSnaps
+                    .filter(snap => snap.exists())
+                    .map(snap => {
+                        const resultData = snap.data() as QuizResult;
+                        const quizData = quizzesMap.get(resultData.quizId);
+                        return {
+                            id: snap.id,
+                            ...resultData,
+                            quizTitle: quizData?.title || 'Unknown Quiz',
+                            quizSubject: quizData?.subject || 'Unknown Subject',
+                        };
+                    });
+                
+                setResults(userResults);
+            } catch (error) {
+                console.error("Error fetching quiz results:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchResults();
+    }, [user, firestore]);
+
+    const {
+        overallAverage,
+        quizzesCompleted,
+        performanceByMonth,
+        performanceBySubject
+    } = useMemo(() => {
+        if (results.length === 0) {
+            return {
+                overallAverage: 0,
+                quizzesCompleted: 0,
+                performanceByMonth: [],
+                performanceBySubject: [],
+            };
+        }
+
+        const totalScore = results.reduce((acc, r) => acc + r.score, 0);
+        const overallAverage = totalScore / results.length;
+
+        const monthlyPerformance: { [key: string]: { scores: number[], count: number } } = {};
+        results.forEach(r => {
+            const month = format((r.completedAt as Timestamp).toDate(), 'MMM yyyy');
+            if (!monthlyPerformance[month]) {
+                monthlyPerformance[month] = { scores: [], count: 0 };
+            }
+            monthlyPerformance[month].scores.push(r.score);
+            monthlyPerformance[month].count++;
+        });
+
+        const performanceByMonth = Object.entries(monthlyPerformance)
+            .map(([month, data]) => ({
+                month,
+                score: data.scores.reduce((a, b) => a + b, 0) / data.count,
+            }))
+            .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
+
+        const subjectPerformance: { [key: string]: { scores: number[], count: number } } = {};
+        results.forEach(r => {
+            const subject = r.quizSubject || 'General';
+            if (!subjectPerformance[subject]) {
+                subjectPerformance[subject] = { scores: [], count: 0 };
+            }
+            subjectPerformance[subject].scores.push(r.score);
+            subjectPerformance[subject].count++;
+        });
+        
+        const performanceBySubject = Object.entries(subjectPerformance).map(([name, data]) => ({
+            name,
+            averageScore: data.scores.reduce((a, b) => a + b, 0) / data.count,
         }));
-        setSubjectData(newSubjectData);
-    }, []);
+
+        return {
+            overallAverage,
+            quizzesCompleted: results.length,
+            performanceByMonth,
+            performanceBySubject,
+        };
+    }, [results]);
+
+  if (profileLoading) {
+    return (
+         <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1 flex items-center justify-center">
+                <p>Loading your profile...</p>
+            </main>
+            <Footer />
+        </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -62,7 +156,7 @@ export default function ProgressPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold font-headline">Your Progress</h1>
             <p className="text-lg text-muted-foreground mt-2">
-              Keep up the great work, {student.name}!
+              Keep up the great work, {userProfile?.fullName || 'Student'}!
             </p>
           </div>
 
@@ -72,7 +166,7 @@ export default function ProgressPage() {
                     <CardTitle>Overall Average</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-5xl font-bold text-primary">{student.averageScore}%</div>
+                    {loading ? <Skeleton className="h-12 w-2/3 mx-auto" /> : <div className="text-5xl font-bold text-primary">{overallAverage.toFixed(0)}%</div>}
                 </CardContent>
             </Card>
             <Card className="text-center">
@@ -80,7 +174,7 @@ export default function ProgressPage() {
                     <CardTitle>Quizzes Completed</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-5xl font-bold text-primary">{student.quizzesCompleted}</div>
+                    {loading ? <Skeleton className="h-12 w-1/3 mx-auto" /> : <div className="text-5xl font-bold text-primary">{quizzesCompleted}</div>}
                 </CardContent>
             </Card>
              <Card className="text-center">
@@ -89,7 +183,7 @@ export default function ProgressPage() {
                 </CardHeader>
                 <CardContent>
                     <Badge variant="default" className="text-lg">Science Star</Badge>
-                     <p className="text-sm text-muted-foreground mt-2">Scored 90% on a Science quiz</p>
+                     <p className="text-sm text-muted-foreground mt-2">(Demo) Scored 90% on a Science quiz</p>
                 </CardContent>
             </Card>
           </div>
@@ -98,18 +192,20 @@ export default function ProgressPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Your Performance Trend</CardTitle>
-                <CardDescription>Your average scores over the last six months.</CardDescription>
+                <CardDescription>Your average scores over time.</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={performanceData}>
-                        <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
-                        <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
-                        <Legend />
-                        <Line type="monotone" dataKey="score" name="Your Score" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
-                    </LineChart>
-                </ResponsiveContainer>
+                 {loading ? <div className="h-[300px] flex items-center justify-center"><p>Loading chart data...</p></div> : 
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={performanceByMonth}>
+                            <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
+                            <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
+                            <Legend />
+                            <Line type="monotone" dataKey="score" name="Your Score" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                 }
               </CardContent>
             </Card>
             <Card>
@@ -118,18 +214,19 @@ export default function ProgressPage() {
                 <CardDescription>Your average scores across different subjects.</CardDescription>
               </CardHeader>
               <CardContent>
-                {subjectData.length > 0 ? (
+                {loading ? <div className="h-[300px] flex items-center justify-center"><p>Loading chart data...</p></div> :
+                    performanceBySubject.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={subjectData}>
+                        <BarChart data={performanceBySubject}>
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`}/>
+                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(value) => `${value}%`}/>
                             <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
                             <Bar dataKey="averageScore" name="Your Average Score" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 ) : (
                     <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                        <p>No performance data yet.</p>
+                        <p>No performance data yet. Take a quiz to get started!</p>
                     </div>
                 )}
               </CardContent>
@@ -141,3 +238,4 @@ export default function ProgressPage() {
     </div>
   );
 }
+
