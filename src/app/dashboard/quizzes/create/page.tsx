@@ -220,18 +220,18 @@ export default function CreateQuizPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Difficulty</FormLabel>
-                          <FormControl>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select difficulty" />
                               </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="easy">Easy</SelectItem>
-                                <SelectItem value="medium">Medium</SelectItem>
-                                <SelectItem value="hard">Hard</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="easy">Easy</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="hard">Hard</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -242,20 +242,20 @@ export default function CreateQuizPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Question Type</FormLabel>
-                          <FormControl>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                           <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select question type" />
                               </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="MCQ">MCQ</SelectItem>
-                                <SelectItem value="True/False">True/False</SelectItem>
-                                <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
-                                <SelectItem value="Match the Following">Match the Following</SelectItem>
-                                <SelectItem value="Image-based questions">Image-based</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="MCQ">MCQ</SelectItem>
+                              <SelectItem value="True/False">True/False</SelectItem>
+                              <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
+                              <SelectItem value="Match the Following">Match the Following</SelectItem>
+                              <SelectItem value="Image-based questions">Image-based</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -304,18 +304,18 @@ export default function CreateQuizPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Difficulty</FormLabel>
-                            <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
                                 <SelectTrigger>
                                   <SelectValue/>
                                 </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="easy">Easy</SelectItem>
-                                  <SelectItem value="medium">Medium</SelectItem>
-                                  <SelectItem value="hard">Hard</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="easy">Easy</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="hard">Hard</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -329,20 +329,20 @@ export default function CreateQuizPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Question Type</FormLabel>
-                              <FormControl>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select question type" />
                                   </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="MCQ">MCQ</SelectItem>
-                                    <SelectItem value="True/False">True/False</SelectItem>
-                                    <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
-                                    <SelectItem value="Match the Following">Match the Following</SelectItem>
-                                    <SelectItem value="Image-based questions">Image-based</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="MCQ">MCQ</SelectItem>
+                                  <SelectItem value="True/False">True/False</SelectItem>
+                                  <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
+                                  <SelectItem value="Match the Following">Match the Following</SelectItem>
+                                  <SelectItem value="Image-based questions">Image-based</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}

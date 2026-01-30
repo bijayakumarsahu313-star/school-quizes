@@ -77,11 +77,21 @@ export async function generateQuizQuestions(input: GenerateQuizQuestionsInput): 
     }
 
     // Fallback to a generic but improved simulation
-    const fakeQuestions = Array.from({ length: numQuestions }, (_, i) => ({
-      text: `For a ${input.board || 'General'} syllabus, what is a key concept in ${input.subject} for class ${input.classLevel} at difficulty level '${input.difficulty}'? (Question ${i + 1})`,
-      options: ["Logical Option 1", "Logical Option 2", "The Correct Logical Answer", "Logical Option 4"],
-      answer: "The Correct Logical Answer",
-    }));
+    const fakeQuestions = Array.from({ length: numQuestions }, (_, i) => {
+      const answer = `The most accurate answer for ${input.subject}`;
+      const options = shuffleArray([
+        answer,
+        `A plausible but incorrect answer for ${input.subject}`,
+        `An answer related to a different topic`,
+        `A simplified or partially correct answer`,
+      ]);
+
+      return {
+        text: `According to the ${input.board || 'General'} curriculum for Class ${input.classLevel}, what is a core principle of ${input.subject} at a ${input.difficulty} level? (Question ${i + 1})`,
+        options: options,
+        answer: answer,
+      };
+    });
 
     return { questions: fakeQuestions };
 }
