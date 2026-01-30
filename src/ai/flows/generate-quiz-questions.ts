@@ -53,7 +53,7 @@ Please generate the questions and provide them in the required structured JSON f
         output: {
             schema: GenerateQuizQuestionsOutputSchema,
         },
-        model: 'gemini-pro',
+        model: googleAI.model('gemini-pro'),
     });
 
     const output = response.output;

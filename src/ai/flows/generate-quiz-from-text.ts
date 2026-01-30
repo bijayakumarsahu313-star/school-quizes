@@ -53,7 +53,7 @@ ${input.textContent}
         output: {
             schema: GenerateQuizQuestionsOutputSchema,
         },
-        model: 'gemini-pro',
+        model: googleAI.model('gemini-pro'),
     });
 
     const output = response.output;

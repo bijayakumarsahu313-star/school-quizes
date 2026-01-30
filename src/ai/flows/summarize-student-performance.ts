@@ -54,7 +54,7 @@ export async function summarizeStudentPerformance(
     output: {
         schema: SummarizeStudentPerformanceOutputSchema,
     },
-    model: 'gemini-pro',
+    model: googleAI.model('gemini-pro'),
   });
 
   const output = response.output;
