@@ -39,6 +39,21 @@
         "subject": {
           "type": "string",
           "description": "The subject taught by the teacher."
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["free", "pro"],
+          "description": "The user's subscription plan."
+        },
+        "planType": {
+          "type": "string",
+          "enum": ["monthly", "yearly"],
+          "description": "The type of pro plan."
+        },
+        "planExpires": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the pro plan expires."
         }
       },
       "required": ["uid", "email", "fullName", "role", "school"]
@@ -95,7 +110,10 @@
         "studentName": { "type": "string" },
         "studentAvatar": { "type": "string" },
         "score": { "type": "number" },
-        "completedAt": { "type": "string", "format": "date-time" },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
         "answers": {
           "type": "object",
           "description": "A map of question index to the answer given by the student."

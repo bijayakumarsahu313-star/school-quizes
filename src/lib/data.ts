@@ -8,6 +8,9 @@ export type UserProfile = {
   classLevel?: number;
   board?: string;
   subject?: string;
+  plan?: 'free' | 'pro';
+  planType?: 'monthly' | 'yearly';
+  planExpires?: any; // Firestore Timestamp
 };
 
 export type Student = {
