@@ -6,7 +6,8 @@ import { badgeInfos, iconMap } from "@/lib/badges";
 
 export default function BadgesPage() {
   // In a real app, you'd filter these based on user's achievements
-  const earnedBadges = badgeInfos;
+  // Reversing the array to show the most recently earned badges first.
+  const earnedBadges = [...badgeInfos].reverse();
   
   return (
     <div className="flex flex-col min-h-screen">
