@@ -1,7 +1,7 @@
 
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   BarChart2,
   BookCopy,
@@ -26,10 +26,12 @@ import {
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
-import { useCollection, useUser } from '@/firebase';
-import type { Quiz } from '@/lib/data';
+import { useCollection, useUser, useAuth, useDoc } from '@/firebase';
+import type { Quiz, UserProfile } from '@/lib/data';
+import { signOut } from 'firebase/auth';
 
-function Header() {
+function Header({userProfile}: {userProfile: UserProfile | null}) {
+    const { user } = useUser();
     return (
       <div className="flex h-16 items-center justify-between border-b px-4 lg:px-6">
         <div className="md:hidden">
@@ -40,8 +42,8 @@ function Header() {
         </div>
         <div className="flex items-center gap-4">
             <Avatar>
-              <AvatarImage src="https://picsum.photos/seed/user/40/40" />
-              <AvatarFallback>T</AvatarFallback>
+              <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || ''} />
+              <AvatarFallback>{userProfile?.fullName?.charAt(0) || 'T'}</AvatarFallback>
             </Avatar>
         </div>
       </div>
@@ -51,12 +53,17 @@ function Header() {
 
 export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useUser();
+  const auth = useAuth();
   const { data: quizzesData, loading: quizzesLoading } = useCollection<Quiz>(
-    'quizzes',
+    user ? 'quizzes' : null,
     'createdBy',
     user?.uid
   );
+  
+  const { data: userProfile } = useDoc<UserProfile>(user ? 'users' : null, user?.uid);
+
 
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
@@ -64,6 +71,12 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     { href: '/dashboard/students', icon: <Users />, label: 'Students' },
     { href: '/dashboard/analytics', icon: <BarChart2 />, label: 'Analytics' },
   ];
+
+  const handleLogout = async () => {
+      if (!auth) return;
+      await signOut(auth);
+      router.push('/');
+  }
 
   return (
     <SidebarProvider>
@@ -102,18 +115,16 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Logout">
-                        <a href="/">
+                    <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
                         <LogOut />
                         <span>Logout</span>
-                        </a>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-            <Header/>
+            <Header userProfile={userProfile as UserProfile | null}/>
             <main className="flex-1 p-4 md:p-6 lg:p-8">
                 {children}
             </main>

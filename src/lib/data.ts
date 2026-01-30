@@ -1,9 +1,12 @@
 
+
 export type UserProfile = {
   uid: string;
   id?: string;
   email: string;
   fullName: string;
+  displayName?: string;
+  photoURL?: string;
   role: 'student' | 'teacher';
   school: string;
   classLevel?: number;

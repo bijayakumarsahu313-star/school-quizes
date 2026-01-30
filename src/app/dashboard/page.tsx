@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -21,39 +22,38 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts';
-import { performanceData, students as mockStudents } from '@/lib/data';
-import { useUser, useCollection } from '@/firebase';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useUser, useCollection, useDoc } from '@/firebase';
 import type { Quiz, UserProfile } from '@/lib/data';
-
+import { Badge } from '@/components/ui/badge';
 
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: quizzes, loading: quizzesLoading } = useCollection<Quiz>('quizzes', 'createdBy', user?.uid);
+  const { data: userProfile } = useDoc<UserProfile>(user ? 'users' : null, user?.uid);
+  const { data: quizzes, loading: quizzesLoading } = useCollection<Quiz>(user ? 'quizzes' : null, 'createdBy', user?.uid);
   const { data: students, loading: studentsLoading } = useCollection<UserProfile>('users', 'role', 'student');
 
   const totalStudents = studentsLoading ? '...' : students.length;
   const totalQuizzes = quizzesLoading ? '...' : (quizzes?.length ?? 0);
-  const publishedQuizzes = quizzes ? quizzes.filter(q => q.status === 'Published').length : 0;
   
-  // Note: Average score is still using mock logic as real-time calculation is complex.
-  const averageScore =
-    quizzes && quizzes.length > 0 
-      ? quizzes.reduce((acc, q) => acc + (q.averageScore || 0), 0) / quizzes.length 
-      : 75; // fallback mock value
+  const recentQuizzes = quizzes
+    ? [...quizzes]
+        .sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0))
+        .slice(0, 5)
+    : [];
 
   return (
     <div className="flex flex-col gap-8">
         <div className="flex items-center justify-between">
             <div>
-                <h1 className="text-3xl font-bold font-headline">Welcome Back, Teacher!</h1>
-                <p className="text-muted-foreground">Here's a snapshot of your classroom's performance.</p>
+                <h1 className="text-3xl font-bold font-headline">Welcome Back, {userProfile?.fullName || 'Teacher'}!</h1>
+                <p className="text-muted-foreground">Here's a snapshot of your classroom's activity.</p>
             </div>
             <Button asChild>
                 <Link href="/dashboard/quizzes/create">Create New Quiz</Link>
@@ -68,7 +68,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{totalStudents}</div>
             <p className="text-xs text-muted-foreground">
-              across all schools
+              enrolled in the platform
             </p>
           </CardContent>
         </Card>
@@ -80,19 +80,19 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{totalQuizzes}</div>
             <p className="text-xs text-muted-foreground">
-              {quizzesLoading ? '...' : publishedQuizzes} published
+              {quizzes ? `${quizzes.filter(q => q.status === 'Published').length} published` : '...'}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+            <CardTitle className="text-sm font-medium">Performance</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{averageScore.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">View Analytics</div>
             <p className="text-xs text-muted-foreground">
-              (demo data)
+              <Link href="/dashboard/analytics" className="underline">Go to the Analytics page for detailed insights</Link>
             </p>
           </CardContent>
         </Card>
@@ -100,26 +100,50 @@ export default function Dashboard() {
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Recent Quiz Performance</CardTitle>
-            <CardDescription>Average scores over the last 6 months (demo data).</CardDescription>
+            <CardTitle>Recent Quizzes</CardTitle>
+            <CardDescription>A list of your 5 most recently created quizzes.</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={performanceData}>
-                    <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
-                    <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
-                    <Bar dataKey="score" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-            </ResponsiveContainer>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {quizzesLoading ? (
+                        <TableRow><TableCell colSpan={3} className="h-24 text-center">Loading...</TableCell></TableRow>
+                    ) : recentQuizzes.length > 0 ? (
+                        recentQuizzes.map(quiz => (
+                            <TableRow key={quiz.id}>
+                                <TableCell className="font-medium">{quiz.title}</TableCell>
+                                <TableCell>
+                                    <Badge variant={quiz.status === 'Published' ? 'default' : 'secondary'}>
+                                        {quiz.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Button asChild variant="ghost" size="sm">
+                                        <Link href={`/dashboard/quizzes/${quiz.id}/results`}>View Results</Link>
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                         <TableRow><TableCell colSpan={3} className="h-24 text-center">No quizzes created yet.</TableCell></TableRow>
+                    )}
+                </TableBody>
+            </Table>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
-              <CardTitle>Top Students</CardTitle>
+              <CardTitle>Student Roster</CardTitle>
               <CardDescription>
-                (demo data)
+                A preview of students on the platform.
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
@@ -130,24 +154,22 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent className="grid gap-8">
-            {mockStudents
-              .sort((a, b) => b.averageScore - a.averageScore)
-              .slice(0, 4)
-              .map((student) => (
-                <div key={student.id} className="flex items-center gap-4">
+            {studentsLoading ? (
+                <div className="text-center text-muted-foreground">Loading students...</div>
+            ) : students.slice(0, 4).map((student) => (
+                <div key={student.uid} className="flex items-center gap-4">
                   <Avatar className="hidden h-9 w-9 sm:flex">
-                    <AvatarImage src={student.avatar} alt="Avatar" />
-                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={student.photoURL} alt="Avatar" />
+                    <AvatarFallback>{student.fullName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="grid gap-1">
                     <p className="text-sm font-medium leading-none">
-                      {student.name}
+                      {student.fullName}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Class {student.classLevel}
                     </p>
                   </div>
-                  <div className="ml-auto font-medium">{student.averageScore}%</div>
                 </div>
               ))}
           </CardContent>

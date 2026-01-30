@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -73,16 +74,16 @@ export default function StudentGenerateQuizPage() {
   function startQuiz() {
     if (!quizSettings || generatedQuestions.length === 0) return;
 
-    const practiceQuiz: Quiz = {
+    const practiceQuiz: Omit<Quiz, 'createdBy' | 'createdAt'> = {
       id: `practice-${Date.now()}`,
       title: quizSettings.title,
       subject: quizSettings.subject,
-      class: String(quizSettings.classLevel),
+      classLevel: quizSettings.classLevel,
       numberOfQuestions: quizSettings.numberOfQuestions,
       duration: quizSettings.duration,
       questions: generatedQuestions,
-      // These fields are not relevant for a practice quiz
-      averageScore: 0,
+      difficulty: quizSettings.difficulty,
+      questionType: 'MCQ',
       status: 'Published',
     };
 

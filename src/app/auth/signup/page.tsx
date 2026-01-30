@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -81,6 +82,14 @@ export default function SignupPage() {
   
   const role = form.watch('role');
 
+  const handleRedirect = (role: 'student' | 'teacher') => {
+      if (role === 'teacher') {
+        router.push('/dashboard');
+      } else {
+        router.push('/student-zone');
+      }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!auth || !firestore) return;
     setIsLoading(true);
@@ -95,6 +104,8 @@ export default function SignupPage() {
         uid: user.uid,
         email: values.email,
         fullName: values.fullName,
+        displayName: values.fullName,
+        photoURL: user.photoURL,
         role: values.role,
         school: values.school,
         plan: 'free',
@@ -113,7 +124,7 @@ export default function SignupPage() {
         title: 'Account Created!',
         description: "Welcome! We're redirecting you...",
       });
-      router.push('/');
+      handleRedirect(values.role);
 
     } catch (error: any) {
       console.error(error);
@@ -155,6 +166,8 @@ export default function SignupPage() {
         uid: user.uid,
         email: user.email!,
         fullName: user.displayName!,
+        displayName: user.displayName!,
+        photoURL: user.photoURL!,
         role: values.role,
         school: values.school,
         plan: 'free',
@@ -173,7 +186,7 @@ export default function SignupPage() {
         title: 'Signed In!',
         description: `Welcome, ${user.displayName}!`,
       });
-      router.push('/');
+      handleRedirect(values.role);
 
     } catch (error: any) {
       console.error(error);
