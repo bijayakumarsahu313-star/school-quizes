@@ -22,6 +22,7 @@ export type Quiz = {
   averageScore: number;
   status: 'Draft' | 'Published';
   questions: Question[];
+  duration: number; // Duration in minutes
 };
 
 export const students: Student[] = [
@@ -41,6 +42,7 @@ export const quizzes: Quiz[] = [
     numberOfQuestions: 2, 
     averageScore: 82, 
     status: 'Published',
+    duration: 5,
     questions: [
         {
             text: "What is the value of x in the equation 2x + 3 = 7?",
@@ -62,6 +64,7 @@ export const quizzes: Quiz[] = [
     numberOfQuestions: 2, 
     averageScore: 88, 
     status: 'Published',
+    duration: 5,
     questions: [
         { text: "When did India get its independence?", options: ["1945", "1947", "1950", "1942"], answer: "1947"},
         { text: "Who was the first Prime Minister of India?", options: ["Mahatma Gandhi", "Sardar Patel", "Jawaharlal Nehru", "B. R. Ambedkar"], answer: "Jawaharlal Nehru"}
@@ -75,12 +78,13 @@ export const quizzes: Quiz[] = [
     numberOfQuestions: 2, 
     averageScore: 76, 
     status: 'Published',
+    duration: 10,
     questions: [
         { text: "What is the powerhouse of the cell?", options: ["Nucleus", "Ribosome", "Mitochondrion", "Chloroplast"], answer: "Mitochondrion"},
         { text: "Which organelle is responsible for photosynthesis?", options: ["Mitochondrion", "Chloroplast", "Vacuole", "Golgi apparatus"], answer: "Chloroplast"}
     ]
   },
-  { id: '4', title: 'Shakespeare\'s Sonnets', subject: 'English', class: '11', numberOfQuestions: 10, averageScore: 91, status: 'Draft', questions: [] },
+  { id: '4', title: 'Shakespeare\'s Sonnets', subject: 'English', class: '11', numberOfQuestions: 10, averageScore: 91, status: 'Draft', duration: 15, questions: [] },
   { 
     id: '5', 
     title: 'Chemical Reactions', 
@@ -89,6 +93,7 @@ export const quizzes: Quiz[] = [
     numberOfQuestions: 2, 
     averageScore: 85, 
     status: 'Published',
+    duration: 5,
     questions: [
         { text: "What is the chemical formula for water?", options: ["H2O2", "CO2", "H2O", "O2"], answer: "H2O"},
         { text: "What is produced when an acid reacts with a base?", options: ["Salt and Water", "Gas", "Oxygen", "Hydrogen"], answer: "Salt and Water"}

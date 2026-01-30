@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { quizzes, Question, Quiz } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Clock } from 'lucide-react';
 
 // Helper function to shuffle an array
 function shuffle(array: any[]) {
@@ -22,6 +23,14 @@ function shuffle(array: any[]) {
   return array;
 }
 
+// Helper function to format time
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
+
 export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
@@ -34,6 +43,9 @@ export default function QuizPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
   const [showVisibilityWarning, setShowVisibilityWarning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   useEffect(() => {
     const foundQuiz = quizzes.find(q => q.id === quizId);
@@ -42,6 +54,7 @@ export default function QuizPage() {
       quizData.questions = shuffle([...quizData.questions]);
       setQuiz(quizData);
       setShuffledQuestions(quizData.questions);
+      setTimeLeft(quizData.duration * 60);
     } else {
       router.push('/student-zone/quizzes');
     }
@@ -87,6 +100,37 @@ export default function QuizPage() {
     };
   }, [isFinished]);
 
+  const handleSubmitQuiz = useCallback(() => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    let correctAnswers = 0;
+    shuffledQuestions.forEach((q, index) => {
+      if (selectedAnswers[index] === q.answer) {
+        correctAnswers++;
+      }
+    });
+    setScore((correctAnswers / shuffledQuestions.length) * 100);
+    setIsFinished(true);
+  }, [isSubmitting, selectedAnswers, shuffledQuestions]);
+
+
+  // Timer countdown
+  useEffect(() => {
+    if (timeLeft === null || isFinished) return;
+
+    if (timeLeft <= 0) {
+      handleSubmitQuiz();
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setTimeLeft(t => (t !== null ? t - 1 : null));
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [timeLeft, isFinished, handleSubmitQuiz]);
+
 
   const handleAnswerSelect = (option: string) => {
     setSelectedAnswers(prev => ({
@@ -99,17 +143,6 @@ export default function QuizPage() {
     if (currentQuestionIndex < shuffledQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     }
-  };
-
-  const handleSubmitQuiz = () => {
-    let correctAnswers = 0;
-    shuffledQuestions.forEach((q, index) => {
-      if (selectedAnswers[index] === q.answer) {
-        correctAnswers++;
-      }
-    });
-    setScore((correctAnswers / shuffledQuestions.length) * 100);
-    setIsFinished(true);
   };
   
   if (!quiz || shuffledQuestions.length === 0) {
@@ -149,10 +182,14 @@ export default function QuizPage() {
             <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                     <span>{quiz.title}</span>
-                    <span className="text-sm font-normal text-muted-foreground">
-                        Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
+                     <span className="flex items-center text-lg font-mono text-primary">
+                        <Clock className="mr-2 h-5 w-5" />
+                        {timeLeft !== null ? formatTime(timeLeft) : '...'}
                     </span>
                 </CardTitle>
+                 <CardDescription>
+                    Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
+                </CardDescription>
                 <Progress value={progress} className="w-full mt-2" />
             </CardHeader>
             <CardContent>

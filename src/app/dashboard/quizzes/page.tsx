@@ -46,7 +46,9 @@ export default function QuizzesPage() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="sm">View</Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/dashboard/quizzes/${quiz.id}/results`}>Results</Link>
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
