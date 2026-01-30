@@ -13,5 +13,10 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.createdBy == request.auth.uid;
       allow update, delete: if request.auth != null && resource.data.createdBy == request.auth.uid;
     }
+
+    match /quizzes/{quizId}/results/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/quizzes/$(quizId)).data.createdBy == request.auth.uid);
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }

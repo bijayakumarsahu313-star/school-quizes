@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -25,15 +26,8 @@ import {
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
-
-const navItems = [
-  { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
-  { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes', badge: quizzes.length.toString() },
-  { href: '/dashboard/students', icon: <Users />, label: 'Students' },
-  { href: '/dashboard/analytics', icon: <BarChart2 />, label: 'Analytics' },
-];
-
-import { quizzes } from '@/lib/data';
+import { useCollection, useUser } from '@/firebase';
+import type { Quiz } from '@/lib/data';
 
 function Header() {
     return (
@@ -57,6 +51,19 @@ function Header() {
 
 export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user } = useUser();
+  const { data: quizzesData, loading: quizzesLoading } = useCollection<Quiz>(
+    user ? 'quizzes' : null,
+    'createdBy',
+    user?.uid
+  );
+
+  const navItems = [
+    { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
+    { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes', badge: quizzesLoading ? '...' : (quizzesData?.length ?? 0).toString() },
+    { href: '/dashboard/students', icon: <Users />, label: 'Students' },
+    { href: '/dashboard/analytics', icon: <BarChart2 />, label: 'Analytics' },
+  ];
 
   return (
     <SidebarProvider>

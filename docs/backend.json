@@ -80,9 +80,28 @@
         "status": {
           "type": "string",
           "enum": ["Draft", "Published"]
+        },
+        "duration": { "type": "number" }
+      },
+      "required": ["title", "subject", "classLevel", "difficulty", "questions", "createdBy", "createdAt", "status", "duration"]
+    },
+    "QuizResult": {
+      "title": "Quiz Result",
+      "description": "Represents a student's result for a specific quiz.",
+      "type": "object",
+      "properties": {
+        "quizId": { "type": "string" },
+        "userId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "studentAvatar": { "type": "string" },
+        "score": { "type": "number" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "answers": {
+          "type": "object",
+          "description": "A map of question index to the answer given by the student."
         }
       },
-      "required": ["title", "subject", "classLevel", "difficulty", "questions", "createdBy", "createdAt", "status"]
+      "required": ["quizId", "userId", "studentName", "score", "completedAt"]
     }
   },
   "auth": {
@@ -96,6 +115,10 @@
     "/quizzes/{quizId}": {
       "schema": { "$ref": "#/entities/Quiz" },
       "description": "Stores all quizzes created by teachers."
+    },
+    "/quizzes/{quizId}/results/{resultId}": {
+      "schema": { "$ref": "#/entities/QuizResult" },
+      "description": "Stores the results for each student who took the quiz. The resultId is the student's UID."
     }
   }
 }

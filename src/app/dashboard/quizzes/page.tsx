@@ -1,11 +1,21 @@
+
+'use client';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { quizzes } from "@/lib/data";
+import { useUser, useCollection } from '@/firebase';
+import type { Quiz } from '@/lib/data';
 
 export default function QuizzesPage() {
+  const { user } = useUser();
+  const { data: quizzes, loading } = useCollection<Quiz>(
+    user ? 'quizzes' : null,
+    'createdBy',
+    user?.uid
+  );
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -33,25 +43,39 @@ export default function QuizzesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {quizzes.map((quiz) => (
-              <TableRow key={quiz.id}>
-                <TableCell className="font-medium">{quiz.title}</TableCell>
-                <TableCell>{quiz.subject}</TableCell>
-                <TableCell>{quiz.class}</TableCell>
-                <TableCell className="text-center">{quiz.numberOfQuestions}</TableCell>
-                <TableCell className="text-center">{quiz.averageScore}%</TableCell>
-                <TableCell className="text-center">
-                  <Badge variant={quiz.status === 'Published' ? 'default' : 'secondary'}>
-                    {quiz.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/dashboard/quizzes/${quiz.id}/results`}>Results</Link>
-                  </Button>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  Loading quizzes...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : quizzes && quizzes.length > 0 ? (
+              quizzes.map((quiz) => (
+                <TableRow key={quiz.id}>
+                  <TableCell className="font-medium">{quiz.title}</TableCell>
+                  <TableCell>{quiz.subject}</TableCell>
+                  <TableCell>{quiz.classLevel}</TableCell>
+                  <TableCell className="text-center">{quiz.questions.length}</TableCell>
+                  <TableCell className="text-center">{quiz.averageScore || 0}%</TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={quiz.status === 'Published' ? 'default' : 'secondary'}>
+                      {quiz.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/dashboard/quizzes/${quiz.id}/results`}>Results</Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+               <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  You haven't created any quizzes yet.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>

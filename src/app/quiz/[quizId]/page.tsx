@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { quizzes, Question, Quiz } from '@/lib/data';
+import { Question, Quiz, QuizResult } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -10,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Clock } from 'lucide-react';
+import { useDoc, useUser, useFirestore } from '@/firebase';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 // Helper function to shuffle an array
 function shuffle(array: any[]) {
@@ -35,7 +38,11 @@ export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const quizId = params.quizId as string;
+  const { user } = useUser();
+  const firestore = useFirestore();
 
+  const { data: quizData, loading: quizLoading } = useDoc<Quiz>('quizzes', quizId);
+  
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -48,17 +55,18 @@ export default function QuizPage() {
 
 
   useEffect(() => {
-    const foundQuiz = quizzes.find(q => q.id === quizId);
-    if (foundQuiz) {
-      const quizData = { ...foundQuiz };
-      quizData.questions = shuffle([...quizData.questions]);
-      setQuiz(quizData);
-      setShuffledQuestions(quizData.questions);
-      setTimeLeft(quizData.duration * 60);
+    if (quizLoading) return;
+
+    if (quizData) {
+      const quizWithShuffled = { ...quizData };
+      quizWithShuffled.questions = shuffle([...quizData.questions]);
+      setQuiz(quizWithShuffled);
+      setShuffledQuestions(quizWithShuffled.questions);
+      setTimeLeft(quizWithShuffled.duration * 60);
     } else {
       router.push('/student-zone/quizzes');
     }
-  }, [quizId, router]);
+  }, [quizId, router, quizData, quizLoading]);
 
   // Anti-cheating: Tab switching
   useEffect(() => {
@@ -100,8 +108,8 @@ export default function QuizPage() {
     };
   }, [isFinished]);
 
-  const handleSubmitQuiz = useCallback(() => {
-    if (isSubmitting) return;
+  const handleSubmitQuiz = useCallback(async () => {
+    if (isSubmitting || !user || !quiz) return;
     setIsSubmitting(true);
 
     let correctAnswers = 0;
@@ -110,9 +118,30 @@ export default function QuizPage() {
         correctAnswers++;
       }
     });
-    setScore((correctAnswers / shuffledQuestions.length) * 100);
+    
+    const finalScore = (correctAnswers / shuffledQuestions.length) * 100;
+    setScore(finalScore);
+
+    const resultData: Omit<QuizResult, 'id'> = {
+      quizId: quiz.id,
+      userId: user.uid,
+      studentName: user.displayName || 'Anonymous',
+      studentAvatar: user.photoURL || '',
+      score: finalScore,
+      completedAt: serverTimestamp(),
+      answers: selectedAnswers,
+    };
+
+    try {
+      const resultRef = doc(firestore, 'quizzes', quiz.id, 'results', user.uid);
+      await setDoc(resultRef, resultData);
+    } catch (error) {
+      console.error("Failed to save quiz result:", error);
+      // Optionally show a toast to the user
+    }
+
     setIsFinished(true);
-  }, [isSubmitting, selectedAnswers, shuffledQuestions]);
+  }, [isSubmitting, selectedAnswers, shuffledQuestions, user, quiz, firestore]);
 
 
   // Timer countdown
@@ -145,7 +174,7 @@ export default function QuizPage() {
     }
   };
   
-  if (!quiz || shuffledQuestions.length === 0) {
+  if (quizLoading || !quiz) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <p>Loading quiz...</p>
@@ -211,7 +240,10 @@ export default function QuizPage() {
                 {currentQuestionIndex < shuffledQuestions.length - 1 ? (
                     <Button onClick={handleNextQuestion} disabled={!selectedAnswers[currentQuestionIndex]}>Next</Button>
                 ) : (
-                    <Button onClick={handleSubmitQuiz} disabled={!selectedAnswers[currentQuestionIndex]}>Submit Quiz</Button>
+                    <Button onClick={handleSubmitQuiz} disabled={!selectedAnswers[currentQuestionIndex] || isSubmitting}>
+                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Submit Quiz
+                    </Button>
                 )}
             </div>
         </Card>

@@ -1,13 +1,17 @@
+
+'use client';
+
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { quizzes } from "@/lib/data";
 import { Play } from "lucide-react";
+import { useCollection } from "@/firebase";
+import type { Quiz } from "@/lib/data";
 
 export default function StudentQuizzesPage() {
-  const publishedQuizzes = quizzes.filter(q => q.status === 'Published');
+  const { data: publishedQuizzes, loading } = useCollection<Quiz>('quizzes', 'status', 'Published');
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -21,16 +25,19 @@ export default function StudentQuizzesPage() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {publishedQuizzes.map((quiz) => (
+            {loading ? (
+              <p>Loading quizzes...</p>
+            ) : publishedQuizzes && publishedQuizzes.length > 0 ? (
+              publishedQuizzes.map((quiz) => (
               <Card key={quiz.id}>
                 <CardHeader>
                   <CardTitle>{quiz.title}</CardTitle>
-                  <CardDescription>{quiz.subject} - Class {quiz.class}</CardDescription>
+                  <CardDescription>{quiz.subject} - Class {quiz.classLevel}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between items-center text-sm text-muted-foreground">
                     <span>{quiz.questions.length} Questions</span>
-                    <span>Avg. Score: {quiz.averageScore}%</span>
+                    <span>{quiz.duration} minutes</span>
                   </div>
                 </CardContent>
                 <div className="p-6 pt-0">
@@ -42,12 +49,12 @@ export default function StudentQuizzesPage() {
                     </Button>
                 </div>
               </Card>
-            ))}
-             {publishedQuizzes.length === 0 && (
+            ))
+            ) : (
               <div className="col-span-full text-center py-12">
                 <p className="text-muted-foreground">No quizzes available at the moment. Check back soon!</p>
               </div>
-             )}
+            )}
           </div>
         </div>
       </main>
