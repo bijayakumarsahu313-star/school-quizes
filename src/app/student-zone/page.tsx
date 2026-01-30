@@ -16,20 +16,23 @@ export default function StudentZonePage() {
             Ready to have some fun while you learn? Your next challenge awaits.
           </p>
           <Button asChild size="lg" className="mt-8">
-            <Link href="/dashboard">Go to My Dashboard</Link>
+            <Link href="/student-zone/quizzes">Take a Quiz</Link>
           </Button>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
-            <Card>
-              <CardContent className="p-6">
-                <Gamepad2 className="h-12 w-12 text-accent mx-auto mb-4" />
-                <h3 className="text-xl font-semibold">Gamified Quizzes</h3>
-                <p className="text-muted-foreground mt-2">
-                  Learning is a game. Play, compete, and conquer your subjects!
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
+            <Link href="/student-zone/quizzes" className="block h-full">
+              <Card className="h-full hover:border-primary transition-colors">
+                <CardContent className="p-6">
+                  <Gamepad2 className="h-12 w-12 text-accent mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold">Gamified Quizzes</h3>
+                  <p className="text-muted-foreground mt-2">
+                    Learning is a game. Play, compete, and conquer your subjects!
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Card className="h-full">
               <CardContent className="p-6">
                 <Award className="h-12 w-12 text-accent mx-auto mb-4" />
                 <h3 className="text-xl font-semibold">Earn Badges & Points</h3>
@@ -41,15 +44,18 @@ export default function StudentZonePage() {
                 </Button>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-6">
-                <LineChart className="h-12 w-12 text-accent mx-auto mb-4" />
-                <h3 className="text-xl font-semibold">Track Your Progress</h3>
-                <p className="text-muted-foreground mt-2">
-                  Watch yourself grow and see how you improve over time.
-                </p>
-              </CardContent>
-            </Card>
+
+            <Link href="/student-zone/progress" className="block h-full">
+              <Card className="h-full hover:border-primary transition-colors">
+                <CardContent className="p-6">
+                  <LineChart className="h-12 w-12 text-accent mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold">Track Your Progress</h3>
+                  <p className="text-muted-foreground mt-2">
+                    Watch yourself grow and see how you improve over time.
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </main>
