@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from "next/link";
@@ -64,7 +63,7 @@ export default function PricingPage() {
               </CardContent>
               <CardFooter>
                 <Button asChild className="w-full" variant="secondary">
-                  <Link href="/dashboard">Get Started</Link>
+                  <Link href="/">Get Started</Link>
                 </Button>
               </CardFooter>
             </Card>
