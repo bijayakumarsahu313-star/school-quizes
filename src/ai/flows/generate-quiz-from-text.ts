@@ -53,7 +53,7 @@ ${input.textContent}
         output: {
             schema: GenerateQuizQuestionsOutputSchema,
         },
-        model: 'gemini-1.5-flash',
+        model: 'gemini-pro',
     });
 
     const output = response.output;
