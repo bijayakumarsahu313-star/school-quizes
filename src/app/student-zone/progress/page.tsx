@@ -104,7 +104,7 @@ export default function ProgressPage() {
                 <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={performanceData}>
                         <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${'${value}'}%`} />
+                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
                         <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
                         <Legend />
                         <Line type="monotone" dataKey="score" name="Your Score" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
@@ -122,7 +122,7 @@ export default function ProgressPage() {
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={subjectData}>
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${'${value}'}%`}/>
+                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`}/>
                             <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
                             <Bar dataKey="averageScore" name="Your Average Score" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
                         </BarChart>
