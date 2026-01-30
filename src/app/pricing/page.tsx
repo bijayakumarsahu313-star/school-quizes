@@ -85,9 +85,12 @@ export default function PricingPage() {
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex-col gap-2 items-stretch">
                 <Button asChild className="w-full">
-                  <Link href="/dashboard">Go Pro</Link>
+                  <Link href="/checkout?plan=pro-monthly&price=5">Go Pro Monthly</Link>
+                </Button>
+                 <Button asChild className="w-full" variant="outline">
+                  <Link href="/checkout?plan=pro-yearly&price=50">Go Pro Annually</Link>
                 </Button>
               </CardFooter>
             </Card>
