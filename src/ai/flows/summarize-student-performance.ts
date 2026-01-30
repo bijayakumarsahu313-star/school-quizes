@@ -8,8 +8,7 @@
  */
 
 import { googleAI } from '@genkit-ai/google-genai';
-import { z } from 'genkit';
-import { ai } from '@/ai/genkit';
+import { genkit, z } from 'genkit';
 
 const SummarizeStudentPerformanceInputSchema = z.object({
   studentName: z.string().describe('The name of the student.'),
@@ -34,6 +33,12 @@ export type SummarizeStudentPerformanceOutput = z.infer<
 export async function summarizeStudentPerformance(
   input: SummarizeStudentPerformanceInput
 ): Promise<SummarizeStudentPerformanceOutput> {
+  const ai = genkit({
+      plugins: [
+        googleAI({ apiKey: process.env.GEMINI_API_KEY }),
+      ],
+  });
+
   const promptText = `Summarize the performance of ${input.studentName} on the ${input.quizName} quiz.
 
   ${input.studentName} scored ${input.score} out of a possible ${input.maxScore} points.

@@ -1,16 +1,3 @@
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
-
-const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error(
-    "The GEMINI_API_KEY environment variable is not set. Please ensure it is configured in your hosting environment."
-  );
-}
-
-export const ai = genkit({
-  plugins: [
-    googleAI({ apiKey: apiKey }),
-  ],
-});
+// This file is intentionally left blank.
+// The AI initialization has been moved directly into the server-side flow functions
+// to ensure correct handling of environment variables at runtime.

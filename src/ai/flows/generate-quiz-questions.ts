@@ -8,9 +8,8 @@
  * - GenerateQuizQuestionsOutput - The return type for the generateQuizQuestions function.
  */
 import { googleAI } from '@genkit-ai/google-genai';
-import { z } from 'genkit';
+import { genkit, z } from 'genkit';
 import { GenerateQuizQuestionsOutput, GenerateQuizQuestionsOutputSchema, QuestionSchema } from '@/ai/schemas/quiz-schemas';
-import { ai } from '@/ai/genkit';
 
 const GenerateQuizQuestionsInputSchema = z.object({
   subject: z.string().describe('The subject of the quiz questions.'),
@@ -26,6 +25,12 @@ export type GenerateQuizQuestionsOutput = z.infer<typeof GenerateQuizQuestionsOu
 
 
 export async function generateQuizQuestions(input: GenerateQuizQuestionsInput): Promise<GenerateQuizQuestionsOutput> {
+    const ai = genkit({
+      plugins: [
+        googleAI({ apiKey: process.env.GEMINI_API_KEY }),
+      ],
+    });
+    
     const promptText = `You are an expert quiz question generator for school students.
 
 You will generate quiz questions for the following subject, class level, and difficulty level.
