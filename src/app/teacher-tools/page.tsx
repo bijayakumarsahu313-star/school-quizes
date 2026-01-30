@@ -1,0 +1,66 @@
+import Link from "next/link";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BrainCircuit, BookOpen, PieChart, Target } from "lucide-react";
+
+const tools = [
+  {
+    icon: <BrainCircuit className="h-10 w-10 text-primary" />,
+    title: "AI-Assisted Question Generation",
+    description: "Save time by generating curriculum-aligned questions in seconds.",
+  },
+  {
+    icon: <BookOpen className="h-10 w-10 text-primary" />,
+    title: "Extensive Question Bank",
+    description: "Access and customize a vast library of questions across all subjects.",
+  },
+  {
+    icon: <Target className="h-10 w-10 text-primary" />,
+    title: "Auto-Grading & Instant Results",
+    description: "Get immediate feedback on student performance without manual grading.",
+  },
+  {
+    icon: <PieChart className="h-10 w-10 text-primary" />,
+    title: "Reports & Analytics",
+    description: "Track progress and identify learning gaps with our powerful analytics.",
+  },
+];
+
+export default function TeacherToolsPage() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-1 bg-muted">
+        <div className="container mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold font-headline">Powerful Tools for Modern Teachers</h1>
+            <p className="text-lg text-muted-foreground mt-2">
+              Streamline your workflow, engage your students, and make data-driven decisions.
+            </p>
+            <Button asChild size="lg" className="mt-6">
+              <Link href="/dashboard">Go to Teacher Dashboard</Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {tools.map((tool) => (
+              <Card key={tool.title} className="text-center">
+                <CardHeader>
+                  <div className="mx-auto bg-primary/10 rounded-full p-3 w-fit">
+                    {tool.icon}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <h3 className="text-lg font-semibold mb-2">{tool.title}</h3>
+                  <p className="text-muted-foreground text-sm">{tool.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
