@@ -22,6 +22,7 @@ export const FirebaseAuthProvider = ({
 
 export const useAuth = () => {
   // It's possible the context is not available yet during initialization.
-  // The consuming hook should handle the null case.
+  // The consuming hook should handle the null case. We do not throw an error here
+  // to allow components to gracefully handle the loading state.
   return useContext(FirebaseAuthContext);
 };

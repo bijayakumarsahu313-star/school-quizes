@@ -12,10 +12,10 @@ const useUser = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // We can't get the user if the auth service isn't ready.
-    if (!auth) {
+    if (auth === null) {
+      // Firebase Auth is not yet initialized. We are in a loading state.
+      // We will wait for the auth object to be available.
       setLoading(true);
-      setUser(null);
       return;
     }
 
