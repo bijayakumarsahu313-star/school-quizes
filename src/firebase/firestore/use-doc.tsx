@@ -1,4 +1,3 @@
-
 'use client';
 
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -12,6 +11,10 @@ const useDoc = <T,>(path: string, id: string) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!db) {
+        setLoading(false);
+        return;
+    }
     const docRef = doc(db, path, id);
     const unsubscribe = onSnapshot(docRef, (doc) => {
       if (doc.exists()) {

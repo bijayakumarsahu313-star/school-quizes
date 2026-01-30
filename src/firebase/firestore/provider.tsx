@@ -1,7 +1,6 @@
-
 'use client';
 
-import { Firestore } from 'firebase/firestore';
+import type { Firestore } from 'firebase/firestore';
 import { createContext, useContext } from 'react';
 
 import { useFirebase } from '@/firebase/provider';
@@ -15,20 +14,14 @@ export const FirebaseFirestoreProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { firestore } = useFirebase();
+  const firebase = useFirebase();
   return (
-    <FirebaseFirestoreContext.Provider value={firestore}>
+    <FirebaseFirestoreContext.Provider value={firebase?.firestore}>
       {children}
     </FirebaseFirestoreContext.Provider>
   );
 };
 
 export const useFirestore = () => {
-  const context = useContext(FirebaseFirestoreContext);
-  if (context === undefined) {
-    throw new Error(
-      'useFirestore must be used within a FirebaseFirestoreProvider'
-    );
-  }
-  return context;
+  return useContext(FirebaseFirestoreContext);
 };

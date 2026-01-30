@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -6,8 +5,8 @@ import {
   onSnapshot,
   query,
   where,
-  Query,
-  DocumentData,
+  type Query,
+  type DocumentData,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -19,17 +18,16 @@ const useCollection = <T,>(path: string | null, field?: string, value?: string) 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!db || !path) {
+      setLoading(false);
+      return;
+    }
+
     // A field is specified but the value is not yet available, so we wait.
     // Firestore's 'where' clause throws an error if the value is undefined.
     if (field && value === undefined) {
       setData([]);
       setLoading(true); // We are waiting for the value.
-      return;
-    }
-
-    if (!path) {
-      setData([]);
-      setLoading(false);
       return;
     }
     

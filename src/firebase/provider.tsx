@@ -1,9 +1,9 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import { FirebaseApp } from 'firebase/app';
-import { Auth } from 'firebase/auth';
-import { Firestore } from 'firebase/firestore';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
 
 import {
   FirebaseClientProvider,
@@ -45,9 +45,8 @@ const FirebaseProviderInternal = ({
     return null;
   }
 
-  const { app, auth, firestore } = firebase;
   return (
-    <FirebaseContext.Provider value={{ app, auth, firestore }}>
+    <FirebaseContext.Provider value={firebase}>
       <FirebaseAuthProvider>
         <FirebaseFirestoreProvider>{children}</FirebaseFirestoreProvider>
       </FirebaseAuthProvider>
@@ -56,9 +55,5 @@ const FirebaseProviderInternal = ({
 };
 
 export const useFirebase = () => {
-  const context = useContext(FirebaseContext);
-  if (context === undefined) {
-    throw new Error('useFirebase must be used within a FirebaseProvider');
-  }
-  return context;
+  return useContext(FirebaseContext);
 };
