@@ -42,7 +42,7 @@ const FirebaseProviderInternal = ({
   const firebase = useFirebaseApp();
 
   if (!firebase) {
-    return <>{children}</>;
+    return null;
   }
 
   const { app, auth, firestore } = firebase;
