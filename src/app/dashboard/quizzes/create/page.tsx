@@ -40,10 +40,6 @@ const contentFormSchema = formSchema.extend({
 });
 type ContentFormValues = z.infer<typeof contentFormSchema>;
 
-const manualFormSchema = z.object({
-  manualContent: z.string().min(1, 'Please enter at least one question.'),
-});
-
 
 export default function CreateQuizPage() {
   const [activeTab, setActiveTab] = useState('topic');
@@ -249,8 +245,8 @@ export default function CreateQuizPage() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-1">
+    <div className="flex flex-col gap-8">
+      <div>
         <Tabs defaultValue="topic" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="topic">From Topic</TabsTrigger>
@@ -449,7 +445,7 @@ Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of Franc
         </Tabs>
       </div>
 
-      <div className="lg:col-span-2">
+      <div>
         <Card className="min-h-full">
           <CardHeader>
             <div className="flex justify-between items-center">
