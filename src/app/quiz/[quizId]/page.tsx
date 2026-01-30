@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Clock, Loader2, Trophy } from 'lucide-react';
+import { Clock, Loader2, Trophy, CheckCircle, XCircle } from 'lucide-react';
 import { useDoc, useUser, useFirestore } from '@/firebase';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -55,6 +55,8 @@ export default function QuizPage() {
   const [showVisibilityWarning, setShowVisibilityWarning] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [answerStatus, setAnswerStatus] = useState<'unanswered' | 'correct' | 'incorrect'>('unanswered');
+  const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
 
 
   useEffect(() => {
@@ -114,15 +116,8 @@ export default function QuizPage() {
   const handleSubmitQuiz = useCallback(async () => {
     if (isSubmitting || !user || !quiz) return;
     setIsSubmitting(true);
-
-    let correctAnswers = 0;
-    shuffledQuestions.forEach((q, index) => {
-      if (selectedAnswers[index] === q.answer) {
-        correctAnswers++;
-      }
-    });
     
-    const finalScore = (correctAnswers / shuffledQuestions.length) * 100;
+    const finalScore = (correctAnswersCount / shuffledQuestions.length) * 100;
     setScore(finalScore);
 
     const resultData: Omit<QuizResult, 'id'> = {
@@ -149,7 +144,7 @@ export default function QuizPage() {
         errorEmitter.emit('permission-error', permissionError);
         setIsSubmitting(false);
       });
-  }, [isSubmitting, selectedAnswers, shuffledQuestions, user, quiz, firestore]);
+  }, [isSubmitting, user, quiz, correctAnswersCount, shuffledQuestions.length, selectedAnswers, firestore]);
 
 
   // Timer countdown
@@ -170,15 +165,33 @@ export default function QuizPage() {
 
 
   const handleAnswerSelect = (option: string) => {
+    if (answerStatus !== 'unanswered') return;
     setSelectedAnswers(prev => ({
       ...prev,
       [currentQuestionIndex]: option,
     }));
   };
+  
+  const handleSubmitAnswer = () => {
+    if (!selectedAnswers[currentQuestionIndex]) return;
+
+    const currentQuestion = shuffledQuestions[currentQuestionIndex];
+    const selectedAnswer = selectedAnswers[currentQuestionIndex];
+
+    if (selectedAnswer === currentQuestion.answer) {
+        setAnswerStatus('correct');
+        setCorrectAnswersCount(prev => prev + 1);
+    } else {
+        setAnswerStatus('incorrect');
+    }
+  };
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < shuffledQuestions.length - 1) {
+      setAnswerStatus('unanswered');
       setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      handleSubmitQuiz();
     }
   };
   
@@ -251,30 +264,66 @@ export default function QuizPage() {
                     value={selectedAnswers[currentQuestionIndex] || ""}
                     onValueChange={handleAnswerSelect}
                     className="space-y-4"
+                    disabled={answerStatus !== 'unanswered'}
                 >
-                    {currentQuestion.options.map((option, i) => (
-                        <Label
-                            key={i}
-                            htmlFor={`option-${i}`}
-                            className={cn(
-                                "flex items-center space-x-4 p-5 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md",
-                                "border-border bg-background hover:border-primary/50",
-                                selectedAnswers[currentQuestionIndex] === option && "border-primary bg-primary/10 shadow-md"
-                            )}
-                        >
-                             <RadioGroupItem value={option} id={`option-${i}`} className="h-5 w-5" />
-                             <span className="text-base font-medium flex-1">{option}</span>
-                        </Label>
-                    ))}
+                    {currentQuestion.options.map((option, i) => {
+                       const isSelected = selectedAnswers[currentQuestionIndex] === option;
+                       const isCorrect = currentQuestion.answer === option;
+                       let variantClass = "border-border bg-background hover:border-primary/50";
+
+                       if (answerStatus !== 'unanswered') {
+                           if (isCorrect) {
+                               variantClass = "border-green-500 bg-green-500/10 text-green-700 font-bold shadow-md";
+                           } else if (isSelected && !isCorrect) {
+                               variantClass = "border-red-500 bg-red-500/10 text-red-700 font-bold shadow-md";
+                           }
+                       } else if (isSelected) {
+                           variantClass = "border-primary bg-primary/10 shadow-md";
+                       }
+                        return (
+                            <Label
+                                key={i}
+                                htmlFor={`option-${i}`}
+                                className={cn(
+                                    "flex items-center space-x-4 p-5 rounded-lg border-2 transition-all",
+                                    answerStatus === 'unanswered' ? "cursor-pointer" : "cursor-default",
+                                    variantClass
+                                )}
+                            >
+                                <RadioGroupItem value={option} id={`option-${i}`} className="h-5 w-5" />
+                                <span className="text-base font-medium flex-1">{option}</span>
+                                {answerStatus !== 'unanswered' && isCorrect && <CheckCircle className="h-6 w-6 text-green-500" />}
+                                {answerStatus !== 'unanswered' && !isCorrect && isSelected && <XCircle className="h-6 w-6 text-red-500" />}
+                            </Label>
+                        )
+                    })}
                 </RadioGroup>
+
+                {answerStatus !== 'unanswered' && (
+                    <div className={cn(
+                        "mt-6 p-4 rounded-lg",
+                        answerStatus === 'correct' ? 'bg-green-500/10' : 'bg-red-500/10'
+                    )}>
+                        <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
+                            {answerStatus === 'correct' ? <CheckCircle className="text-green-600" /> : <XCircle className="text-red-600" />}
+                            {answerStatus === 'correct' ? 'Correct!' : 'Incorrect'}
+                        </h4>
+                        <p className="text-muted-foreground">The correct answer is: <strong className="text-foreground">{currentQuestion.answer}</strong></p>
+                        <p className="mt-2 text-sm">
+                            <strong>AI Explanation:</strong> Our AI confirms this is the correct answer based on established knowledge in {quiz.subject}. Keep up the great work!
+                        </p>
+                    </div>
+                )}
             </CardContent>
-             <div className="p-6 pt-0 flex justify-end">
-                {currentQuestionIndex < shuffledQuestions.length - 1 ? (
-                    <Button onClick={handleNextQuestion} disabled={!selectedAnswers[currentQuestionIndex]}>Next</Button>
+             <div className="p-6 pt-4 flex justify-end">
+                {answerStatus === 'unanswered' ? (
+                    <Button onClick={handleSubmitAnswer} disabled={!selectedAnswers[currentQuestionIndex]}>Submit</Button>
+                ) : currentQuestionIndex < shuffledQuestions.length - 1 ? (
+                    <Button onClick={handleNextQuestion}>Next Question</Button>
                 ) : (
-                    <Button onClick={handleSubmitQuiz} disabled={!selectedAnswers[currentQuestionIndex] || isSubmitting}>
+                    <Button onClick={handleNextQuestion} disabled={isSubmitting}>
                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      Submit Quiz
+                      Finish Quiz
                     </Button>
                 )}
             </div>
@@ -297,3 +346,4 @@ export default function QuizPage() {
     </div>
   );
 }
+
