@@ -48,7 +48,7 @@ const testimonials = [
     title: '8th Grade Science Teacher',
     image: 'https://picsum.photos/seed/t1/100/100',
     quote:
-      "QuizWhiz Academy has transformed how I assess my students. The AI quiz generator is a lifesaver, and the detailed analytics help me tailor my teaching.",
+      "school quizes has transformed how I assess my students. The AI quiz generator is a lifesaver, and the detailed analytics help me tailor my teaching.",
   },
   {
     name: 'Rohan V.',
@@ -62,7 +62,7 @@ const testimonials = [
     title: 'Springfield Public School',
     image: 'https://picsum.photos/seed/t3/100/100',
     quote:
-      'We implemented QuizWhiz for our entire school, and the results have been outstanding. Teacher efficiency is up, and student engagement has never been higher.',
+      'We implemented school quizes for our entire school, and the results have been outstanding. Teacher efficiency is up, and student engagement has never been higher.',
   },
 ];
 
@@ -85,7 +85,7 @@ export default function Home() {
                     Create, Engage, and Evaluate with AI-Powered Quizzes
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    QuizWhiz Academy helps teachers build world-class quizzes in minutes,
+                    school quizes helps teachers build world-class quizzes in minutes,
                     making learning interactive and fun for students from Class 1 to 12.
                   </p>
                 </div>
@@ -160,7 +160,7 @@ export default function Home() {
                 Loved by Teachers and Students Alike
               </h2>
               <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Don't just take our word for it. Here's what people are saying about QuizWhiz Academy.
+                Don't just take our word for it. Here's what people are saying about school quizes.
               </p>
             </div>
             <div className="grid w-full grid-cols-1 gap-6 pt-8 md:grid-cols-3">

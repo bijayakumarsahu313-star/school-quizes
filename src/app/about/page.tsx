@@ -11,7 +11,7 @@ export default function AboutPage() {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-16">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold font-headline">About QuizWhiz Academy</h1>
+            <h1 className="text-4xl font-bold font-headline">About school quizes</h1>
             <p className="text-lg text-muted-foreground mt-2">
               Empowering educators and inspiring students through innovative technology.
             </p>
@@ -36,7 +36,7 @@ export default function AboutPage() {
               </p>
               <h2 className="text-3xl font-bold font-headline text-primary">Our Vision</h2>
               <p className="text-muted-foreground text-lg">
-                We envision a world where every classroom is a hub of curiosity and knowledge. QuizWhiz Academy aims to be the leading platform for educational assessment, continuously innovating to meet the evolving needs of teachers and students globally, and fostering a lifelong love for learning.
+                We envision a world where every classroom is a hub of curiosity and knowledge. school quizes aims to be the leading platform for educational assessment, continuously innovating to meet the evolving needs of teachers and students globally, and fostering a lifelong love for learning.
               </p>
             </div>
           </div>

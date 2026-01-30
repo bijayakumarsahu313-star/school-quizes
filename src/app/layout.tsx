@@ -3,7 +3,7 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'QuizWhiz Academy',
+  title: 'school quizes',
   description: 'A modern, user-friendly, and scalable educational quiz website.',
 };
 
