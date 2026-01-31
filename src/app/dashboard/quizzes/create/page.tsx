@@ -173,6 +173,11 @@ export default function CreateQuizPage() {
             }
         }
         
+        // Shuffle options for MCQ
+        if (question.options.length > 1) {
+            question.options = question.options.sort(() => Math.random() - 0.5);
+        }
+
         if (question.text && question.options.length > 1 && question.answer) {
              questions.push(question);
         }
@@ -187,7 +192,7 @@ export default function CreateQuizPage() {
     }
     
     let questionsToSave: AIQuestion[] = [];
-    let detailsToSave = quizDetails;
+    let detailsToSave: FormValues | ContentFormValues = quizDetails;
 
     if (activeTab === 'manual') {
         const formValues = form.getValues();
@@ -246,227 +251,220 @@ export default function CreateQuizPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
         <Tabs defaultValue="topic" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="topic">From Topic</TabsTrigger>
-            <TabsTrigger value="content">From Content</TabsTrigger>
-            <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-          </TabsList>
-          <TabsContent value="topic">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create a New Quiz with AI</CardTitle>
-                <CardDescription>
-                  Fill in the details below, and our AI will generate a quiz for you in seconds.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onGenerateSubmit)} className="space-y-6">
-                    <FormField control={form.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Quiz Title</FormLabel> <FormControl> <Input placeholder="e.g., Algebra Basics" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl> <Input placeholder="e.g., Physics, History" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField control={form.control} name="classLevel" render={({ field }) => ( <FormItem> <FormLabel>Class Level</FormLabel> <FormControl> <Input type="number" min="1" max="12" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="board" render={({ field }) => ( <FormItem> <FormLabel>Board (Optional)</FormLabel> <FormControl> <Input placeholder="e.g., CBSE" {...field} value={field.value ?? ''}/> </FormControl> <FormMessage /> </FormItem> )}/>
+            <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="topic">From Topic</TabsTrigger>
+                <TabsTrigger value="content">From Content</TabsTrigger>
+                <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+            </TabsList>
+            <TabsContent value="topic">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Create a New Quiz with AI</CardTitle>
+                        <CardDescription>
+                        Fill in the details below, and our AI will generate a quiz for you in seconds.
+                        </CardDescription>
+                    </CardHeader>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onGenerateSubmit)}>
+                            <CardContent className="space-y-6">
+                                <FormField control={form.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Quiz Title</FormLabel> <FormControl> <Input placeholder="e.g., Algebra Basics" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl> <Input placeholder="e.g., Physics, History" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <div className="grid grid-cols-2 gap-4">
+                                <FormField control={form.control} name="classLevel" render={({ field }) => ( <FormItem> <FormLabel>Class Level</FormLabel> <FormControl> <Input type="number" min="1" max="12" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={form.control} name="board" render={({ field }) => ( <FormItem> <FormLabel>Board (Optional)</FormLabel> <FormControl> <Input placeholder="e.g., CBSE" {...field} value={field.value ?? ''}/> </FormControl> <FormMessage /> </FormItem> )}/>
+                                </div>
+                                <FormField
+                                control={form.control}
+                                name="difficulty"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Difficulty</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select difficulty" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                        <SelectItem value="easy">Easy</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="hard">Hard</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name="questionType"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Question Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select question type" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                        <SelectItem value="MCQ">MCQ</SelectItem>
+                                        <SelectItem value="True/False">True/False</SelectItem>
+                                        <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
+                                        <SelectItem value="Match the Following">Match the Following</SelectItem>
+                                        <SelectItem value="Image-based questions">Image-based</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                                <FormField control={form.control} name="numberOfQuestions" render={({ field }) => ( <FormItem> <FormLabel>Number of Questions</FormLabel> <FormControl> <Input type="number" min="1" max="20" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Duration (minutes)</FormLabel> <FormControl> <Input type="number" min="1" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                            </CardContent>
+                            <CardFooter>
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                    {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Wand2 className="mr-2 h-4 w-4" /> )}
+                                    Generate Questions
+                                </Button>
+                            </CardFooter>
+                        </form>
+                    </Form>
+                </Card>
+            </TabsContent>
+            <TabsContent value="content">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Create From Your Content</CardTitle>
+                        <CardDescription>
+                        Paste your text or upload a file to generate a quiz.
+                        </CardDescription>
+                    </CardHeader>
+                    <Form {...contentForm}>
+                        <form onSubmit={contentForm.handleSubmit(onContentGenerateSubmit)}>
+                            <CardContent className="space-y-6">
+                                <FormField control={contentForm.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Quiz Title</FormLabel> <FormControl> <Input placeholder="e.g., Chapter 5 Review" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={contentForm.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl> <Input placeholder="e.g., Biology" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={contentForm.control} name="textContent" render={({ field }) => ( <FormItem> <FormLabel>Your Content</FormLabel> <FormControl> <Textarea placeholder="Paste your lesson notes, an article, or any text here..." className="min-h-[150px]" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormItem>
+                                    <FormLabel>Or Upload a File (PDF/DOCX)</FormLabel>
+                                    <FormControl>
+                                        <Input type="file" disabled title="PDF and DOCX upload coming soon!"/>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                <div className="grid grid-cols-2 gap-4">
+                                <FormField control={contentForm.control} name="classLevel" render={({ field }) => ( <FormItem> <FormLabel>Class</FormLabel> <FormControl> <Input type="number" min="1" max="12" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={contentForm.control} name="board" render={({ field }) => ( <FormItem> <FormLabel>Board</FormLabel> <FormControl> <Input placeholder="e.g., CBSE" {...field} value={field.value ?? ''} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                <FormField control={contentForm.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Duration (min)</FormLabel> <FormControl> <Input type="number" min="1" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField
+                                    control={contentForm.control}
+                                    name="difficulty"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Difficulty</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                            <SelectValue placeholder="Select difficulty" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="easy">Easy</SelectItem>
+                                            <SelectItem value="medium">Medium</SelectItem>
+                                            <SelectItem value="hard">Hard</SelectItem>
+                                        </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                <FormField control={contentForm.control} name="numberOfQuestions" render={({ field }) => ( <FormItem> <FormLabel>Questions</FormLabel> <FormControl> <Input type="number" min="1" max="20" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField
+                                    control={contentForm.control}
+                                    name="questionType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Question Type</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select question type" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                            <SelectItem value="MCQ">MCQ</SelectItem>
+                                            <SelectItem value="True/False">True/False</SelectItem>
+                                            <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
+                                            <SelectItem value="Match the Following">Match the Following</SelectItem>
+                                            <SelectItem value="Image-based questions">Image-based</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                    />
+                                </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                    {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Wand2 className="mr-2 h-4 w-4" /> )}
+                                    Generate From Content
+                                </Button>
+                            </CardFooter>
+                        </form>
+                    </Form>
+                </Card>
+            </TabsContent>
+            <TabsContent value="manual">
+                <Card>
+                <CardHeader>
+                    <CardTitle>Manual Question Entry</CardTitle>
+                    <CardDescription>
+                        Use the "From Topic" tab for quiz details (title, subject, etc.), then type your questions below.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="p-3 bg-muted/50 rounded-lg border border-dashed text-xs text-muted-foreground">
+                        <p className="font-bold mb-1">Formatting Instructions:</p>
+                        <p>• Start each question with `Q:`</p>
+                        <p>• Mark the correct answer with `*A:`</p>
+                        <p>• Mark other options with `O:`</p>
+                        <p>• Separate each question block with `---`</p>
+                        <p className="mt-2 font-bold">Example:</p>
+                        <pre className="mt-1">
+    Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of France?{'\n'}*A: Paris{'\n'}O: London
+                        </pre>
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="difficulty"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Difficulty</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select difficulty" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="easy">Easy</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="hard">Hard</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                    <Textarea
+                        placeholder="Enter your questions here following the format rules..."
+                        className="min-h-[250px] font-mono text-sm"
+                        value={manualContent}
+                        onChange={(e) => setManualContent(e.target.value)}
                     />
-                    <FormField
-                      control={form.control}
-                      name="questionType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Question Type</FormLabel>
-                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select question type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="MCQ">MCQ</SelectItem>
-                              <SelectItem value="True/False">True/False</SelectItem>
-                              <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
-                              <SelectItem value="Match the Following">Match the Following</SelectItem>
-                              <SelectItem value="Image-based questions">Image-based</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField control={form.control} name="numberOfQuestions" render={({ field }) => ( <FormItem> <FormLabel>Number of Questions</FormLabel> <FormControl> <Input type="number" min="1" max="20" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Duration (minutes)</FormLabel> <FormControl> <Input type="number" min="1" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Wand2 className="mr-2 h-4 w-4" /> )}
-                      Generate Questions
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="content">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create From Your Content</CardTitle>
-                <CardDescription>
-                  Paste your text or upload a file to generate a quiz.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...contentForm}>
-                  <form onSubmit={contentForm.handleSubmit(onContentGenerateSubmit)} className="space-y-6">
-                    <FormField control={contentForm.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Quiz Title</FormLabel> <FormControl> <Input placeholder="e.g., Chapter 5 Review" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={contentForm.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl> <Input placeholder="e.g., Biology" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={contentForm.control} name="textContent" render={({ field }) => ( <FormItem> <FormLabel>Your Content</FormLabel> <FormControl> <Textarea placeholder="Paste your lesson notes, an article, or any text here..." className="min-h-[150px]" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormItem>
-                      <FormLabel>Or Upload a File (PDF/DOCX)</FormLabel>
-                      <FormControl>
-                        <Input type="file" disabled title="PDF and DOCX upload coming soon!"/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField control={contentForm.control} name="classLevel" render={({ field }) => ( <FormItem> <FormLabel>Class</FormLabel> <FormControl> <Input type="number" min="1" max="12" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={contentForm.control} name="board" render={({ field }) => ( <FormItem> <FormLabel>Board</FormLabel> <FormControl> <Input placeholder="e.g., CBSE" {...field} value={field.value ?? ''} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField control={contentForm.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Duration (min)</FormLabel> <FormControl> <Input type="number" min="1" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField
-                        control={contentForm.control}
-                        name="difficulty"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Difficulty</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select difficulty" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="easy">Easy</SelectItem>
-                                <SelectItem value="medium">Medium</SelectItem>
-                                <SelectItem value="hard">Hard</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                     <div className="grid grid-cols-2 gap-4">
-                       <FormField control={contentForm.control} name="numberOfQuestions" render={({ field }) => ( <FormItem> <FormLabel>Questions</FormLabel> <FormControl> <Input type="number" min="1" max="20" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                       <FormField
-                          control={contentForm.control}
-                          name="questionType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Question Type</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select question type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="MCQ">MCQ</SelectItem>
-                                  <SelectItem value="True/False">True/False</SelectItem>
-                                  <SelectItem value="Fill in the Blanks">Fill in the Blanks</SelectItem>
-                                  <SelectItem value="Match the Following">Match the Following</SelectItem>
-                                  <SelectItem value="Image-based questions">Image-based</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Wand2 className="mr-2 h-4 w-4" /> )}
-                      Generate From Content
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-           <TabsContent value="manual">
-            <Card>
-              <CardHeader>
-                <CardTitle>Manual Question Entry</CardTitle>
-                <CardDescription>
-                    Enter quiz details in the "From Topic" tab, then type your questions below.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                 <div className="p-3 bg-muted/50 rounded-lg border border-dashed text-xs text-muted-foreground">
-                    <p className="font-bold mb-1">Formatting Instructions:</p>
-                    <p>• Start each question with `Q:`</p>
-                    <p>• Mark the correct answer with `*A:`</p>
-                    <p>• Mark other options with `O:`</p>
-                    <p>• Separate each question block with `---`</p>
-                    <p className="mt-2 font-bold">Example:</p>
-                    <pre className="mt-1">
-Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of France?{'\n'}*A: Paris{'\n'}O: London
-                    </pre>
-                </div>
-                 <Textarea
-                    placeholder="Enter your questions here following the format rules..."
-                    className="min-h-[250px] font-mono text-sm"
-                    value={manualContent}
-                    onChange={(e) => setManualContent(e.target.value)}
-                  />
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+                </Card>
+            </TabsContent>
         </Tabs>
-      </div>
-
-      <div>
+      
         <Card className="min-h-full">
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
                 <div>
-                    <CardTitle>Generated Questions</CardTitle>
+                    <CardTitle>Generated & Saved Questions</CardTitle>
                     <CardDescription>
-                    Review the questions below. You can edit them before saving the quiz.
+                        Review the generated questions below or save your manually entered ones.
                     </CardDescription>
                 </div>
-                 {activeTab !== 'manual' && generatedQuestions.length > 0 && (
-                    <Button onClick={handleSaveQuiz} disabled={isSaving || isLoading}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Save AI Quiz
-                    </Button>
-                 )}
-                 {activeTab === 'manual' && (
-                    <Button onClick={handleSaveQuiz} disabled={isSaving}>
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Save Manual Quiz
-                    </Button>
-                 )}
+                 <Button onClick={handleSaveQuiz} disabled={isSaving || isLoading}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Quiz
+                </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -476,13 +474,19 @@ Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of Franc
                 <p className="text-muted-foreground">Generating your quiz...</p>
               </div>
             )}
-            {!isLoading && generatedQuestions.length === 0 && (
+            {!isLoading && generatedQuestions.length === 0 && activeTab !== 'manual' && (
               <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-                <p className="text-muted-foreground">Generated or manually parsed questions will appear here.</p>
-                <p className="text-sm text-muted-foreground mt-1">Fill out a form on the left to begin.</p>
+                <p className="text-muted-foreground">Generated questions will appear here.</p>
+                <p className="text-sm text-muted-foreground mt-1">Fill out a form above to begin.</p>
               </div>
             )}
-            {generatedQuestions.length > 0 && (
+            {!isLoading && activeTab === 'manual' && (
+                 <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
+                    <p className="text-muted-foreground">Manually entered questions will be processed upon saving.</p>
+                    <p className="text-sm text-muted-foreground mt-1">Ensure your formatting is correct before clicking "Save Quiz".</p>
+                </div>
+            )}
+            {generatedQuestions.length > 0 && activeTab !== 'manual' && (
               <div className="space-y-4">
                 {generatedQuestions.map((q, index) => (
                   <div key={index} className="p-4 border rounded-lg bg-muted/50">
@@ -498,9 +502,6 @@ Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of Franc
             )}
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
-
-    
