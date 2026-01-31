@@ -90,15 +90,10 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link href="/dashboard">
+                  <Link href="/get-started">
                     <Button size="lg" className="bg-primary hover:bg-primary/90">
-                      For Teachers
+                      Get Started
                       <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/student-zone">
-                    <Button size="lg" variant="secondary">
-                      For Students
                     </Button>
                   </Link>
                 </div>
@@ -190,7 +185,7 @@ export default function Home() {
               Join thousands of educators and students who are making learning more effective and enjoyable.
             </p>
             <div className="mt-8 flex justify-center">
-              <Link href="/dashboard">
+              <Link href="/get-started">
                 <Button size="lg" variant="secondary" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90">
                   Get Started for Free
                 </Button>
