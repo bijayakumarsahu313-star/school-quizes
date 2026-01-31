@@ -3,9 +3,11 @@
 import { usePathname } from 'next/navigation';
 import {
   BookCopy,
+  FileText,
   LayoutDashboard,
   PieChart,
   Sparkles,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -40,6 +42,8 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
     { href: '/dashboard/quizzes/create', icon: <Sparkles />, label: 'Create Quiz' },
     { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'All Quizzes' },
+    { href: '/dashboard/submissions', icon: <FileText />, label: 'Submissions' },
+    { href: '/dashboard/users', icon: <Users />, label: 'Users' },
     { href: '/dashboard/analytics', icon: <PieChart />, label: 'Analytics' },
   ];
 
