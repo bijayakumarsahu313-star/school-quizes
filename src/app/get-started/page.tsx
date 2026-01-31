@@ -25,7 +25,7 @@ export default function GetStartedPage() {
 
   // State for teacher dialog
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
-  const [teacherDetails, setTeacherDetails] = useState({ id: '', school: '' });
+  const [teacherDetails, setTeacherDetails] = useState({ adminId: '', school: '' });
   const [teacherIdError, setTeacherIdError] = useState('');
   const ADMIN_ID = 'ADMIN-12345';
 
@@ -44,16 +44,16 @@ export default function GetStartedPage() {
   const handleTeacherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setTeacherDetails(prev => ({ ...prev, [id]: value }));
-    if (id === 'id') {
+    if (id === 'adminId') {
         setTeacherIdError('');
     }
   };
 
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (teacherDetails.id === ADMIN_ID) {
+    if (teacherDetails.adminId === ADMIN_ID) {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
-      sessionStorage.setItem('adminDetails', JSON.stringify({ adminId: teacherDetails.id, school: teacherDetails.school }));
+      sessionStorage.setItem('adminDetails', JSON.stringify(teacherDetails));
       setIsTeacherDialogOpen(false);
       router.push('/teacher-tools');
     } else {
@@ -105,10 +105,10 @@ export default function GetStartedPage() {
                       For demonstration, the Admin No. is: <strong className="text-foreground">{ADMIN_ID}</strong>
                     </p>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="id" className="text-right">
+                      <Label htmlFor="adminId" className="text-right">
                         Admin No.
                       </Label>
-                      <Input id="id" value={teacherDetails.id} onChange={handleTeacherInputChange} className="col-span-3" required />
+                      <Input id="adminId" value={teacherDetails.adminId} onChange={handleTeacherInputChange} className="col-span-3" required />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="school" className="text-right">
