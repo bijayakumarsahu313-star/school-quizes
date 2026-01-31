@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useAuth, useFirestore } from '@/firebase';
+import { auth } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,16 +11,11 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/data';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
-  const auth = useAuth();
-  const firestore = useFirestore();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,23 +25,9 @@ export default function LoginPage() {
     const password = (e.currentTarget.elements.namedItem('password') as HTMLInputElement).value;
 
     try {
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCred.user;
-
-      const docRef = doc(firestore, "users", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const userProfile = docSnap.data() as UserProfile;
-        if (userProfile.role === 'teacher' || userProfile.role === 'admin') {
-            window.location.href = '/dashboard';
-        } else {
-            window.location.href = '/student-zone';
-        }
-      } else {
-        // Fallback if user document doesn't exist for some reason
-        window.location.href = '/';
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      // Hard redirect to ensure all state is fresh.
+      window.location.href = '/';
 
     } catch (err: any) {
       toast({

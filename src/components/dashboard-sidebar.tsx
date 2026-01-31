@@ -28,7 +28,8 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useUser } from '@/firebase/auth/use-user';
+import { auth, firestore as db } from '@/firebase/provider';
 import { useEffect, useState } from 'react';
 
 
@@ -56,8 +57,6 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, userProfile } = useUser();
-  const auth = useAuth();
-  const db = useFirestore();
   const [quizzesCount, setQuizzesCount] = useState(0);
   const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 

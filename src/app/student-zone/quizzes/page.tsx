@@ -4,7 +4,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useFirestore, useUser } from "@/firebase";
+import { firestore as db } from "@/firebase/provider";
+import { useUser } from "@/firebase/auth/use-user";
 import type { Quiz } from "@/lib/data";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -15,7 +16,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentQuizzesPage() {
     const { userProfile, loading: userLoading } = useUser();
-    const db = useFirestore();
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 

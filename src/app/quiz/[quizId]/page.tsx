@@ -10,12 +10,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Trophy, CheckCircle, XCircle } from 'lucide-react';
-import { useFirestore, useUser } from '@/firebase';
+import { useUser } from '@/firebase/auth/use-user';
+import { firestore as db } from '@/firebase/provider';
 import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-
 
 type QuizData = {
     id: string;
@@ -28,7 +26,6 @@ export default function QuizPage() {
   const params = useParams();
   const quizId = params.quizId as string;
   const { user } = useUser();
-  const db = useFirestore();
   
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,20 +86,14 @@ export default function QuizPage() {
         submittedAt: serverTimestamp(),
     };
 
-    addDoc(collection(db, "submissions"), submissionData)
-      .then(() => {
+    try {
+        await addDoc(collection(db, "submissions"), submissionData);
         setIsFinished(true);
+    } catch (error) {
+        console.error("Error submitting quiz:", error);
+    } finally {
         setIsSubmitting(false);
-      })
-      .catch(serverError => {
-        const permissionError = new FirestorePermissionError({
-            path: '/submissions',
-            operation: 'create',
-            requestResourceData: submissionData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        setIsSubmitting(false);
-      });
+    }
 
   }, [isSubmitting, user, quiz, selectedAnswers, db]);
 

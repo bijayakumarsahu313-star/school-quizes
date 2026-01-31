@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useFirestore, useUser } from "@/firebase";
+import { firestore as db } from "@/firebase/provider";
+import { useUser } from "@/firebase/auth/use-user";
 import type { Quiz, UserProfile } from '@/lib/data';
 import { useState, useEffect } from "react";
 import { MoreHorizontal } from "lucide-react";
@@ -13,7 +14,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export default function QuizzesPage() {
   const { user, userProfile } = useUser();
-  const db = useFirestore();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
 

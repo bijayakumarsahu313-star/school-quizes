@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { useAuth, useFirestore } from '@/firebase';
+import { auth, firestore as db } from '@/firebase/provider';
 import type { Question } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,15 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function CreateQuizPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth();
-  const db = useFirestore();
 
   const handleSaveQuiz = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,22 +52,13 @@ export default function CreateQuizPage() {
             createdAt: serverTimestamp()
         };
 
-        addDoc(collection(db, "quizzes"), quizData)
-            .then(() => {
-                toast({ title: "Success!", description: "Quiz created successfully." });
-                router.push('/dashboard/quizzes');
-            })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: '/quizzes',
-                    operation: 'create',
-                    requestResourceData: quizData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            });
+        await addDoc(collection(db, "quizzes"), quizData)
+        toast({ title: "Success!", description: "Quiz created successfully." });
+        router.push('/dashboard/quizzes');
 
     } catch (error: any) {
-        toast({ title: "Error creating quiz", description: error.message, variant: "destructive" });
+        console.error("Error creating quiz:", error);
+        toast({ title: "Error creating quiz", description: "An unexpected error occurred.", variant: "destructive" });
     } finally {
         setLoading(false);
     }

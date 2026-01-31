@@ -3,14 +3,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { collection, query, getDocs } from 'firebase/firestore';
-import { useFirestore, useUser } from "@/firebase";
+import { firestore as db } from "@/firebase/provider";
+import { useUser } from "@/firebase/auth/use-user";
 import type { UserProfile } from '@/lib/data';
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 
 export default function UsersPage() {
   const { userProfile } = useUser();
-  const db = useFirestore();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { signOut } from 'firebase/auth';
-import { useAuth, useUser } from '@/firebase';
+import { useUser } from '@/firebase/auth/use-user';
+import { auth } from '@/firebase/provider';
 import { Skeleton } from './ui/skeleton';
 import {
   DropdownMenu,
@@ -28,14 +29,13 @@ const navLinks = [
 
 export function Header() {
   const { user, userProfile, loading } = useUser();
-  const auth = useAuth();
 
   const handleLogout = async () => {
     await signOut(auth);
   };
 
   const getDashboardLink = () => {
-    if (userProfile?.role === 'teacher') {
+    if (userProfile?.role === 'teacher' || userProfile?.role === 'admin') {
         return '/dashboard';
     }
     return '/student-zone';
