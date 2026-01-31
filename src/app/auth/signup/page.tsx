@@ -51,11 +51,8 @@ export default function SignupPage() {
       
       alert('Signup successful!');
 
-      if (role === 'teacher') {
-        router.push('/dashboard');
-      } else {
-        router.push('/student-zone');
-      }
+      router.push('/');
+      
     } catch (err: any) {
       alert(err.message);
     } finally {
