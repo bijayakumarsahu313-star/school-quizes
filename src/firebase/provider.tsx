@@ -31,11 +31,6 @@ if (typeof window !== 'undefined' && firebaseConfig?.projectId && firebaseConfig
 } else {
   // This else block is a safeguard. It creates mock objects to prevent the app
   // from crashing during development or SSR if the config is missing.
-  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-    console.error(
-      'Firebase config is missing or contains placeholder values. Firebase will not be initialized.'
-    );
-  }
   firebaseApp = {} as FirebaseApp;
   auth = {} as Auth;
   firestore = {} as Firestore;
@@ -53,21 +48,8 @@ const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
 export function FirebaseProvider({ children }: { children: ReactNode }) {
   // The provider now simply provides the pre-initialized and stable context value.
-  if (!firebaseContextValue.app.options?.projectId) {
-    // This renders a clear fallback UI if the Firebase config was invalid during initialization.
-    return (
-        <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            fontFamily: 'sans-serif'
-        }}>
-            <h1>Firebase is not configured. Please check your firebase/config.ts file.</h1>
-        </div>
-    );
-  }
-
+  // The conditional check that was here has been removed to prevent hydration errors,
+  // as the singleton pattern above already handles the SSR case by creating mock objects.
   return (
     <FirebaseContext.Provider value={firebaseContextValue}>
       {children}
