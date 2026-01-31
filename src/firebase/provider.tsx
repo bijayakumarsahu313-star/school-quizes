@@ -14,40 +14,20 @@ interface FirebaseContextValue {
 }
 
 // --- Singleton Initialization Pattern ---
-// This code ensures Firebase is initialized only once per client session,
-// outside of the React component lifecycle. This is the key to preventing
-// race conditions and the `auth/configuration-not-found` error.
-
-let firebaseApp: FirebaseApp;
-let auth: Auth;
-let firestore: Firestore;
-
-// This check prevents initialization errors during server-side rendering.
-if (typeof window !== 'undefined' && firebaseConfig?.projectId) {
-  // getApps() checks if Firebase has already been initialized.
-  if (!getApps().length) {
-    firebaseApp = initializeApp(firebaseConfig);
-  } else {
-    firebaseApp = getApp();
-  }
-  auth = getAuth(firebaseApp);
-  firestore = getFirestore(firebaseApp);
-} else {
-  // On the server, or if config is missing, create mock objects. This prevents
-  // the app from crashing and is crucial for SSR safety.
-  firebaseApp = {} as FirebaseApp;
-  auth = {} as Auth;
-  firestore = {} as Firestore;
-}
+// The 'use client' directive ensures this code runs only in the browser.
+// This code initializes Firebase and sets up the services. It's guaranteed
+// to run once before any component that uses these services is rendered.
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const firestore = getFirestore(app);
 
 const firebaseContextValue: FirebaseContextValue = {
-  app: firebaseApp,
+  app,
   auth,
   firestore,
 };
 
-// --- End of Singleton Initialization ---
-
+// --- React Context and Provider ---
 const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
 /**
@@ -62,7 +42,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
       {children}
     </FirebaseContext.Provider>
   );
-};
+}
 
 // --- Service Hooks ---
 // These hooks provide a clean, consistent way for components to access services.

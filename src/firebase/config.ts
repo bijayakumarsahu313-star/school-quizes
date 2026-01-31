@@ -1,10 +1,11 @@
-// The value of `firebaseConfig` is provided by the server and obtained in
-// `src/firebase/index.ts`. It should not be committed to version control.
+// This file reads the Firebase configuration from environment variables.
+// It is safe to use in both server and client environments.
+
 export const firebaseConfig = {
-  apiKey: "AIzaSyCrYs-SDa1MS5grPC5vOAaiTzpyeaxqyK8",
-  authDomain: "studio-8531319632-2a07c.firebaseapp.com",
-  projectId: "studio-8531319632-2a07c",
-  storageBucket: "studio-8531319632-2a07c.appspot.com",
-  messagingSenderId: "715607628631",
-  appId: "1:715607628631:web:0182fd7af9a6568c073c12",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
