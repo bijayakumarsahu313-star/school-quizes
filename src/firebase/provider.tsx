@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
@@ -49,6 +49,12 @@ const firebaseContextValue: FirebaseContextValue = {
 const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
 export function FirebaseProvider({ children }: { children: ReactNode }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
   // The provider now simply provides the pre-initialized and stable context value.
   // This eliminates the race condition caused by useState and useEffect.
   if (!firebaseContextValue.app.options?.projectId) {
@@ -68,7 +74,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseContext.Provider value={firebaseContextValue}>
-      {process.env.NODE_ENV === 'development' && <FirebaseErrorListener />}
+      {isClient && process.env.NODE_ENV === 'development' && <FirebaseErrorListener />}
       {children}
     </FirebaseContext.Provider>
   );
