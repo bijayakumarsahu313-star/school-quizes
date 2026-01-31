@@ -45,6 +45,7 @@ export default function GetStartedPage() {
     e.preventDefault();
     if (teacherIdInput === ADMIN_ID) {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
+      sessionStorage.setItem('adminDetails', JSON.stringify({ adminId: teacherIdInput }));
       setIsTeacherDialogOpen(false);
       router.push('/teacher-tools');
     } else {
