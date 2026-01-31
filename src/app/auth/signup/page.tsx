@@ -33,7 +33,12 @@ export default function SignupPage() {
         createdAt: new Date(),
       });
 
-      router.push("/");
+      if (role === 'teacher') {
+        router.push('/dashboard');
+      } else {
+        router.push('/student-zone');
+      }
+
     } catch (err: any) {
       alert(err.message);
     } finally {

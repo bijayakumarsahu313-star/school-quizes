@@ -1,7 +1,8 @@
 "use client";
 
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -14,12 +15,25 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(
+      const userCred = await signInWithEmailAndPassword(
         auth,
         e.target.email.value,
         e.target.password.value
       );
-      router.push("/");
+      
+      const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
+      if (userDoc.exists()) {
+        const role = userDoc.data()?.role;
+        if (role === 'teacher') {
+          router.push('/dashboard');
+        } else {
+          router.push('/student-zone');
+        }
+      } else {
+        // Fallback if user document doesn't exist for some reason
+        router.push('/');
+      }
+
     } catch (err: any) {
       alert(err.message);
     } finally {
