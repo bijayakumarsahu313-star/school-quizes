@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -25,8 +25,8 @@ export default function GetStartedPage() {
 
   // State for teacher dialog
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
-  const [adminId, setAdminId] = useState('');
-  const [school, setSchool] = useState('');
+  const adminIdRef = useRef<HTMLInputElement>(null);
+  const schoolRef = useRef<HTMLInputElement>(null);
   const [teacherIdError, setTeacherIdError] = useState('');
   const ADMIN_ID = '123456';
 
@@ -44,6 +44,9 @@ export default function GetStartedPage() {
 
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const adminId = adminIdRef.current?.value ?? '';
+    const school = schoolRef.current?.value ?? '';
+
     if (adminId.trim() === ADMIN_ID) {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
       sessionStorage.setItem('adminDetails', JSON.stringify({ adminId: adminId.trim(), school }));
@@ -101,13 +104,13 @@ export default function GetStartedPage() {
                       <Label htmlFor="adminId" className="text-right">
                         Admin No.
                       </Label>
-                      <Input id="adminId" value={adminId} onChange={(e) => { setAdminId(e.target.value); setTeacherIdError(''); }} className="col-span-3" required />
+                      <Input ref={adminIdRef} id="adminId" onChange={() => { setTeacherIdError(''); }} className="col-span-3" required />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="school" className="text-right">
                         School
                       </Label>
-                      <Input id="school" value={school} onChange={(e) => setSchool(e.target.value)} className="col-span-3" required />
+                      <Input ref={schoolRef} id="school" className="col-span-3" required />
                     </div>
                     {teacherIdError && <p className="text-red-500 text-sm text-center col-span-4">{teacherIdError}</p>}
                   </div>
