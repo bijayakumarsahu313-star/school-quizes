@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,20 +23,8 @@ export default function LoginPage() {
     const password = (e.currentTarget.elements.namedItem('password') as HTMLInputElement).value;
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (!userDoc.exists()) {
-        throw new Error('User data not found in Firestore.');
-      }
-
-      const userData = userDoc.data();
-      if (userData.role === 'teacher') {
-        router.push('/dashboard');
-      } else {
-        router.push('/student-zone');
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/');
     } catch (err: any) {
       alert(err.message);
     } finally {
