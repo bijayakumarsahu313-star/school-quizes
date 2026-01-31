@@ -1,31 +1,7 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
-
-// Input Schema
-export const GeneratePracticeQuizInputSchema = z.object({
-  topic: z.string().describe('The topic for the quiz.'),
-  numQuestions: z.number().min(1).max(20).describe('The number of questions to generate.'),
-  difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The difficulty level of the quiz.'),
-});
-export type GeneratePracticeQuizInput = z.infer<typeof GeneratePracticeQuizInputSchema>;
-
-// Output Schemas
-const PracticeQuizQuestionSchema = z.object({
-    question: z.string().describe("The text of the quiz question."),
-    options: z.array(z.string()).min(2).describe("An array of possible answers."),
-    answer: z.string().describe("The correct answer from the options."),
-    explanation: z.string().describe("A brief AI-generated explanation for why the answer is correct."),
-});
-
-export const PracticeQuizSchema = z.object({
-    title: z.string().describe("A suitable title for the quiz based on the topic."),
-    subject: z.string().describe("The general subject category of the quiz (e.g., 'History', 'Science', 'Mathematics')."),
-    questions: z.array(PracticeQuizQuestionSchema),
-});
-export type PracticeQuiz = z.infer<typeof PracticeQuizSchema>;
-
+import { GeneratePracticeQuizInputSchema, PracticeQuizSchema, type GeneratePracticeQuizInput, type PracticeQuiz } from '@/ai/schemas';
 
 const generatePracticeQuizFlow = ai.defineFlow(
     {

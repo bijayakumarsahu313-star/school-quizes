@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BrainCircuit, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { generatePracticeQuiz, type PracticeQuiz } from '@/ai/flows/generate-practice-quiz-flow';
+import { generatePracticeQuiz } from '@/ai/flows/generate-practice-quiz-flow';
+import type { PracticeQuiz } from '@/ai/schemas';
 
 export default function GeneratePracticeQuizPage() {
   const router = useRouter();
