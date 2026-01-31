@@ -15,6 +15,9 @@ service cloud.firestore {
       // Check if the requesting user has the 'teacher' role.
       return request.auth != null && getRole(request.auth.uid) == 'teacher';
     }
+    function isNotChanging(field) {
+      return request.resource.data[field] == resource.data[field];
+    }
 
     // Rules for user profiles
     match /users/{userId} {
@@ -22,8 +25,10 @@ service cloud.firestore {
       // A teacher can get any user's profile (for student rosters).
       allow get: if isOwner(userId) || isTeacher();
       
-      // A user can create or update their own profile.
-      allow create, update: if isOwner(userId);
+      // A user can create their own profile.
+      allow create: if isOwner(userId);
+      // A user can update their own profile, but cannot change their role.
+      allow update: if isOwner(userId) && isNotChanging('role');
       
       // No user can delete a profile directly.
       allow delete: if false;
