@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Award } from 'lucide-react';
 
 const navLinks = [
   { href: '/about', label: 'About Us' },
@@ -71,7 +72,12 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center ml-4">
+        <div className="flex items-center ml-4 gap-4">
+            {userDetails?.type === 'student' && (
+                <Link href="/student-zone/badges" title="Your Badges">
+                    <Award className="h-6 w-6 text-yellow-500 hover:scale-110 transition-transform" />
+                </Link>
+            )}
             {userDetails ? (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

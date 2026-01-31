@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Clock, Trophy, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useBadges } from '@/hooks/use-badges';
 
 // Define types locally to match the practice quiz structure
 type PracticeQuestion = {
@@ -48,6 +49,7 @@ function formatTime(seconds: number) {
 
 export default function PracticeQuizPage() {
   const router = useRouter();
+  const { awardBadges } = useBadges();
 
   const [quiz, setQuiz] = useState<PracticeQuiz | null>(null);
   const [shuffledQuestions, setShuffledQuestions] = useState<PracticeQuestion[]>([]);
@@ -121,13 +123,16 @@ export default function PracticeQuizPage() {
   }, [isFinished]);
 
   const handleSubmitQuiz = useCallback(() => {
-    if (isFinished) return;
+    if (isFinished || !quiz) return;
     
     const finalScore = (correctAnswersCount / shuffledQuestions.length) * 100;
     setScore(finalScore);
     setIsFinished(true);
+
+    awardBadges(finalScore, quiz.subject);
+    
     sessionStorage.removeItem('practiceQuiz');
-  }, [isFinished, correctAnswersCount, shuffledQuestions.length]);
+  }, [isFinished, correctAnswersCount, shuffledQuestions.length, quiz, awardBadges]);
 
 
   // Timer countdown

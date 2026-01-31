@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -13,10 +12,12 @@ import { Loader2, Trophy, CheckCircle, XCircle } from 'lucide-react';
 import { firestore as db } from '@/firebase/client';
 import { doc, getDoc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
+import { useBadges } from '@/hooks/use-badges';
 
 type QuizData = {
     id: string;
     title: string;
+    subject: string;
     questions: Question[];
 };
 
@@ -24,6 +25,7 @@ export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const quizId = params.quizId as string;
+  const { awardBadges } = useBadges();
   
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,13 @@ export default function QuizPage() {
         const quizDocSnap = await getDoc(quizDocRef);
 
         if (quizDocSnap.exists()) {
-            setQuiz({ id: quizDocSnap.id, ...quizDocSnap.data() } as QuizData);
+            const data = quizDocSnap.data();
+            setQuiz({ 
+                id: quizDocSnap.id,
+                title: data.title,
+                subject: data.subject,
+                questions: data.questions
+             } as QuizData);
         } else {
             alert('Quiz not found!');
             router.push('/student-zone');
@@ -68,7 +76,9 @@ export default function QuizPage() {
     const finalScore = (correct / quiz.questions.length) * 100;
     setScore(finalScore);
     setIsFinished(true);
-  }, [quiz, selectedAnswers]);
+
+    awardBadges(finalScore, quiz.subject);
+  }, [quiz, selectedAnswers, awardBadges]);
 
   const handleAnswerSelect = (option: string) => {
     if (answerStatus !== 'unanswered') return;

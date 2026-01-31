@@ -1,13 +1,22 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { badgeInfos, iconMap } from "@/lib/badges";
+import { cn } from '@/lib/utils';
 
 export default function BadgesPage() {
-  // In a real app, you'd filter these based on user's achievements
-  // Reversing the array to show the most recently earned badges first.
-  const earnedBadges = [...badgeInfos].reverse();
+  const [earnedBadgeIds, setEarnedBadgeIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    // In a real app, this would be fetched from a database.
+    // For now, we use sessionStorage to persist earned badges.
+    const storedBadges = sessionStorage.getItem('earnedBadges');
+    if (storedBadges) {
+      setEarnedBadgeIds(new Set(JSON.parse(storedBadges)));
+    }
+  }, []);
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -21,15 +30,25 @@ export default function BadgesPage() {
             </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {earnedBadges.map((badge) => {
+            {badgeInfos.map((badge) => {
               const Icon = iconMap[badge.iconName];
+              const isEarned = earnedBadgeIds.has(badge.id);
               return (
-                <Card key={badge.id} className="text-center transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col">
+                <Card 
+                  key={badge.id} 
+                  className={cn(
+                    "text-center transition-transform transform hover:scale-105 flex flex-col",
+                    isEarned ? "hover:shadow-lg" : "bg-gray-100 dark:bg-gray-800/50"
+                  )}
+                >
                   <CardHeader className="flex-grow">
-                    <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-primary/10 mb-4 transform-gpu transition-transform group-hover:scale-110">
-                      <Icon className={`h-16 w-16 ${badge.iconColor} transition-colors`} />
+                    <div className={cn(
+                      "mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-primary/10 mb-4 transform-gpu transition-all",
+                      !isEarned && "grayscale opacity-50"
+                    )}>
+                      <Icon className={cn("h-16 w-16 transition-colors", isEarned ? badge.iconColor : 'text-gray-400')} />
                     </div>
-                    <CardTitle>{badge.title}</CardTitle>
+                    <CardTitle className={cn(!isEarned && "text-muted-foreground")}>{badge.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription>{badge.description}</CardDescription>
