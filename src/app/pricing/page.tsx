@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -114,7 +115,9 @@ export default function PricingPage() {
                 </ul>
               </CardContent>
               <CardFooter>
-                  <Button className="w-full" variant="secondary">Contact Sales</Button>
+                  <Button asChild className="w-full" variant="secondary">
+                    <Link href="/contact">Contact Sales</Link>
+                  </Button>
               </CardFooter>
             </Card>
           </div>
