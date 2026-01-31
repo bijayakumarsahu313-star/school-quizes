@@ -2,18 +2,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-
-export const GenerateQuizInputSchema = z.object({
-    topic: z.string().describe('The topic for the quiz. Used if no PDF is provided.'),
-    pdfDataUri: z.string().optional().describe(
-        "A PDF document as a data URI. If provided, the quiz will be generated based on the content of this document. Expected format: 'data:application/pdf;base64,<encoded_data>'."
-    ),
-    numQuestions: z.number().min(1).max(20).describe('The number of questions to generate'),
-    difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The difficulty level of the quiz'),
-    questionType: z.enum(['Multiple Choice', 'True/False']).describe('The type of questions'),
-});
-
-export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
+import { GenerateQuizInputSchema, type GenerateQuizInput } from '@/ai/schemas';
 
 const prompt = ai.definePrompt(
     {
@@ -66,7 +55,7 @@ O: True
     },
 );
 
-export const generateQuizFlow = ai.defineFlow(
+const generateQuizFlow = ai.defineFlow(
     {
         name: 'generateQuizFlow',
         inputSchema: GenerateQuizInputSchema,

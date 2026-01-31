@@ -13,7 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Wand2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { generateQuiz, type GenerateQuizInput } from '@/ai/flows/generate-quiz-flow';
+import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
+import type { GenerateQuizInput } from '@/ai/schemas';
 
 function parseManualQuestions(content: string): Question[] {
     const questions: Question[] = [];
