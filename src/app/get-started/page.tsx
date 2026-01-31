@@ -25,7 +25,8 @@ export default function GetStartedPage() {
 
   // State for teacher dialog
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
-  const [teacherDetails, setTeacherDetails] = useState({ adminId: '', school: '' });
+  const [adminId, setAdminId] = useState('');
+  const [school, setSchool] = useState('');
   const [teacherIdError, setTeacherIdError] = useState('');
   const ADMIN_ID = '123456';
 
@@ -41,19 +42,11 @@ export default function GetStartedPage() {
     router.push('/student-zone');
   };
 
-  const handleTeacherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setTeacherDetails(prev => ({ ...prev, [id]: value }));
-    if (id === 'adminId') {
-        setTeacherIdError('');
-    }
-  };
-
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (teacherDetails.adminId.trim() === ADMIN_ID) {
+    if (adminId.trim() === ADMIN_ID) {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
-      sessionStorage.setItem('adminDetails', JSON.stringify(teacherDetails));
+      sessionStorage.setItem('adminDetails', JSON.stringify({ adminId: adminId.trim(), school }));
       setIsTeacherDialogOpen(false);
       router.push('/teacher-tools');
     } else {
@@ -108,13 +101,13 @@ export default function GetStartedPage() {
                       <Label htmlFor="adminId" className="text-right">
                         Admin No.
                       </Label>
-                      <Input id="adminId" value={teacherDetails.adminId} onChange={handleTeacherInputChange} className="col-span-3" required />
+                      <Input id="adminId" value={adminId} onChange={(e) => { setAdminId(e.target.value); setTeacherIdError(''); }} className="col-span-3" required />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="school" className="text-right">
                         School
                       </Label>
-                      <Input id="school" value={teacherDetails.school} onChange={handleTeacherInputChange} className="col-span-3" required />
+                      <Input id="school" value={school} onChange={(e) => setSchool(e.target.value)} className="col-span-3" required />
                     </div>
                     {teacherIdError && <p className="text-red-500 text-sm text-center col-span-4">{teacherIdError}</p>}
                   </div>
