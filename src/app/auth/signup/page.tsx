@@ -41,26 +41,8 @@ const formSchema = z
     schoolName: z.string().min(1, { message: 'School name is required.' }),
     role: z.enum(['student', 'teacher'], { required_error: 'You must select a role.' }),
     subject: z.string().optional(),
-    classLevel: z.coerce.number().min(1).max(12).optional(),
-    board: z.string().min(1).optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.role === 'student') {
-      if (!data.classLevel) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Class is required.',
-          path: ['classLevel'],
-        });
-      }
-      if (!data.board) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Board is required.',
-          path: ['board'],
-        });
-      }
-    }
     if (data.role === 'teacher') {
       if (!data.subject || data.subject.length === 0) {
         ctx.addIssue({
@@ -87,24 +69,19 @@ export default function SignupPage() {
       password: '',
       schoolName: '',
       subject: '',
-      board: '',
     },
   });
 
   const role = form.watch('role');
 
-  // Disable Google button if role-specific fields are missing
-  const studentFields = form.watch(['classLevel', 'board']);
   const teacherField = form.watch('subject');
   const isGoogleDisabled =
-    (role === 'student' && (!studentFields[0] || !studentFields[1])) ||
-    (role === 'teacher' && !teacherField) ||
-    !role;
+    (role === 'teacher' && !teacherField) || !role;
 
   const buildUserProfile = (
     uid: string,
     values: z.infer<typeof formSchema>
-  ): Omit<UserProfile, 'id' | 'planExpires'> => {
+  ): Omit<UserProfile, 'id' | 'planExpires' | 'classLevel' | 'board'> => {
     const profile: Partial<UserProfile> = {
       uid,
       email: values.email,
@@ -117,11 +94,7 @@ export default function SignupPage() {
     if (values.role === 'teacher' && values.subject) {
       profile.subject = values.subject;
     }
-    if (values.role === 'student') {
-      if (values.classLevel) profile.classLevel = values.classLevel;
-      if (values.board) profile.board = values.board;
-    }
-    return profile as Omit<UserProfile, 'id' | 'planExpires'>;
+    return profile as Omit<UserProfile, 'id' | 'planExpires' | 'classLevel' | 'board'>;
   };
 
   const handleUserCreation = async (
@@ -129,7 +102,6 @@ export default function SignupPage() {
     provider: 'email' | 'google',
     formValues: z.infer<typeof formSchema>
   ) => {
-    // If google sign in, some profile details come from the google profile
     const finalValues: z.infer<typeof formSchema> = {
       ...formValues,
       email: user.email!,
@@ -151,7 +123,6 @@ export default function SignupPage() {
         description: "You're all set. Welcome aboard!",
       });
 
-      // Redirect based on role
       if (finalValues.role === 'teacher') {
         router.push('/dashboard');
       } else {
@@ -164,7 +135,6 @@ export default function SignupPage() {
         title: 'Uh oh! Something went wrong.',
         description: 'Could not save your user profile. Please contact support.',
       });
-      // This will trigger the dev overlay with rich error info
       if (error.code?.includes('permission-denied')) {
         const permissionError = new FirestorePermissionError({
           path: `users/${user.uid}`,
@@ -201,7 +171,6 @@ export default function SignupPage() {
   }
 
   async function handleGoogleSignIn() {
-    // We get the role-specific details from the form before initiating the popup
     const formValues = form.getValues();
     setIsSubmitting('google');
 
@@ -332,37 +301,6 @@ export default function SignupPage() {
                     </FormItem>
                   )}
                 />
-              )}
-
-              {role === 'student' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="classLevel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Class Level</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 10" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="board"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Board</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., CBSE, ICSE" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
               )}
 
               <div>
