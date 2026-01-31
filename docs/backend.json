@@ -26,18 +26,26 @@
         },
         "school": {
           "type": "string",
-          "description": "The name of the user's school."
+          "description": "The name of the user's school (for teachers)."
         },
         "class": {
           "type": "string",
-          "description": "The class of the student."
+          "description": "The class of the student (e.g., 10th A)."
+        },
+        "board": {
+            "type": "string",
+            "description": "The educational board of the student (e.g., CBSE, ICSE)."
+        },
+        "subject": {
+            "type": "string",
+            "description": "The primary subject taught by the teacher."
         },
         "createdAt": {
           "type": "string",
           "format": "date-time"
         }
       },
-      "required": ["uid", "email", "name", "role", "school", "createdAt"]
+      "required": ["uid", "email", "name", "role", "createdAt"]
     },
     "Quiz": {
       "title": "Quiz",

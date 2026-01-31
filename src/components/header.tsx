@@ -1,16 +1,24 @@
-
 'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
-import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/data';
 import { Skeleton } from './ui/skeleton';
 import { useEffect, useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { LogOut, LayoutDashboard } from 'lucide-react';
 
 const navLinks = [
   { href: '/about', label: 'About Us' },
@@ -24,7 +32,6 @@ export function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
@@ -45,10 +52,8 @@ export function Header() {
     return () => unsubscribe();
   }, []);
 
-
   const handleLogout = async () => {
     await signOut(auth);
-    router.push('/');
   };
 
   const getDashboardLink = () => {
@@ -56,6 +61,10 @@ export function Header() {
         return '/dashboard';
     }
     return '/student-zone';
+  }
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('');
   }
 
   return (
@@ -79,13 +88,39 @@ export function Header() {
                     <Skeleton className="h-9 w-20" />
                     <Skeleton className="h-9 w-20" />
                 </div>
-            ) : user ? (
-                <>
-                    <Button variant="ghost" asChild>
-                        <Link href={getDashboardLink()}>Dashboard</Link>
+            ) : user && userProfile ? (
+                 <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                       <Avatar className="h-9 w-9">
+                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || ''} />
+                        <AvatarFallback>{getInitials(userProfile.name)}</AvatarFallback>
+                      </Avatar>
                     </Button>
-                    <Button onClick={handleLogout}>Logout</Button>
-                </>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{userProfile.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href={getDashboardLink()}>
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
             ) : (
                 <>
                     <Button variant="ghost" asChild>

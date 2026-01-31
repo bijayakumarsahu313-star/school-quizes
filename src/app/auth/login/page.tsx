@@ -9,9 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,9 +26,18 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = '/';
+      toast({
+        title: "Login Successful!",
+        description: "Welcome back.",
+      });
+      // The header will automatically update. The user can navigate from there.
+      router.push('/');
     } catch (err: any) {
-      alert(err.message);
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: err.message,
+      });
     } finally {
       setLoading(false);
     }

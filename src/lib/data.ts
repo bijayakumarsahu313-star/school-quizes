@@ -5,8 +5,10 @@ export type UserProfile = {
   name: string;
   email: string;
   role: 'student' | 'teacher';
-  school: string;
-  class?: string;
+  school?: string; // Optional for students
+  class?: string; // Student only
+  board?: string; // Student only
+  subject?: string; // Teacher only
   createdAt: any; // Firestore Timestamp
 };
 
