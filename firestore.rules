@@ -1,72 +1,8 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper functions for auth checks
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    function getRole(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data.role;
-    }
-    function isTeacher() {
-      // Check if the requesting user has the 'teacher' role.
-      return request.auth != null && getRole(request.auth.uid) == 'teacher';
-    }
-    function isNotChanging(field) {
-      return request.resource.data[field] == resource.data[field];
-    }
-
-    // Rules for user profiles
     match /users/{userId} {
-      // A user can get their own profile.
-      // A teacher can get any user's profile (for student rosters).
-      allow get: if isOwner(userId) || isTeacher();
-      
-      // A user can create their own profile.
-      allow create: if isOwner(userId);
-      // A user can update their own profile, but cannot change their role.
-      allow update: if isOwner(userId) && isNotChanging('role');
-      
-      // No user can delete a profile directly.
-      allow delete: if false;
-    }
-
-    // Rules for listing users
-    match /users/{path=**} {
-      // Only teachers can list users (e.g., to see student rosters).
-      // Students are blocked from listing other users.
-      allow list: if isTeacher();
-    }
-
-    // Rules for quizzes
-    match /quizzes/{quizId} {
-      // Any authenticated user can read a quiz.
-      allow read: if request.auth != null;
-      
-      // Only the teacher who created the quiz can create, update, or delete it.
-      allow create: if isTeacher() && request.resource.data.createdBy == request.auth.uid;
-      allow update, delete: if isTeacher() && resource.data.createdBy == request.auth.uid;
-    }
-
-    // Rules for quiz results
-    match /quizzes/{quizId}/results/{userId} {
-      // The student who took the quiz can read their own result.
-      // The teacher who created the quiz can read all results for it.
-      allow read: if request.auth != null && (isOwner(userId) || get(/databases/$(database)/documents/quizzes/$(quizId)).data.createdBy == request.auth.uid);
-      
-      // A student can only create a result for themselves.
-      allow create: if request.auth != null && isOwner(userId);
-    }
-
-    // Rules for school inquiries
-    match /schoolInquiries/{inquiryId} {
-      // Anyone can submit an inquiry (no auth required).
-      allow create: if true; 
-      // Inquiries can only be managed by backend admins, not through client requests.
-      allow read, update, delete: if false;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
