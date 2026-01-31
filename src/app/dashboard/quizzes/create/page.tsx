@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2, Sparkles } from 'lucide-react';
+import { Loader2, Wand2, Sparkles, PlusCircle, Trash2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
@@ -115,17 +115,21 @@ export default function CreateQuizPage() {
         const className = (form.elements.namedItem('class') as HTMLInputElement).value;
 
         if (questions.length === 0) {
-             toast({ title: "No Questions", description: "Please generate questions before saving.", variant: "destructive" });
+             toast({ title: "No Questions", description: "Please add questions before saving.", variant: "destructive" });
              setSaveLoading(false);
              return;
         }
 
         const isDataValid = questions.every(q => 
-            q.question && q.options.length > 0 && q.correctAnswer && q.options.includes(q.correctAnswer)
+            q.question.trim() !== '' && 
+            q.options.length >= 2 && 
+            q.options.every(opt => opt.trim() !== '') &&
+            q.correctAnswer && 
+            q.options.includes(q.correctAnswer)
         );
 
         if (!isDataValid) {
-            toast({ title: "Invalid Data", description: "Please ensure every question has text, options, and a valid correct answer.", variant: "destructive" });
+            toast({ title: "Incomplete Quiz", description: "Please ensure every question has text, at least two filled options, and a correct answer selected.", variant: "destructive" });
             setSaveLoading(false);
             return;
         }
@@ -173,17 +177,46 @@ export default function CreateQuizPage() {
 
     const handleOptionChange = (qIndex: number, oIndex: number, value: string) => {
         const newQuestions = [...questions];
-        const oldOptionValue = newQuestions[qIndex].options[oIndex];
-        const newOptions = [...newQuestions[qIndex].options];
-        newOptions[oIndex] = value;
-        newQuestions[qIndex] = { ...newQuestions[qIndex], options: newOptions };
+        const question = newQuestions[qIndex];
+        const oldOptionValue = question.options[oIndex];
         
-        if (questions[qIndex].correctAnswer === oldOptionValue) {
-             newQuestions[qIndex].correctAnswer = value;
+        question.options[oIndex] = value;
+        
+        if (question.correctAnswer === oldOptionValue) {
+             question.correctAnswer = value;
         }
         setQuestions(newQuestions);
     };
 
+    const handleAddQuestion = () => {
+        setQuestions(prev => [...prev, { question: '', options: ['', ''], correctAnswer: '' }]);
+    };
+
+    const handleRemoveQuestion = (qIndex: number) => {
+        setQuestions(prev => prev.filter((_, index) => index !== qIndex));
+    };
+
+    const handleAddOption = (qIndex: number) => {
+        const newQuestions = [...questions];
+        newQuestions[qIndex].options.push('');
+        setQuestions(newQuestions);
+    };
+
+    const handleRemoveOption = (qIndex: number, oIndex: number) => {
+        const newQuestions = [...questions];
+        const question = newQuestions[qIndex];
+        
+        if (question.options.length <= 2) return;
+        
+        const removedOption = question.options[oIndex];
+        question.options.splice(oIndex, 1);
+        
+        if (question.correctAnswer === removedOption) {
+            question.correctAnswer = '';
+        }
+
+        setQuestions(newQuestions);
+    };
 
     return (
         <div className="flex flex-col gap-8">
@@ -306,13 +339,23 @@ export default function CreateQuizPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label>Questions & Answers</Label>
+                            <div className="flex items-center justify-between">
+                                <Label>Questions & Answers</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={handleAddQuestion}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Question
+                                </Button>
+                            </div>
                             {questions.length > 0 ? (
-                                <div className="space-y-6">
+                                <div className="space-y-6 pt-2">
                                     {questions.map((q, qIndex) => (
                                         <Card key={qIndex} className="bg-muted/30 p-4">
                                             <CardHeader className="flex flex-row items-center justify-between p-2">
                                                 <CardTitle className="text-base">Question {qIndex + 1}</CardTitle>
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveQuestion(qIndex)} className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                                                    <Trash2 className="h-4 w-4" />
+                                                    <span className="sr-only">Remove Question</span>
+                                                </Button>
                                             </CardHeader>
                                             <CardContent className="space-y-4 p-2">
                                                 <div className="space-y-2">
@@ -328,15 +371,31 @@ export default function CreateQuizPage() {
                                                     <Label className="text-sm font-medium">Options</Label>
                                                     <div className="space-y-2">
                                                         {q.options.map((opt, oIndex) => (
-                                                            <Input 
-                                                                key={oIndex}
-                                                                id={`option-${qIndex}-${oIndex}`}
-                                                                value={opt}
-                                                                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                                                                placeholder={`Option ${oIndex + 1}`}
-                                                            />
+                                                            <div key={oIndex} className="flex items-center gap-2">
+                                                                <Input 
+                                                                    id={`option-${qIndex}-${oIndex}`}
+                                                                    value={opt}
+                                                                    onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                                                                    placeholder={`Option ${oIndex + 1}`}
+                                                                />
+                                                                <Button 
+                                                                    type="button" 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    className="h-9 w-9 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                                                    disabled={q.options.length <= 2}
+                                                                    onClick={() => handleRemoveOption(qIndex, oIndex)}
+                                                                >
+                                                                    <X className="h-4 w-4" />
+                                                                    <span className="sr-only">Remove Option</span>
+                                                                </Button>
+                                                            </div>
                                                         ))}
                                                     </div>
+                                                    <Button type="button" variant="outline" size="sm" onClick={() => handleAddOption(qIndex)} className="mt-2">
+                                                        <PlusCircle className="mr-2 h-4 w-4" />
+                                                        Add Option
+                                                    </Button>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label htmlFor={`correct-answer-${qIndex}`} className="text-sm font-medium">Correct Answer</Label>
@@ -348,7 +407,7 @@ export default function CreateQuizPage() {
                                                             <SelectValue placeholder="Select correct answer" />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {q.options.map((opt, oIndex) => (
+                                                            {q.options.filter(opt => opt.trim() !== '').map((opt, oIndex) => (
                                                                 <SelectItem key={oIndex} value={opt}>{opt}</SelectItem>
                                                             ))}
                                                         </SelectContent>
@@ -363,8 +422,8 @@ export default function CreateQuizPage() {
                                 </div>
                             ) : (
                                 <div className="p-8 mt-2 bg-muted/50 rounded-lg border border-dashed text-center text-muted-foreground">
-                                    <p>Your generated questions will appear here.</p>
-                                    <p className="text-xs">Use the "Generate Quiz with AI" tool above to start.</p>
+                                    <p>Your questions will appear here.</p>
+                                    <p className="text-xs">Use the "Generate Quiz with AI" tool above or "Add Question" to start.</p>
                                 </div>
                             )}
                         </div>
