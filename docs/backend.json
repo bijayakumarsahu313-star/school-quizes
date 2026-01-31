@@ -7,6 +7,7 @@
       "type": "object",
       "properties": {
         "title": { "type": "string" },
+        "subject": { "type": "string" },
         "school": { "type": "string" },
         "class": { "type": "string" },
         "questions": {
@@ -29,7 +30,7 @@
           "format": "date-time"
         }
       },
-      "required": ["title", "questions", "school", "class", "createdAt"]
+      "required": ["title", "subject", "questions", "school", "class", "createdAt"]
     }
   },
   "firestore": {

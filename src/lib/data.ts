@@ -8,6 +8,7 @@ export type Question = {
 export type Quiz = {
   id: string;
   title: string;
+  subject: string;
   school: string;
   class: string;
   questions: Question[];

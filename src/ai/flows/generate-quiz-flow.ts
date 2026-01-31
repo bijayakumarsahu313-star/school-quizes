@@ -22,8 +22,8 @@ Number of Questions: ${input.numQuestions}
 Difficulty: ${input.difficulty}
 Question Type: ${input.questionType}
 `;
-        if (input.gradeLevel) {
-          promptText += `Grade Level: ${input.gradeLevel}\n`;
+        if (input.subject) {
+          promptText += `Subject: ${input.subject}\n`;
         }
         if (input.className) {
           promptText += `Class: ${input.className}\n`;

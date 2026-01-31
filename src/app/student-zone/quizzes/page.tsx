@@ -96,7 +96,7 @@ export default function StudentQuizzesPage() {
                             ))
                         ) : quizzes.length > 0 ? (
                             quizzes.map((quiz) => {
-                                const Icon = getSubjectIcon(quiz.title);
+                                const Icon = getSubjectIcon(quiz.subject || quiz.title);
                                 return (
                                     <Card key={quiz.id} className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col group">
                                         <CardHeader className="p-0">
@@ -106,7 +106,7 @@ export default function StudentQuizzesPage() {
                                                 </div>
                                                 <div>
                                                     <CardTitle className="leading-tight">{quiz.title}</CardTitle>
-                                                    <CardDescription>{quiz.class} - {quiz.school}</CardDescription>
+                                                    <CardDescription>{quiz.subject ? `${quiz.subject} • ` : ''}{quiz.class} - {quiz.school}</CardDescription>
                                                 </div>
                                             </div>
                                         </CardHeader>

@@ -122,7 +122,7 @@ export default function CreateQuizPage() {
             numQuestions: parseInt(formData.get('numQuestions') as string, 10),
             difficulty: formData.get('difficulty') as 'Easy' | 'Medium' | 'Hard',
             questionType: formData.get('questionType') as 'Multiple Choice' | 'True/False',
-            gradeLevel: formData.get('gradeLevel') as string | undefined,
+            subject: formData.get('subject') as string | undefined,
             className: formData.get('className') as string | undefined,
             pdfDataUri: pdfDataUri,
         };
@@ -147,6 +147,7 @@ export default function CreateQuizPage() {
 
         const form = e.currentTarget;
         const title = (form.elements.namedItem('title') as HTMLInputElement).value;
+        const subject = (form.elements.namedItem('subject') as HTMLInputElement).value;
         const className = (form.elements.namedItem('class') as HTMLInputElement).value;
         const questionsContent = (form.elements.namedItem('questions') as HTMLTextAreaElement).value;
 
@@ -166,6 +167,7 @@ export default function CreateQuizPage() {
 
             const quizData = {
                 title,
+                subject,
                 questions,
                 school,
                 class: className,
@@ -257,8 +259,8 @@ export default function CreateQuizPage() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="gradeLevel">Grade Level</Label>
-                                <Input id="gradeLevel" name="gradeLevel" placeholder="e.g., 10th Grade" />
+                                <Label htmlFor="subject">Subject</Label>
+                                <Input id="subject" name="subject" placeholder="e.g., History" />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="className">Class</Label>
@@ -284,9 +286,15 @@ export default function CreateQuizPage() {
                 </CardHeader>
                 <form onSubmit={handleSaveQuiz}>
                     <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="title">Quiz Title</Label>
-                            <Input id="title" name="title" placeholder="e.g., The Solar System" required />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="title">Quiz Title</Label>
+                                <Input id="title" name="title" placeholder="e.g., The Solar System" required />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="subject-save">Subject</Label>
+                                <Input id="subject-save" name="subject" placeholder="e.g., Science" required />
+                            </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">

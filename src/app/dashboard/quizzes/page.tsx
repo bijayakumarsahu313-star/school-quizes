@@ -45,6 +45,7 @@ export default function QuizzesPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
+              <TableHead>Subject</TableHead>
               <TableHead>School</TableHead>
               <TableHead>Class</TableHead>
               <TableHead className="text-center">Questions</TableHead>
@@ -56,7 +57,7 @@ export default function QuizzesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   Loading quizzes...
                 </TableCell>
               </TableRow>
@@ -64,6 +65,7 @@ export default function QuizzesPage() {
               quizzes.map((quiz) => (
                 <TableRow key={quiz.id}>
                   <TableCell className="font-medium">{quiz.title}</TableCell>
+                  <TableCell>{quiz.subject}</TableCell>
                   <TableCell>{quiz.school}</TableCell>
                   <TableCell>{quiz.class}</TableCell>
                   <TableCell className="text-center">{quiz.questions.length}</TableCell>
@@ -84,7 +86,7 @@ export default function QuizzesPage() {
               ))
             ) : (
                <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No quizzes found.
                 </TableCell>
               </TableRow>
