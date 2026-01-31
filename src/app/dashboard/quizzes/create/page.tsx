@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore as db } from '@/firebase/client';
@@ -19,9 +19,9 @@ import type { GenerateQuizInput } from '@/ai/schemas';
 export default function CreateQuizPage() {
     const [saveLoading, setSaveLoading] = useState(false);
     const [generateLoading, setGenerateLoading] = useState(false);
+    const [questions, setQuestions] = useState<Question[]>([]);
     const router = useRouter();
     const { toast } = useToast();
-    const manualQuestionsRef = useRef<HTMLTextAreaElement>(null);
     const [school, setSchool] = useState('');
     const [creatorId, setCreatorId] = useState('');
 
@@ -95,9 +95,7 @@ export default function CreateQuizPage() {
     
         try {
             const generatedQuestions = await generateQuiz(input);
-            if (manualQuestionsRef.current) {
-                manualQuestionsRef.current.value = JSON.stringify(generatedQuestions, null, 2);
-            }
+            setQuestions(generatedQuestions);
             toast({ title: "Quiz Generated!", description: "Review the questions below and save the quiz." });
         } catch (error) {
             console.error("Error generating quiz:", error);
@@ -115,7 +113,22 @@ export default function CreateQuizPage() {
         const title = (form.elements.namedItem('title') as HTMLInputElement).value;
         const subject = (form.elements.namedItem('subject') as HTMLInputElement).value;
         const className = (form.elements.namedItem('class') as HTMLInputElement).value;
-        const questionsContent = (form.elements.namedItem('questions') as HTMLTextAreaElement).value;
+
+        if (questions.length === 0) {
+             toast({ title: "No Questions", description: "Please generate questions before saving.", variant: "destructive" });
+             setSaveLoading(false);
+             return;
+        }
+
+        const isDataValid = questions.every(q => 
+            q.question && q.options.length > 0 && q.correctAnswer && q.options.includes(q.correctAnswer)
+        );
+
+        if (!isDataValid) {
+            toast({ title: "Invalid Data", description: "Please ensure every question has text, options, and a valid correct answer.", variant: "destructive" });
+            setSaveLoading(false);
+            return;
+        }
 
         if (!school) {
             toast({ title: "Error", description: "School information not found. Please log in again.", variant: "destructive" });
@@ -130,13 +143,6 @@ export default function CreateQuizPage() {
        }
 
         try {
-            const questions = JSON.parse(questionsContent) as Question[];
-            if (!Array.isArray(questions) || questions.length === 0) {
-                toast({ title: "Invalid Format", description: "Could not find any valid questions. Please ensure the content is a valid JSON array.", variant: "destructive" });
-                setSaveLoading(false);
-                return;
-            }
-
             const quizData = {
                 title,
                 subject,
@@ -153,15 +159,31 @@ export default function CreateQuizPage() {
 
         } catch (error: any) {
             console.error("Error creating quiz:", error);
-            if (error.name === 'SyntaxError') {
-                 toast({ title: "Invalid JSON", description: "The questions content is not valid JSON. Please check the format.", variant: "destructive" });
-            } else {
-                toast({ title: "Error creating quiz", description: error.message || "An unexpected error occurred.", variant: "destructive" });
-            }
+            toast({ title: "Error creating quiz", description: error.message || "An unexpected error occurred.", variant: "destructive" });
         } finally {
             setSaveLoading(false);
         }
     };
+    
+    const handleQuestionChange = (qIndex: number, field: 'question' | 'correctAnswer', value: string) => {
+        const newQuestions = [...questions];
+        newQuestions[qIndex] = { ...newQuestions[qIndex], [field]: value };
+        setQuestions(newQuestions);
+    };
+
+    const handleOptionChange = (qIndex: number, oIndex: number, value: string) => {
+        const newQuestions = [...questions];
+        const oldOptionValue = newQuestions[qIndex].options[oIndex];
+        const newOptions = [...newQuestions[qIndex].options];
+        newOptions[oIndex] = value;
+        newQuestions[qIndex] = { ...newQuestions[qIndex], options: newOptions };
+        
+        if (questions[qIndex].correctAnswer === oldOptionValue) {
+             newQuestions[qIndex].correctAnswer = value;
+        }
+        setQuestions(newQuestions);
+    };
+
 
     return (
         <div className="flex flex-col gap-8">
@@ -283,30 +305,68 @@ export default function CreateQuizPage() {
                                 <Input id="class" name="class" placeholder="e.g., 10th A" required />
                             </div>
                         </div>
-                        <div>
-                            <Label htmlFor="questions">Questions & Answers (JSON Format)</Label>
-                             <div className="p-3 mt-2 bg-muted/50 rounded-lg border border-dashed text-xs text-muted-foreground">
-                                <p className="font-bold mb-1">Instructions:</p>
-                                <p>The questions must be in a valid JSON array format. The AI generator will produce this format automatically.</p>
-                                <p className="mt-2 font-bold">Example:</p>
-                                <pre className="mt-1 text-xs">
-{`[
-  {
-    "question": "What is 2+2?",
-    "options": ["3", "4", "5"],
-    "correctAnswer": "4"
-  }
-]`}
-                                </pre>
-                            </div>
-                            <Textarea
-                                ref={manualQuestionsRef}
-                                id="questions"
-                                name="questions"
-                                placeholder="Enter your questions here as a JSON array, or generate them with AI above..."
-                                className="min-h-[250px] font-mono text-sm mt-2"
-                                required
-                            />
+                        <div className="space-y-2">
+                            <Label>Questions & Answers</Label>
+                            {questions.length > 0 ? (
+                                <div className="space-y-6">
+                                    {questions.map((q, qIndex) => (
+                                        <Card key={qIndex} className="bg-muted/30 p-4">
+                                            <CardHeader className="flex flex-row items-center justify-between p-2">
+                                                <CardTitle className="text-base">Question {qIndex + 1}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-4 p-2">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor={`question-text-${qIndex}`} className="text-sm font-medium">Question Text</Label>
+                                                    <Textarea 
+                                                        id={`question-text-${qIndex}`}
+                                                        value={q.question} 
+                                                        onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
+                                                        placeholder="Enter the question"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-sm font-medium">Options</Label>
+                                                    <div className="space-y-2">
+                                                        {q.options.map((opt, oIndex) => (
+                                                            <Input 
+                                                                key={oIndex}
+                                                                id={`option-${qIndex}-${oIndex}`}
+                                                                value={opt}
+                                                                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                                                                placeholder={`Option ${oIndex + 1}`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor={`correct-answer-${qIndex}`} className="text-sm font-medium">Correct Answer</Label>
+                                                    <Select 
+                                                        value={q.correctAnswer} 
+                                                        onValueChange={(value) => handleQuestionChange(qIndex, 'correctAnswer', value)}
+                                                    >
+                                                        <SelectTrigger id={`correct-answer-${qIndex}`}>
+                                                            <SelectValue placeholder="Select correct answer" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {q.options.map((opt, oIndex) => (
+                                                                <SelectItem key={oIndex} value={opt}>{opt}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {q.correctAnswer && !q.options.includes(q.correctAnswer) && (
+                                                        <p className="text-xs text-destructive">The correct answer must be one of the options.</p>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 mt-2 bg-muted/50 rounded-lg border border-dashed text-center text-muted-foreground">
+                                    <p>Your generated questions will appear here.</p>
+                                    <p className="text-xs">Use the "Generate Quiz with AI" tool above to start.</p>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                     <CardFooter>
