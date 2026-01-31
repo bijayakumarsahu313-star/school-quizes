@@ -27,7 +27,7 @@ export default function GetStartedPage() {
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
   const [teacherDetails, setTeacherDetails] = useState({ adminId: '', school: '' });
   const [teacherIdError, setTeacherIdError] = useState('');
-  const ADMIN_ID = 'ADMIN-9876';
+  const ADMIN_ID = '123456';
 
   const handleStudentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
