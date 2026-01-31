@@ -4,7 +4,10 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
 export const GenerateQuizInputSchema = z.object({
-    topic: z.string().describe('The topic for the quiz'),
+    topic: z.string().describe('The topic for the quiz. Used if no PDF is provided.'),
+    pdfDataUri: z.string().optional().describe(
+        "A PDF document as a data URI. If provided, the quiz will be generated based on the content of this document. Expected format: 'data:application/pdf;base64,<encoded_data>'."
+    ),
     numQuestions: z.number().min(1).max(20).describe('The number of questions to generate'),
     difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The difficulty level of the quiz'),
     questionType: z.enum(['Multiple Choice', 'True/False']).describe('The type of questions'),
@@ -21,7 +24,13 @@ const prompt = ai.definePrompt(
         },
         prompt: `You are an expert quiz creator for school students. Generate a quiz based on the following criteria:
 
+{{#if pdfDataUri}}
+The primary source for the quiz questions is the content of the attached PDF document. The topic below is for context only.
+PDF Document: {{media url=pdfDataUri}}
 Topic: {{topic}}
+{{else}}
+Topic: {{topic}}
+{{/if}}
 Number of Questions: {{numQuestions}}
 Difficulty: {{difficulty}}
 Question Type: {{questionType}}

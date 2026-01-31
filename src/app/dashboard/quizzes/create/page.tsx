@@ -63,15 +63,52 @@ export default function CreateQuizPage() {
     const handleGenerateQuiz = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setGenerateLoading(true);
-
+    
         const formData = new FormData(e.currentTarget);
+        const pdfFile = formData.get('pdf') as File | null;
+    
+        let pdfDataUri: string | undefined = undefined;
+    
+        if (pdfFile && pdfFile.size > 0) {
+            try {
+                pdfDataUri = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        if (event.target?.result) {
+                            resolve(event.target.result as string);
+                        } else {
+                            reject(new Error("Failed to read PDF file."));
+                        }
+                    };
+                    reader.onerror = (error) => {
+                        reject(error);
+                    };
+                    reader.readAsDataURL(pdfFile);
+                });
+            } catch (error) {
+                console.error("Error reading PDF file:", error);
+                toast({ title: "PDF Read Error", description: "Could not read the provided PDF file. Please try again.", variant: "destructive" });
+                setGenerateLoading(false);
+                return;
+            }
+        }
+
+        const topic = formData.get('topic') as string;
+
+        if (!topic && !pdfDataUri) {
+            toast({ title: "Input Required", description: "Please provide a topic or upload a PDF to generate a quiz.", variant: "destructive" });
+            setGenerateLoading(false);
+            return;
+        }
+
         const input: GenerateQuizInput = {
-            topic: formData.get('topic') as string,
+            topic: topic,
             numQuestions: parseInt(formData.get('numQuestions') as string, 10),
             difficulty: formData.get('difficulty') as 'Easy' | 'Medium' | 'Hard',
             questionType: formData.get('questionType') as 'Multiple Choice' | 'True/False',
+            pdfDataUri: pdfDataUri,
         };
-
+    
         try {
             const generatedContent = await generateQuiz(input);
             if (manualQuestionsRef.current) {
@@ -132,16 +169,32 @@ export default function CreateQuizPage() {
                         <Sparkles className="text-primary" /> Generate Quiz with AI
                     </CardTitle>
                     <CardDescription>
-                        Let AI do the heavy lifting. Just provide a topic and some parameters.
+                        Let AI do the heavy lifting. Provide a topic, upload a PDF, or both!
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleGenerateQuiz}>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
                             <Label htmlFor="topic">Topic</Label>
-                            <Input id="topic" name="topic" placeholder="e.g., The Solar System" required />
+                            <Input id="topic" name="topic" placeholder="e.g., The Solar System (optional if PDF is used)" />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-card px-2 text-muted-foreground">Or</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="pdf">Upload PDF</Label>
+                            <Input id="pdf" name="pdf" type="file" accept="application/pdf" className="file:text-primary file:font-semibold" />
+                            <p className="text-xs text-muted-foreground">Generate questions directly from a PDF document.</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="numQuestions">Number of Questions</Label>
                                 <Select name="numQuestions" defaultValue="5">
