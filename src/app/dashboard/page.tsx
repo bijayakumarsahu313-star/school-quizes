@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -29,15 +28,50 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useUser, useCollection, useDoc } from '@/firebase';
+import { useUser, useCollection, useDoc, useFirestore } from '@/firebase';
 import type { Quiz, UserProfile } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: userProfile } = useDoc<UserProfile>(user ? 'users' : null, user?.uid);
+  const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(user ? 'users' : null, user?.uid);
   const { data: quizzes, loading: quizzesLoading } = useCollection<Quiz>(user ? 'quizzes' : null, 'createdBy', user?.uid);
-  const { data: students, loading: studentsLoading } = useCollection<UserProfile>('users', 'role', 'student');
+  
+  const [students, setStudents] = useState<UserProfile[]>([]);
+  const [studentsLoading, setStudentsLoading] = useState(true);
+  const firestore = useFirestore();
+
+  useEffect(() => {
+    if (!firestore || !userProfile?.school) {
+      if (!profileLoading) {
+        setStudentsLoading(false);
+      }
+      return;
+    }
+
+    setStudentsLoading(true);
+    const studentsQuery = query(
+      collection(firestore, 'users'),
+      where('role', '==', 'student'),
+      where('school', '==', userProfile.school)
+    );
+
+    const unsubscribe = onSnapshot(studentsQuery, 
+      (snapshot) => {
+        const studentData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserProfile));
+        setStudents(studentData);
+        setStudentsLoading(false);
+      }, 
+      (error) => {
+        console.error("Error fetching students:", error);
+        setStudentsLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [firestore, userProfile, profileLoading]);
 
   const totalStudents = studentsLoading ? '...' : students.length;
   const totalQuizzes = quizzesLoading ? '...' : (quizzes?.length ?? 0);
@@ -68,7 +102,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{totalStudents}</div>
             <p className="text-xs text-muted-foreground">
-              enrolled in the platform
+              in your school
             </p>
           </CardContent>
         </Card>
@@ -143,7 +177,7 @@ export default function Dashboard() {
             <div className="grid gap-2">
               <CardTitle>Student Roster</CardTitle>
               <CardDescription>
-                A preview of students on the platform.
+                A preview of students in your school.
               </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
@@ -156,7 +190,8 @@ export default function Dashboard() {
           <CardContent className="grid gap-8">
             {studentsLoading ? (
                 <div className="text-center text-muted-foreground">Loading students...</div>
-            ) : students.slice(0, 4).map((student) => (
+            ) : students.length > 0 ? (
+                students.slice(0, 4).map((student) => (
                 <div key={student.uid} className="flex items-center gap-4">
                   <Avatar className="hidden h-9 w-9 sm:flex">
                     <AvatarImage src={student.photoURL} alt="Avatar" />
@@ -171,7 +206,10 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">No students found for your school.</div>
+            )}
           </CardContent>
         </Card>
       </div>
