@@ -51,7 +51,7 @@ export default function GetStartedPage() {
 
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (teacherDetails.adminId === ADMIN_ID) {
+    if (teacherDetails.adminId.trim() === ADMIN_ID) {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
       sessionStorage.setItem('adminDetails', JSON.stringify(teacherDetails));
       setIsTeacherDialogOpen(false);
