@@ -58,7 +58,7 @@ O: True
         }
         
         const llmResponse = await ai.generate({
-            model: 'gemini-1.5-flash-latest',
+            model: 'googleai/gemini-1.5-flash',
             prompt: promptRequest,
         });
 
