@@ -2,21 +2,18 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Only admin can manage quizzes
-    // Students can only read quizzes that are published
+    // Rules are opened for demonstration purposes as there is no active auth.
+    // In a production app, these would be secured.
     match /quizzes/{quizId} {
-      allow read: if resource.data.published == true;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read, write: if true;
     }
 
-    // Students can create submissions for themselves
     match /submissions/{submissionId} {
-        allow create: if request.auth.uid == request.resource.data.userId;
+        allow read, write: if true;
     }
-    
-    // Users can manage their own profile
+
     match /users/{userId} {
-        allow read, write: if request.auth.uid == userId;
+        allow read, write: if true;
     }
 
     // Fallback rule to block all other access

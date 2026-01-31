@@ -145,11 +145,10 @@ export default function CreateQuizPage() {
                 class: className,
                 creatorId: creatorId,
                 createdAt: serverTimestamp(),
-                published: false
             };
 
             await addDoc(collection(db, "quizzes"), quizData)
-            toast({ title: "Success!", description: "Quiz created and saved as a draft." });
+            toast({ title: "Success!", description: "Quiz created and saved." });
             router.push('/dashboard/quizzes');
 
         } catch (error: any) {
@@ -259,7 +258,7 @@ export default function CreateQuizPage() {
                 <CardHeader>
                     <CardTitle>Review & Save Quiz</CardTitle>
                     <CardDescription>
-                        Review the generated questions or enter them manually, then save the quiz. The quiz will be saved as a draft.
+                        Review the generated questions or enter them manually, then save the quiz.
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSaveQuiz}>
@@ -313,7 +312,7 @@ export default function CreateQuizPage() {
                     <CardFooter>
                         <Button type="submit" className="w-full" disabled={saveLoading}>
                             {saveLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                            Save Quiz as Draft
+                            Save Quiz
                         </Button>
                     </CardFooter>
                 </form>

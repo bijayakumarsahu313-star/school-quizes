@@ -39,7 +39,7 @@ export default function StudentQuizzesPage() {
                     return;
                 }
 
-                const q = query(collection(db, 'quizzes'), where("school", "==", school), where("published", "==", true));
+                const q = query(collection(db, 'quizzes'), where("school", "==", school));
                 const querySnapshot = await getDocs(q);
                 const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
                 setQuizzes(fetchedQuizzes);

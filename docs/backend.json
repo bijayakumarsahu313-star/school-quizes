@@ -23,7 +23,6 @@
         "subject": { "type": "string" },
         "school": { "type": "string" },
         "class": { "type": "string" },
-        "published": { "type": "boolean", "description": "Indicates if the quiz is visible to students." },
         "questions": {
           "type": "array",
           "items": {
@@ -45,7 +44,7 @@
           "format": "date-time"
         }
       },
-      "required": ["title", "subject", "questions", "school", "class", "creatorId", "createdAt", "published"]
+      "required": ["title", "subject", "questions", "school", "class", "creatorId", "createdAt"]
     },
     "Submission": {
         "title": "Quiz Submission",

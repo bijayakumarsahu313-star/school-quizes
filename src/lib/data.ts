@@ -12,6 +12,5 @@ export type Quiz = {
   school: string;
   class: string;
   questions: Question[];
-  published: boolean;
   createdAt: any; // Firestore timestamp
 };
