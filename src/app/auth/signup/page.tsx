@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -14,7 +13,6 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
 export default function SignupPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState('');
 
@@ -51,7 +49,7 @@ export default function SignupPage() {
       
       alert('Signup successful!');
 
-      router.push('/');
+      window.location.href = '/';
       
     } catch (err: any) {
       alert(err.message);
