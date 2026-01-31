@@ -63,20 +63,26 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
-        const unsub = onSnapshot(query(collection(db, 'quizzes'), where('createdBy', '==', user.uid)), (snapshot) => {
+        const q = userProfile?.role === 'admin' 
+            ? query(collection(db, 'quizzes'))
+            : query(collection(db, 'quizzes'), where('createdBy', '==', user.uid));
+            
+        const unsub = onSnapshot(q, (snapshot) => {
             setQuizzesCount(snapshot.size);
             setLoadingQuizzes(false);
         });
         return () => unsub();
     }
-  }, [user, db]);
+  }, [user, userProfile, db]);
   
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
     { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes', badge: loadingQuizzes ? '...' : quizzesCount.toString() },
-    { href: '/dashboard/students', icon: <Users />, label: 'Students' },
-    { href: '/dashboard/analytics', icon: <BarChart2 />, label: 'Analytics' },
   ];
+  
+  if (userProfile?.role === 'admin') {
+    navItems.push({ href: '/dashboard/users', icon: <Users />, label: 'Users' });
+  }
 
   const handleLogout = async () => {
       await signOut(auth);

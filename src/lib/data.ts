@@ -4,7 +4,7 @@ export type UserProfile = {
   id?: string;
   name: string;
   email: string;
-  role: 'student' | 'teacher';
+  role: 'student' | 'teacher' | 'admin';
   school?: string; // Optional for students
   class?: string; // Student only
   board?: string; // Student only

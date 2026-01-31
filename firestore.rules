@@ -1,21 +1,39 @@
+
 rules_version = '2';
 service cloud.firestore {
+  function isRole(role) {
+    return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+  }
+  function isStudent() { return isRole('student'); }
+  function isTeacher() { return isRole('teacher'); }
+  function isAdmin() { return isRole('admin'); }
+
   match /databases/{database}/documents {
     
     match /users/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
+      // Admins can read any user profile. Users can read their own.
+      allow read: if (request.auth.uid == userId) || isAdmin();
+      // Users can update their own profile.
+      allow update: if request.auth.uid == userId;
+      // Any authenticated user can create a user profile document (on signup).
       allow create: if request.auth != null;
     }
 
     match /quizzes/{quizId} {
-      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "student" 
-                 && resource.data.school == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.school
-                 && resource.data.class == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.class;
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "teacher";
+      // Teachers and Admins can do anything to quizzes.
+      allow read, write: if isTeacher() || isAdmin();
+      // Students can read quizzes matching their school and class.
+      allow read: if isStudent() && 
+                   resource.data.school == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.school &&
+                   resource.data.class == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.class;
     }
 
     match /submissions/{submissionId} {
-      allow read, write: if request.auth != null;
+      // Teachers and Admins can read/write any submission.
+      allow read, write: if isTeacher() || isAdmin();
+      // Students can create and read/write their own submissions.
+      allow read, write: if request.auth.uid == resource.data.studentId;
+      allow create: if request.auth.uid == request.resource.data.studentId;
     }
   }
 }

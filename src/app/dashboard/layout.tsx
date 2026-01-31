@@ -25,7 +25,7 @@ export default function DashboardLayout({
     }
 
     if (userProfile) {
-      if (userProfile.role === 'teacher') {
+      if (userProfile.role === 'teacher' || userProfile.role === 'admin') {
         setIsAuthorized(true);
       } else {
         router.replace('/student-zone');

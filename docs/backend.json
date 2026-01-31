@@ -21,7 +21,7 @@
         },
         "role": {
           "type": "string",
-          "enum": ["student", "teacher"],
+          "enum": ["student", "teacher", "admin"],
           "description": "The user's role."
         },
         "school": {
