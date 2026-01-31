@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { auth, firestore as db } from '@/firebase/client';
+import { firestore as db } from '@/firebase/client';
 import type { Question } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,12 +29,6 @@ export default function CreateQuizPage() {
     const className = (form.elements.namedItem('class') as HTMLInputElement).value;
     const questionsContent = (form.elements.namedItem('questions') as HTMLTextAreaElement).value;
 
-    if (!auth.currentUser) {
-        toast({ title: "Error", description: "You must be logged in to create a quiz.", variant: "destructive" });
-        setLoading(false);
-        return;
-    }
-
     try {
         const questions = parseManualQuestions(questionsContent);
         if (questions.length === 0) {
@@ -48,7 +42,6 @@ export default function CreateQuizPage() {
             questions,
             school,
             class: className,
-            createdBy: auth.currentUser.uid,
             createdAt: serverTimestamp()
         };
 
