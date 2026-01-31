@@ -5,26 +5,23 @@ import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 import { GenerateQuizInputSchema, type GenerateQuizInput } from '@/ai/schemas';
 
-const prompt = ai.definePrompt(
+const generateQuizFlow = ai.defineFlow(
     {
-        name: 'generateQuizPrompt',
-        model: googleAI.model('gemini-1.5-flash-latest'),
-        input: { schema: GenerateQuizInputSchema },
-        output: {
-            format: 'text',
-        },
-        prompt: `You are an expert quiz creator for school students. Generate a quiz based on the following criteria:
+        name: 'generateQuizFlow',
+        inputSchema: GenerateQuizInputSchema,
+        outputSchema: z.string(),
+    },
+    async (input) => {
+        // Dynamically construct the prompt based on user input.
+        const promptText = `You are an expert quiz creator for school students. Generate a quiz based on the following criteria:
 
-{{#if pdfDataUri}}
-The primary source for the quiz questions is the content of the attached PDF document. The topic below is for context only.
-PDF Document: {{media url=pdfDataUri}}
-Topic: {{topic}}
-{{else}}
-Topic: {{topic}}
-{{/if}}
-Number of Questions: {{numQuestions}}
-Difficulty: {{difficulty}}
-Question Type: {{questionType}}
+${input.pdfDataUri
+    ? `The primary source for the quiz questions is the content of the attached PDF document. The topic below is for context only.\nTopic: ${input.topic}`
+    : `Topic: ${input.topic}`
+}
+Number of Questions: ${input.numQuestions}
+Difficulty: ${input.difficulty}
+Question Type: ${input.questionType}
 
 VERY IMPORTANT: Your response MUST be only the quiz content and strictly follow this format for each question:
 - Start each question with "Q: "
@@ -53,18 +50,19 @@ O: False
 Q: Humans can fly without assistance.
 *A: False
 O: True
-`,
-    },
-);
+`;
 
-const generateQuizFlow = ai.defineFlow(
-    {
-        name: 'generateQuizFlow',
-        inputSchema: GenerateQuizInputSchema,
-        outputSchema: z.string(),
-    },
-    async (input) => {
-        const llmResponse = await prompt(input);
+        const promptRequest: any[] = [{ text: promptText }];
+        if (input.pdfDataUri) {
+            // Add the PDF media part to the beginning of the prompt array
+            promptRequest.unshift({ media: { url: input.pdfDataUri, contentType: 'application/pdf' } });
+        }
+        
+        const llmResponse = await ai.generate({
+            model: googleAI.model('gemini-1.5-flash-latest'),
+            prompt: promptRequest,
+        });
+
         return llmResponse.text;
     }
 );
