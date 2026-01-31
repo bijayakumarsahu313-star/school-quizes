@@ -1,10 +1,11 @@
-
 'use client';
 
 import { usePathname } from 'next/navigation';
 import {
   BookCopy,
   LayoutDashboard,
+  PieChart,
+  Sparkles,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -37,7 +38,9 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
-    { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes' },
+    { href: '/dashboard/quizzes/create', icon: <Sparkles />, label: 'Create Quiz' },
+    { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'All Quizzes' },
+    { href: '/dashboard/analytics', icon: <PieChart />, label: 'Analytics' },
   ];
 
   return (
