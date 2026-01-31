@@ -63,7 +63,7 @@ export default function GetStartedPage() {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
       sessionStorage.setItem('adminDetails', JSON.stringify({ adminId, school }));
       setIsTeacherDialogOpen(false);
-      router.push('/teacher-tools');
+      router.push('/dashboard');
     } else {
       setTeacherIdError('Please enter a valid Admin No. (a number from 1 to 1,000,000,000).');
     }
@@ -94,7 +94,7 @@ export default function GetStartedPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-center text-primary font-semibold">
-                      Go to Teacher Tools
+                      Go to Teacher Dashboard
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </div>
                   </CardContent>

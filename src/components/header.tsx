@@ -16,7 +16,7 @@ import { Award } from 'lucide-react';
 
 const navLinks = [
   { href: '/about', label: 'About Us' },
-  { href: '/teacher-tools', label: 'Teacher Tools' },
+  { href: '/dashboard', label: 'Teacher Dashboard' },
   { href: '/student-zone', label: 'Student Zone' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },

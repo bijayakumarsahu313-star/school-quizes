@@ -17,7 +17,7 @@ export default function CheckoutPage() {
                         </CardDescription>
                     </CardHeader>
                      <CardContent>
-                        <p>You can now directly access the <Link href="/teacher-tools" className="text-primary hover:underline">teacher tools</Link> or the <Link href="/student-zone" className="text-primary hover:underline">student zone</Link>.</p>
+                        <p>You can now directly access the <Link href="/dashboard" className="text-primary hover:underline">teacher dashboard</Link> or the <Link href="/student-zone" className="text-primary hover:underline">student zone</Link>.</p>
                     </CardContent>
                 </Card>
             </main>
