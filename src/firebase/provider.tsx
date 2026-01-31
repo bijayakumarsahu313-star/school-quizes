@@ -22,16 +22,18 @@ let firebaseApp: FirebaseApp;
 let auth: Auth;
 let firestore: Firestore;
 
+// This check prevents initialization errors during server-side rendering or if the config is missing.
 if (firebaseConfig?.projectId && firebaseConfig.projectId !== 'PROJECT_ID') {
+  // getApps() checks if Firebase has already been initialized.
   firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(firebaseApp);
   firestore = getFirestore(firebaseApp);
 } else {
   // This else block is a safeguard for development if the config is missing.
+  // It creates mock objects to prevent the app from crashing during development.
   console.error(
     'Firebase config is missing or contains placeholder values. Firebase will not be initialized.'
   );
-  // Create mock objects to prevent the app from crashing.
   firebaseApp = {} as FirebaseApp;
   auth = {} as Auth;
   firestore = {} as Firestore;
@@ -49,9 +51,9 @@ const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
 export function FirebaseProvider({ children }: { children: ReactNode }) {
   // The provider now simply provides the pre-initialized and stable context value.
-  // This eliminates the race condition caused by useState and useEffect.
+  // This is safe because the initialization logic above has already run.
   if (!firebaseContextValue.app.options?.projectId) {
-    // This renders a fallback UI if the Firebase config was invalid.
+    // This renders a clear fallback UI if the Firebase config was invalid.
     return (
         <div style={{
             display: 'flex',
@@ -72,7 +74,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   );
 };
 
-// Hooks remain the same, but now they are guaranteed to receive an initialized context.
+// These hooks provide a clean way for components to access the initialized services.
 export const useFirebase = (): FirebaseContextValue => {
   const context = useContext(FirebaseContext);
   if (!context) {
