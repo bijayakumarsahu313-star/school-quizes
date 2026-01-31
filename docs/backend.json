@@ -1,52 +1,6 @@
 
 {
   "entities": {
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "Represents a user's profile in the system.",
-      "type": "object",
-      "properties": {
-        "uid": {
-          "type": "string",
-          "description": "The user's unique ID from Firebase Auth."
-        },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "The user's email address."
-        },
-        "name": {
-          "type": "string",
-          "description": "The user's full name."
-        },
-        "role": {
-          "type": "string",
-          "enum": ["student", "teacher", "admin"],
-          "description": "The user's role."
-        },
-        "school": {
-          "type": "string",
-          "description": "The name of the user's school (for teachers)."
-        },
-        "class": {
-          "type": "string",
-          "description": "The class of the student (e.g., 10th A)."
-        },
-        "board": {
-            "type": "string",
-            "description": "The educational board of the student (e.g., CBSE, ICSE)."
-        },
-        "subject": {
-            "type": "string",
-            "description": "The primary subject taught by the teacher."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "required": ["uid", "email", "name", "role", "createdAt"]
-    },
     "Quiz": {
       "title": "Quiz",
       "description": "Represents a quiz created by a teacher.",
@@ -70,49 +24,18 @@
             "required": ["question", "options", "answer"]
           }
         },
-        "createdBy": {
-          "type": "string",
-          "description": "The UID of the teacher who created the quiz."
-        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
         }
       },
-      "required": ["title", "questions", "school", "class", "createdBy", "createdAt"]
-    },
-    "Submission": {
-      "title": "Submission",
-      "description": "Represents a student's submission for a quiz.",
-      "type": "object",
-      "properties": {
-        "studentId": { "type": "string" },
-        "quizId": { "type": "string" },
-        "answers": { "type": "object" },
-        "score": { "type": "number" },
-        "submittedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "required": ["studentId", "quizId", "answers", "submittedAt"]
+      "required": ["title", "questions", "school", "class", "createdAt"]
     }
   },
-  "auth": {
-    "providers": ["email", "google"]
-  },
   "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "Stores public profile information for each user."
-    },
     "/quizzes/{quizId}": {
       "schema": { "$ref": "#/entities/Quiz" },
       "description": "Stores all quizzes created by teachers."
-    },
-    "/submissions/{submissionId}": {
-      "schema": { "$ref": "#/entities/Submission" },
-      "description": "Stores student quiz submissions."
     }
   }
 }

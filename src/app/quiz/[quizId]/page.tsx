@@ -10,9 +10,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Trophy, CheckCircle, XCircle } from 'lucide-react';
-import { useUser } from '@/firebase/auth/use-user';
 import { firestore as db } from '@/firebase/client';
-import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
 type QuizData = {
@@ -25,7 +24,6 @@ export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const quizId = params.quizId as string;
-  const { user } = useUser();
   
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,15 +32,8 @@ export default function QuizPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [answerStatus, setAnswerStatus] = useState<'unanswered' | 'correct' | 'incorrect'>('unanswered');
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
-
-  useEffect(() => {
-    if (!user) {
-        router.push('/auth/login');
-    }
-  }, [user, router]);
 
   useEffect(() => {
     if (!quizId) return;
@@ -65,9 +56,8 @@ export default function QuizPage() {
   }, [quizId, router]);
 
 
-  const handleSubmitQuiz = useCallback(async () => {
-    if (isSubmitting || !user || !quiz) return;
-    setIsSubmitting(true);
+  const handleFinishQuiz = useCallback(() => {
+    if (!quiz) return;
     
     let correct = 0;
     quiz.questions.forEach((q, index) => {
@@ -77,25 +67,8 @@ export default function QuizPage() {
     });
     const finalScore = (correct / quiz.questions.length) * 100;
     setScore(finalScore);
-
-    const submissionData = {
-        studentId: user.uid,
-        quizId: quiz.id,
-        answers: selectedAnswers,
-        score: finalScore,
-        submittedAt: serverTimestamp(),
-    };
-
-    try {
-        await addDoc(collection(db, "submissions"), submissionData);
-        setIsFinished(true);
-    } catch (error) {
-        console.error("Error submitting quiz:", error);
-    } finally {
-        setIsSubmitting(false);
-    }
-
-  }, [isSubmitting, user, quiz, selectedAnswers]);
+    setIsFinished(true);
+  }, [quiz, selectedAnswers]);
 
   const handleAnswerSelect = (option: string) => {
     if (answerStatus !== 'unanswered') return;
@@ -125,7 +98,7 @@ export default function QuizPage() {
       setAnswerStatus('unanswered');
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      handleSubmitQuiz();
+      handleFinishQuiz();
     }
   };
   
@@ -219,12 +192,9 @@ export default function QuizPage() {
              <div className="p-6 pt-4 flex justify-end gap-4">
                 {answerStatus === 'unanswered' ? (
                     <Button onClick={handleSubmitAnswer} disabled={!selectedAnswers[currentQuestionIndex]}>Submit</Button>
-                ) : currentQuestionIndex < quiz.questions.length - 1 ? (
-                    <Button onClick={handleNextQuestion}>Next Question</Button>
                 ) : (
-                    <Button onClick={handleNextQuestion} disabled={isSubmitting}>
-                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      Finish Quiz
+                    <Button onClick={handleNextQuestion}>
+                      {currentQuestionIndex < quiz.questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
                     </Button>
                 )}
             </div>

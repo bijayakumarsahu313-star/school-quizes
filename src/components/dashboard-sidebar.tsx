@@ -1,14 +1,10 @@
 
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
-  BarChart2,
   BookCopy,
   LayoutDashboard,
-  LogOut,
-  Settings,
-  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -17,37 +13,20 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter,
-  SidebarMenuBadge,
   SidebarProvider,
   SidebarInset,
   SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Separator } from './ui/separator';
-import { signOut } from 'firebase/auth';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { useUser } from '@/firebase/auth/use-user';
-import { auth, firestore as db } from '@/firebase/client';
-import { useEffect, useState } from 'react';
-
 
 function Header() {
-    const { user, userProfile } = useUser();
     return (
       <div className="flex h-16 items-center justify-between border-b px-4 lg:px-6">
         <div className="md:hidden">
             <SidebarTrigger />
         </div>
         <div className="hidden md:block">
-            {/* Can add breadcrumbs or page title here */}
-        </div>
-        <div className="flex items-center gap-4">
-            <Avatar>
-              <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || ''} />
-              <AvatarFallback>{userProfile?.name?.charAt(0) || 'T'}</AvatarFallback>
-            </Avatar>
+            <h1 className="text-lg font-semibold">Teacher Dashboard</h1>
         </div>
       </div>
     );
@@ -55,38 +34,11 @@ function Header() {
 
 export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, userProfile } = useUser();
-  const [quizzesCount, setQuizzesCount] = useState(0);
-  const [loadingQuizzes, setLoadingQuizzes] = useState(true);
-
-  useEffect(() => {
-    if (user) {
-        const q = userProfile?.role === 'admin' 
-            ? query(collection(db, 'quizzes'))
-            : query(collection(db, 'quizzes'), where('createdBy', '==', user.uid));
-            
-        const unsub = onSnapshot(q, (snapshot) => {
-            setQuizzesCount(snapshot.size);
-            setLoadingQuizzes(false);
-        });
-        return () => unsub();
-    }
-  }, [user, userProfile]);
   
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
-    { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes', badge: loadingQuizzes ? '...' : quizzesCount.toString() },
+    { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes' },
   ];
-  
-  if (userProfile?.role === 'admin') {
-    navItems.push({ href: '/dashboard/users', icon: <Users />, label: 'Users' });
-  }
-
-  const handleLogout = async () => {
-      await signOut(auth);
-      router.push('/');
-  }
 
   return (
     <SidebarProvider>
@@ -108,30 +60,10 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                       <span>{item.label}</span>
                     </a>
                   </SidebarMenuButton>
-                  {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter>
-            <Separator className="my-2" />
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Settings">
-                        <a href="#">
-                        <Settings />
-                        <span>Settings</span>
-                        </a>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
-                        <LogOut />
-                        <span>Logout</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
         </Sidebar>
         <SidebarInset>
             <Header/>

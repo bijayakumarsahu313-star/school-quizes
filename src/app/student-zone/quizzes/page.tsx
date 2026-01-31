@@ -3,9 +3,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { firestore as db } from "@/firebase/client";
-import { useUser } from "@/firebase/auth/use-user";
 import type { Quiz } from "@/lib/data";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -15,24 +14,14 @@ import { Play, Calculator, Landmark, FlaskConical, BookText, BrainCircuit } from
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentQuizzesPage() {
-    const { userProfile, loading: userLoading } = useUser();
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 
     useEffect(() => {
-        if (userLoading || !userProfile) return;
-
         const fetchQuizzes = async () => {
-            if (!userProfile.school || !userProfile.class) {
-                setLoadingQuizzes(false);
-                return;
-            }
+            setLoadingQuizzes(true);
             try {
-                const q = query(
-                    collection(db, 'quizzes'),
-                    where('school', '==', userProfile.school),
-                    where('class', '==', userProfile.class)
-                );
+                const q = query(collection(db, 'quizzes'));
                 const querySnapshot = await getDocs(q);
                 const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
                 setQuizzes(fetchedQuizzes);
@@ -45,7 +34,7 @@ export default function StudentQuizzesPage() {
         };
 
         fetchQuizzes();
-    }, [userProfile, userLoading]);
+    }, []);
 
     const getSubjectIcon = (subject: string) => {
         const s = subject.toLowerCase();
@@ -56,30 +45,20 @@ export default function StudentQuizzesPage() {
         return <BrainCircuit className="h-6 w-6 text-primary" />;
     };
     
-    const isLoading = userLoading || loadingQuizzes;
-
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1 bg-gray-50 dark:bg-gray-900/10">
                 <div className="container mx-auto px-4 py-16">
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-12">
                         <h1 className="text-4xl font-bold font-headline">Available Quizzes</h1>
                         <p className="text-lg text-muted-foreground mt-2">
                             Choose a quiz to test your knowledge.
                         </p>
                     </div>
 
-                    <div className="flex justify-center mb-12 items-center gap-4">
-                        {userProfile && (
-                            <p className="text-muted-foreground">
-                                Showing quizzes for <span className="font-bold text-foreground">Class {userProfile.class}</span> at <span className="font-bold text-foreground">{userProfile.school}</span>
-                            </p>
-                        )}
-                    </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {isLoading ? (
+                        {loadingQuizzes ? (
                             Array.from({ length: 3 }).map((_, i) => (
                                 <Card key={i} className="overflow-hidden">
                                      <CardHeader className="p-0">
@@ -93,7 +72,6 @@ export default function StudentQuizzesPage() {
                                     </CardHeader>
                                     <CardContent className="p-6 space-y-4">
                                          <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                            <Skeleton className="h-4 w-24" />
                                             <Skeleton className="h-4 w-24" />
                                         </div>
                                        <Skeleton className="h-10 w-full" />
@@ -112,7 +90,7 @@ export default function StudentQuizzesPage() {
                                                 </div>
                                                 <div>
                                                     <CardTitle className="leading-tight">{quiz.title}</CardTitle>
-                                                    <CardDescription>{quiz.class}</CardDescription>
+                                                    <CardDescription>{quiz.class} - {quiz.school}</CardDescription>
                                                 </div>
                                             </div>
                                         </CardHeader>
@@ -132,7 +110,7 @@ export default function StudentQuizzesPage() {
                             })
                         ) : (
                             <div className="col-span-full text-center py-12">
-                                <p className="text-muted-foreground text-lg">No quizzes found for your school and class.</p>
+                                <p className="text-muted-foreground text-lg">No quizzes found.</p>
                                 <p className="text-muted-foreground text-sm">Please check back later!</p>
                             </div>
                         )}

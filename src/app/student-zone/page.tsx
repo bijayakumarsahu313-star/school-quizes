@@ -4,7 +4,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gamepad2, Award, LineChart, BrainCircuit } from "lucide-react";
+import { Gamepad2, Award, BrainCircuit } from "lucide-react";
 
 export default function StudentZonePage() {
   const menuItems = [
@@ -12,7 +12,7 @@ export default function StudentZonePage() {
       href: "/student-zone/quizzes",
       icon: Gamepad2,
       title: "Take a Quiz",
-      description: "Browse and take quizzes assigned by your teachers.",
+      description: "Browse and take quizzes for your school and class.",
     },
     {
       href: "/student-zone/generate-quiz",
@@ -24,13 +24,7 @@ export default function StudentZonePage() {
       href: "/student-zone/badges",
       icon: Award,
       title: "Your Badges",
-      description: "Check out all the cool badges you've earned.",
-    },
-    {
-      href: "/student-zone/progress",
-      icon: LineChart,
-      title: "Track Progress",
-      description: "Watch yourself grow and see how you improve over time.",
+      description: "Check out all the cool badges you can earn.",
     },
   ];
 
@@ -47,7 +41,7 @@ export default function StudentZonePage() {
             <Link href="/student-zone/quizzes">Take a Quiz</Link>
           </Button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-5xl mx-auto">
             {menuItems.map((item) => {
               const Icon = item.icon;
               return (

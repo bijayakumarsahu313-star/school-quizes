@@ -1,37 +1,24 @@
 
 'use client';
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { firestore as db } from "@/firebase/client";
-import { useUser } from "@/firebase/auth/use-user";
-import type { Quiz, UserProfile } from '@/lib/data';
+import type { Quiz } from '@/lib/data';
 import { useState, useEffect } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function QuizzesPage() {
-  const { user, userProfile } = useUser();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !userProfile) return;
-
-    const fetchQuizzes = async (uid: string, profile: UserProfile) => {
+    const fetchQuizzes = async () => {
       setLoading(true);
       try {
-        let q;
-        if (profile.role === 'admin') {
-          // Admin sees all quizzes
-          q = query(collection(db, 'quizzes'));
-        } else {
-          // Teacher sees quizzes created by them
-          q = query(collection(db, 'quizzes'), where('createdBy', '==', uid));
-        }
-        
+        const q = query(collection(db, 'quizzes'));
         const querySnapshot = await getDocs(q);
         const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
         setQuizzes(fetchedQuizzes);
@@ -42,19 +29,16 @@ export default function QuizzesPage() {
       }
     };
     
-    fetchQuizzes(user.uid, userProfile);
-  }, [user, userProfile]);
+    fetchQuizzes();
+  }, []);
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Your Quizzes</CardTitle>
-          <CardDescription>Manage, edit, and view performance for all your quizzes.</CardDescription>
+          <CardTitle>All Quizzes</CardTitle>
+          <CardDescription>Manage, and view performance for all quizzes in the system.</CardDescription>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/quizzes/create">Create New Quiz</Link>
-        </Button>
       </CardHeader>
       <CardContent>
         <Table>
@@ -92,7 +76,7 @@ export default function QuizzesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Submissions</DropdownMenuItem>
+                        <DropdownMenuItem disabled>View Submissions</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -101,7 +85,7 @@ export default function QuizzesPage() {
             ) : (
                <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  You haven't created any quizzes yet.
+                  No quizzes found.
                 </TableCell>
               </TableRow>
             )}
