@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, ReactNode } from 'react';
@@ -15,22 +14,27 @@ interface FirebaseContextValue {
 }
 
 // --- Singleton Initialization Pattern ---
-// This code runs once per client session when the module is first imported,
-// ensuring Firebase is initialized before any component renders.
+// This code ensures Firebase is initialized only once per client session,
+// outside of the React component lifecycle. This is the key to preventing
+// race conditions and the `auth/configuration-not-found` error.
 
 let firebaseApp: FirebaseApp;
 let auth: Auth;
 let firestore: Firestore;
 
-// This check prevents initialization errors during server-side rendering or if the config is missing.
-if (typeof window !== 'undefined' && firebaseConfig?.projectId && firebaseConfig.projectId !== 'PROJECT_ID') {
+// This check prevents initialization errors during server-side rendering.
+if (typeof window !== 'undefined' && firebaseConfig?.projectId) {
   // getApps() checks if Firebase has already been initialized.
-  firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  if (!getApps().length) {
+    firebaseApp = initializeApp(firebaseConfig);
+  } else {
+    firebaseApp = getApp();
+  }
   auth = getAuth(firebaseApp);
   firestore = getFirestore(firebaseApp);
 } else {
-  // This else block is a safeguard. It creates mock objects to prevent the app
-  // from crashing during development or SSR if the config is missing.
+  // On the server, or if config is missing, create mock objects. This prevents
+  // the app from crashing and is crucial for SSR safety.
   firebaseApp = {} as FirebaseApp;
   auth = {} as Auth;
   firestore = {} as Firestore;
@@ -46,10 +50,13 @@ const firebaseContextValue: FirebaseContextValue = {
 
 const FirebaseContext = createContext<FirebaseContextValue | null>(null);
 
+/**
+ * This is a "pure" provider. It contains no hooks or conditional rendering.
+ * Its only job is to provide the pre-initialized Firebase services.
+ * This guarantees it renders identically on the server and client,
+ * which is essential for preventing hydration errors.
+ */
 export function FirebaseProvider({ children }: { children: ReactNode }) {
-  // The provider now simply provides the pre-initialized and stable context value.
-  // The conditional check that was here has been removed to prevent hydration errors,
-  // as the singleton pattern above already handles the SSR case by creating mock objects.
   return (
     <FirebaseContext.Provider value={firebaseContextValue}>
       {children}
@@ -57,7 +64,9 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   );
 };
 
-// These hooks provide a clean way for components to access the initialized services.
+// --- Service Hooks ---
+// These hooks provide a clean, consistent way for components to access services.
+
 export const useFirebase = (): FirebaseContextValue => {
   const context = useContext(FirebaseContext);
   if (!context) {

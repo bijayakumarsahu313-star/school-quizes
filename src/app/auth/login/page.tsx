@@ -9,7 +9,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
@@ -42,6 +41,7 @@ export default function LoginPage() {
   });
   
   const handleRedirect = async (uid: string) => {
+    if (!firestore) return;
     const userDoc = await getDoc(doc(firestore, 'users', uid));
     if (userDoc.exists()) {
       const userProfile = userDoc.data() as UserProfile;
@@ -51,6 +51,7 @@ export default function LoginPage() {
         router.push('/student-zone');
       }
     } else {
+      // This case handles users who signed up with Google but didn't complete the profile.
       router.push('/auth/signup'); 
     }
   };
@@ -103,7 +104,8 @@ export default function LoginPage() {
         });
         router.push('/auth/signup');
       }
-    } catch (error: any) {
+    } catch (error: any)
+     {
       console.error(error);
       if (error.code === 'auth/account-exists-with-different-credential') {
         toast({
