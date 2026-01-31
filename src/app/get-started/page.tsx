@@ -25,7 +25,7 @@ export default function GetStartedPage() {
 
   // State for teacher dialog
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
-  const [teacherIdInput, setTeacherIdInput] = useState('');
+  const [teacherDetails, setTeacherDetails] = useState({ id: '', school: '' });
   const [teacherIdError, setTeacherIdError] = useState('');
   const ADMIN_ID = 'ADMIN-12345';
 
@@ -41,11 +41,19 @@ export default function GetStartedPage() {
     router.push('/student-zone');
   };
 
+  const handleTeacherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setTeacherDetails(prev => ({ ...prev, [id]: value }));
+    if (id === 'id') {
+        setTeacherIdError('');
+    }
+  };
+
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (teacherIdInput === ADMIN_ID) {
+    if (teacherDetails.id === ADMIN_ID) {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
-      sessionStorage.setItem('adminDetails', JSON.stringify({ adminId: teacherIdInput }));
+      sessionStorage.setItem('adminDetails', JSON.stringify({ adminId: teacherDetails.id, school: teacherDetails.school }));
       setIsTeacherDialogOpen(false);
       router.push('/teacher-tools');
     } else {
@@ -88,7 +96,7 @@ export default function GetStartedPage() {
                 <DialogHeader>
                   <DialogTitle>Teacher Verification</DialogTitle>
                   <DialogDescription>
-                    Please enter your Admin No. to access the teacher dashboard.
+                    Please enter your details to access the teacher dashboard.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleTeacherSubmit}>
@@ -97,10 +105,16 @@ export default function GetStartedPage() {
                       For demonstration, the Admin No. is: <strong className="text-foreground">{ADMIN_ID}</strong>
                     </p>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="teacherId" className="text-right">
+                      <Label htmlFor="id" className="text-right">
                         Admin No.
                       </Label>
-                      <Input id="teacherId" value={teacherIdInput} onChange={(e) => { setTeacherIdInput(e.target.value); setTeacherIdError(''); }} className="col-span-3" required />
+                      <Input id="id" value={teacherDetails.id} onChange={handleTeacherInputChange} className="col-span-3" required />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="school" className="text-right">
+                        School
+                      </Label>
+                      <Input id="school" value={teacherDetails.school} onChange={handleTeacherInputChange} className="col-span-3" required />
                     </div>
                     {teacherIdError && <p className="text-red-500 text-sm text-center col-span-4">{teacherIdError}</p>}
                   </div>

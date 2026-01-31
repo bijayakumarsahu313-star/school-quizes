@@ -22,7 +22,7 @@ const navLinks = [
 ];
 
 export function Header() {
-  const [userDetails, setUserDetails] = useState<{ type: 'student' | 'teacher'; name: string; id: string } | null>(null);
+  const [userDetails, setUserDetails] = useState<{ type: 'student' | 'teacher'; name: string; id: string, school: string } | null>(null);
 
   useEffect(() => {
     // This code runs only on the client, so window and sessionStorage are available.
@@ -32,8 +32,8 @@ export function Header() {
     if (studentDetailsString) {
       try {
         const student = JSON.parse(studentDetailsString);
-        if (student.name && student.rollNo) {
-            setUserDetails({ type: 'student', name: student.name, id: student.rollNo });
+        if (student.name && student.rollNo && student.school) {
+            setUserDetails({ type: 'student', name: student.name, id: student.rollNo, school: student.school });
         }
       } catch (e) {
         console.error("Failed to parse student details", e);
@@ -41,8 +41,8 @@ export function Header() {
     } else if (adminDetailsString) {
       try {
         const admin = JSON.parse(adminDetailsString);
-        if(admin.adminId) {
-            setUserDetails({ type: 'teacher', name: 'Teacher', id: admin.adminId });
+        if(admin.adminId && admin.school) {
+            setUserDetails({ type: 'teacher', name: 'Teacher', id: admin.adminId, school: admin.school });
         }
       } catch (e) {
         console.error("Failed to parse admin details", e);
@@ -82,6 +82,7 @@ export function Header() {
                     <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                         <div className="font-bold">{userDetails.name}</div>
+                        <div className="text-xs text-muted-foreground font-normal">School: {userDetails.school}</div>
                         <div className="text-xs text-muted-foreground font-normal">
                         {userDetails.type === 'teacher' ? 'Admin No.' : 'Roll No.'}: {userDetails.id}
                         </div>

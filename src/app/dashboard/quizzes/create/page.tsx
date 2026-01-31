@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore as db } from '@/firebase/client';
@@ -60,6 +60,21 @@ export default function CreateQuizPage() {
     const router = useRouter();
     const { toast } = useToast();
     const manualQuestionsRef = useRef<HTMLTextAreaElement>(null);
+    const [school, setSchool] = useState('');
+
+    useEffect(() => {
+        const adminDetailsString = sessionStorage.getItem('adminDetails');
+        if (adminDetailsString) {
+            try {
+                const admin = JSON.parse(adminDetailsString);
+                if (admin.school) {
+                    setSchool(admin.school);
+                }
+            } catch(e) {
+                console.error("Failed to parse admin details", e);
+            }
+        }
+    }, []);
 
     const handleGenerateQuiz = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -132,9 +147,14 @@ export default function CreateQuizPage() {
 
         const form = e.currentTarget;
         const title = (form.elements.namedItem('title') as HTMLInputElement).value;
-        const school = (form.elements.namedItem('school') as HTMLInputElement).value;
         const className = (form.elements.namedItem('class') as HTMLInputElement).value;
         const questionsContent = (form.elements.namedItem('questions') as HTMLTextAreaElement).value;
+
+        if (!school) {
+            toast({ title: "Error", description: "School information not found. Please log in again.", variant: "destructive" });
+            setSaveLoading(false);
+            return;
+        }
 
         try {
             const questions = parseManualQuestions(questionsContent);
@@ -271,7 +291,7 @@ export default function CreateQuizPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="school">School</Label>
-                                <Input id="school" name="school" placeholder="e.g., Springfield High" required />
+                                <Input id="school" name="school" value={school} placeholder="Your school will appear here..." required disabled />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="class">Class</Label>

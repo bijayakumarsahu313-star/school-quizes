@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs, where } from 'firebase/firestore';
 import { firestore as db } from "@/firebase/client";
 import type { Quiz } from "@/lib/data";
 import { Header } from "@/components/header";
@@ -20,8 +19,25 @@ export default function StudentQuizzesPage() {
     useEffect(() => {
         const fetchQuizzes = async () => {
             setLoadingQuizzes(true);
+
+            const studentDetailsString = sessionStorage.getItem('studentDetails');
+            if (!studentDetailsString) {
+                setQuizzes([]);
+                setLoadingQuizzes(false);
+                return;
+            }
+
             try {
-                const q = query(collection(db, 'quizzes'));
+                const student = JSON.parse(studentDetailsString);
+                const studentSchool = student.school;
+
+                if (!studentSchool) {
+                    setQuizzes([]);
+                    setLoadingQuizzes(false);
+                    return;
+                }
+
+                const q = query(collection(db, 'quizzes'), where("school", "==", studentSchool));
                 const querySnapshot = await getDocs(q);
                 const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
                 setQuizzes(fetchedQuizzes);
@@ -110,8 +126,8 @@ export default function StudentQuizzesPage() {
                             })
                         ) : (
                             <div className="col-span-full text-center py-12">
-                                <p className="text-muted-foreground text-lg">No quizzes found.</p>
-                                <p className="text-muted-foreground text-sm">Please check back later!</p>
+                                <p className="text-muted-foreground text-lg">No quizzes found for your school.</p>
+                                <p className="text-muted-foreground text-sm">Please check back later or ask your teacher to create one!</p>
                             </div>
                         )}
                     </div>
