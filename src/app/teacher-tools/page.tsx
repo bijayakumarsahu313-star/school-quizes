@@ -1,9 +1,13 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BrainCircuit, BookOpen, PieChart, Target } from "lucide-react";
+import { BrainCircuit, BookOpen, PieChart, Target, Loader2 } from "lucide-react";
 
 const tools = [
   {
@@ -33,6 +37,34 @@ const tools = [
 ];
 
 export default function TeacherToolsPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // This check runs only on the client-side
+    const teacherAuth = sessionStorage.getItem('isTeacherAuthenticated');
+    if (teacherAuth !== 'true') {
+      router.replace('/get-started');
+    } else {
+      setIsAuthenticated(true);
+    }
+    setLoading(false);
+  }, [router]);
+
+  if (loading || !isAuthenticated) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-1 flex items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="ml-2">Verifying access...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
