@@ -19,7 +19,7 @@ export default function LoginPage() {
         e.target.email.value,
         e.target.password.value
       );
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: any) {
       alert(err.message);
     } finally {

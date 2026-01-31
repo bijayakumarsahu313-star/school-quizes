@@ -33,7 +33,7 @@ export default function SignupPage() {
         createdAt: new Date(),
       });
 
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: any) {
       alert(err.message);
     } finally {
