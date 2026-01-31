@@ -9,6 +9,7 @@ export const GenerateQuizInputSchema = z.object({
     difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The difficulty level of the quiz'),
     questionType: z.enum(['Multiple Choice', 'True/False']).describe('The type of questions'),
     gradeLevel: z.string().optional().describe('The grade level for which the quiz is intended (e.g., "10th Grade")'),
+    className: z.string().optional().describe('The class for which the quiz is intended (e.g., "10th A")'),
 });
 
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;

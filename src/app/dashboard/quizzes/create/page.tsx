@@ -108,6 +108,7 @@ export default function CreateQuizPage() {
             difficulty: formData.get('difficulty') as 'Easy' | 'Medium' | 'Hard',
             questionType: formData.get('questionType') as 'Multiple Choice' | 'True/False',
             gradeLevel: formData.get('gradeLevel') as string | undefined,
+            className: formData.get('className') as string | undefined,
             pdfDataUri: pdfDataUri,
         };
     
@@ -196,7 +197,7 @@ export default function CreateQuizPage() {
                             <p className="text-xs text-muted-foreground">Generate questions directly from a PDF document.</p>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="numQuestions">Number of Questions</Label>
                                 <Select name="numQuestions" defaultValue="5">
@@ -238,6 +239,10 @@ export default function CreateQuizPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="gradeLevel">Grade Level</Label>
                                 <Input id="gradeLevel" name="gradeLevel" placeholder="e.g., 10th Grade" />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="className">Class</Label>
+                                <Input id="className" name="className" placeholder="e.g., 10th A" />
                             </div>
                         </div>
                     </CardContent>

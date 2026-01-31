@@ -25,6 +25,9 @@ Question Type: ${input.questionType}
         if (input.gradeLevel) {
           promptText += `Grade Level: ${input.gradeLevel}\n`;
         }
+        if (input.className) {
+          promptText += `Class: ${input.className}\n`;
+        }
 
         promptText += `
 VERY IMPORTANT: Your response MUST be only the quiz content and strictly follow this format for each question:
