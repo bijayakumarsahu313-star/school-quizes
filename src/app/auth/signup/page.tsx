@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -101,7 +102,20 @@ export default function SignupPage() {
     },
   });
   
-  const role = form.watch('role');
+  const watchedFields = form.watch(['role', 'school', 'classLevel', 'board', 'subject']);
+  const role = watchedFields[0];
+
+  const isGoogleButtonDisabled = useMemo(() => {
+    const [ role, school, classLevel, board, subject ] = watchedFields;
+    if (!school) return true;
+    if (role === 'student' && (!classLevel || !board)) {
+        return true;
+    }
+    if (role === 'teacher' && !subject) {
+        return true;
+    }
+    return false;
+  }, [watchedFields]);
 
   const handleRedirect = (role: 'student' | 'teacher') => {
       if (role === 'teacher') {
@@ -143,16 +157,7 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    const result = await form.trigger(['role', 'school', 'classLevel', 'board', 'subject']);
-    if (!result) {
-        toast({
-            variant: 'destructive',
-            title: 'Missing Information',
-            description: "Please fill out the required fields for your role before signing up with Google.",
-        });
-        return;
-    }
-      
+    // Validation is now handled by disabling the button, so we can proceed directly.
     setIsSubmitting('google');
     const provider = new GoogleAuthProvider();
 
@@ -182,7 +187,7 @@ export default function SignupPage() {
           title: 'Account Already Exists',
           description: "This email is already in use. Please go to the login page and use your original sign-in method.",
         });
-      } else {
+      } else if (error.code !== 'auth/popup-closed-by-user') {
         toast({
           variant: 'destructive',
           title: 'Google Sign-Up Failed',
@@ -327,7 +332,25 @@ export default function SignupPage() {
                         Create an account
                     </Button>
 
-                    <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isSubmitting !== 'idle'}>
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">
+                                Or continue with
+                            </span>
+                        </div>
+                    </div>
+
+                    <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        type="button" 
+                        onClick={handleGoogleSignIn} 
+                        disabled={isSubmitting !== 'idle' || isGoogleButtonDisabled}
+                        title={isGoogleButtonDisabled ? 'Please fill out your role-specific information first.' : 'Sign up with Google'}
+                    >
                         {isSubmitting === 'google' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Sign up with Google
                     </Button>
