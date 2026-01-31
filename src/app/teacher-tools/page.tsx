@@ -50,13 +50,13 @@ export default function TeacherToolsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {tools.map((tool) => (
               <Link href={tool.href} key={tool.title} className="block h-full">
-                <Card className="text-center h-full hover:border-primary transition-colors">
+                <Card className="text-center h-full hover:border-primary transition-colors flex flex-col">
                   <CardHeader>
                     <div className="mx-auto bg-primary/10 rounded-full p-3 w-fit">
                       {tool.icon}
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-grow">
                     <h3 className="text-lg font-semibold mb-2">{tool.title}</h3>
                     <p className="text-muted-foreground text-sm">{tool.description}</p>
                   </CardContent>

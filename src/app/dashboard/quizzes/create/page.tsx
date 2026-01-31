@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { firestore as db } from '@/firebase/client';
@@ -11,53 +10,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { generateQuiz, type GenerateQuizInput } from '@/ai/flows/generate-quiz-flow';
 
-export default function CreateQuizPage() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const { toast } = useToast();
-
-  const handleSaveQuiz = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const form = e.currentTarget;
-    const title = (form.elements.namedItem('title') as HTMLInputElement).value;
-    const school = (form.elements.namedItem('school') as HTMLInputElement).value;
-    const className = (form.elements.namedItem('class') as HTMLInputElement).value;
-    const questionsContent = (form.elements.namedItem('questions') as HTMLTextAreaElement).value;
-
-    try {
-        const questions = parseManualQuestions(questionsContent);
-        if (questions.length === 0) {
-            toast({ title: "Invalid Format", description: "Could not find any valid questions. Please check the format instructions.", variant: "destructive" });
-            setLoading(false);
-            return;
-        }
-
-        const quizData = {
-            title,
-            questions,
-            school,
-            class: className,
-            createdAt: serverTimestamp()
-        };
-
-        await addDoc(collection(db, "quizzes"), quizData)
-        toast({ title: "Success!", description: "Quiz created successfully." });
-        router.push('/dashboard/quizzes');
-
-    } catch (error: any) {
-        console.error("Error creating quiz:", error);
-        toast({ title: "Error creating quiz", description: "An unexpected error occurred.", variant: "destructive" });
-    } finally {
-        setLoading(false);
-    }
-  };
-
-  function parseManualQuestions(content: string): Question[] {
+function parseManualQuestions(content: string): Question[] {
     const questions: Question[] = [];
     const questionBlocks = content.trim().split('---');
 
@@ -80,7 +38,7 @@ export default function CreateQuizPage() {
                 question.answer = answer;
                 question.options?.push(answer);
             } else if (trimmedLine.toUpperCase().startsWith('A:') || trimmedLine.toUpperCase().startsWith('O:')) {
-                 question.options?.push(trimmedLine.substring(2).trim());
+                question.options?.push(trimmedLine.substring(2).trim());
             }
         }
         
@@ -89,67 +47,204 @@ export default function CreateQuizPage() {
         }
 
         if (question.question && question.options && question.options.length > 1 && question.answer) {
-             questions.push(question as Question);
+            questions.push(question as Question);
         }
     }
     return questions;
-  }
+}
 
-  return (
-    <div className="flex flex-col gap-8">
-        <Card>
-            <CardHeader>
-                <CardTitle>Create a New Quiz</CardTitle>
-                <CardDescription>
-                Fill in the details below and add your questions manually.
-                </CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSaveQuiz}>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="title">Quiz Title</Label>
-                        <Input id="title" name="title" placeholder="e.g., Algebra Basics" required />
-                    </div>
-                     <div className="grid grid-cols-2 gap-4">
+export default function CreateQuizPage() {
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [generateLoading, setGenerateLoading] = useState(false);
+    const router = useRouter();
+    const { toast } = useToast();
+    const manualQuestionsRef = useRef<HTMLTextAreaElement>(null);
+
+    const handleGenerateQuiz = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setGenerateLoading(true);
+
+        const formData = new FormData(e.currentTarget);
+        const input: GenerateQuizInput = {
+            topic: formData.get('topic') as string,
+            numQuestions: parseInt(formData.get('numQuestions') as string, 10),
+            difficulty: formData.get('difficulty') as 'Easy' | 'Medium' | 'Hard',
+            questionType: formData.get('questionType') as 'Multiple Choice' | 'True/False',
+        };
+
+        try {
+            const generatedContent = await generateQuiz(input);
+            if (manualQuestionsRef.current) {
+                manualQuestionsRef.current.value = generatedContent;
+            }
+            toast({ title: "Quiz Generated!", description: "Review the questions below and save the quiz." });
+        } catch (error) {
+            console.error("Error generating quiz:", error);
+            toast({ title: "Generation Failed", description: "The AI failed to generate a quiz. Please try again.", variant: "destructive" });
+        } finally {
+            setGenerateLoading(false);
+        }
+    };
+
+    const handleSaveQuiz = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSaveLoading(true);
+
+        const form = e.currentTarget;
+        const title = (form.elements.namedItem('title') as HTMLInputElement).value;
+        const school = (form.elements.namedItem('school') as HTMLInputElement).value;
+        const className = (form.elements.namedItem('class') as HTMLInputElement).value;
+        const questionsContent = (form.elements.namedItem('questions') as HTMLTextAreaElement).value;
+
+        try {
+            const questions = parseManualQuestions(questionsContent);
+            if (questions.length === 0) {
+                toast({ title: "Invalid Format", description: "Could not find any valid questions. Please check the format instructions.", variant: "destructive" });
+                setSaveLoading(false);
+                return;
+            }
+
+            const quizData = {
+                title,
+                questions,
+                school,
+                class: className,
+                createdAt: serverTimestamp()
+            };
+
+            await addDoc(collection(db, "quizzes"), quizData)
+            toast({ title: "Success!", description: "Quiz created successfully." });
+            router.push('/dashboard/quizzes');
+
+        } catch (error: any) {
+            console.error("Error creating quiz:", error);
+            toast({ title: "Error creating quiz", description: "An unexpected error occurred.", variant: "destructive" });
+        } finally {
+            setSaveLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex flex-col gap-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="text-primary" /> Generate Quiz with AI
+                    </CardTitle>
+                    <CardDescription>
+                        Let AI do the heavy lifting. Just provide a topic and some parameters.
+                    </CardDescription>
+                </CardHeader>
+                <form onSubmit={handleGenerateQuiz}>
+                    <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="school">School</Label>
-                            <Input id="school" name="school" placeholder="e.g., Springfield High" required />
+                            <Label htmlFor="topic">Topic</Label>
+                            <Input id="topic" name="topic" placeholder="e.g., The Solar System" required />
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="numQuestions">Number of Questions</Label>
+                                <Select name="numQuestions" defaultValue="5">
+                                    <SelectTrigger id="numQuestions">
+                                        <SelectValue placeholder="Select number" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5">5</SelectItem>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="15">15</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="difficulty">Difficulty</Label>
+                                <Select name="difficulty" defaultValue="Medium">
+                                    <SelectTrigger id="difficulty">
+                                        <SelectValue placeholder="Select difficulty" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Easy">Easy</SelectItem>
+                                        <SelectItem value="Medium">Medium</SelectItem>
+                                        <SelectItem value="Hard">Hard</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="questionType">Question Type</Label>
+                                <Select name="questionType" defaultValue="Multiple Choice">
+                                    <SelectTrigger id="questionType">
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Multiple Choice">Multiple Choice</SelectItem>
+                                        <SelectItem value="True/False">True/False</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" className="w-full" disabled={generateLoading}>
+                            {generateLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            Generate Questions
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Review & Save Quiz</CardTitle>
+                    <CardDescription>
+                        Review the generated questions or enter them manually, then save the quiz.
+                    </CardDescription>
+                </CardHeader>
+                <form onSubmit={handleSaveQuiz}>
+                    <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="class">Class</Label>
-                            <Input id="class" name="class" placeholder="e.g., 10th A" required />
+                            <Label htmlFor="title">Quiz Title</Label>
+                            <Input id="title" name="title" placeholder="e.g., The Solar System" required />
                         </div>
-                    </div>
-                    <div>
-                         <Label htmlFor="questions">Questions</Label>
-                         <div className="p-3 mt-2 bg-muted/50 rounded-lg border border-dashed text-xs text-muted-foreground">
-                            <p className="font-bold mb-1">Formatting Instructions:</p>
-                            <p>• Start each question with `Q:`</p>
-                            <p>• Mark the correct answer with `*A:`</p>
-                            <p>• Mark other options with `O:`</p>
-                            <p>• Separate each question block with `---`</p>
-                            <p className="mt-2 font-bold">Example:</p>
-                            <pre className="mt-1">
-        Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of France?{'\n'}*A: Paris{'\n'}O: London
-                            </pre>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="school">School</Label>
+                                <Input id="school" name="school" placeholder="e.g., Springfield High" required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="class">Class</Label>
+                                <Input id="class" name="class" placeholder="e.g., 10th A" required />
+                            </div>
                         </div>
-                        <Textarea
-                            id="questions"
-                            name="questions"
-                            placeholder="Enter your questions here following the format rules..."
-                            className="min-h-[250px] font-mono text-sm mt-2"
-                            required
-                        />
-                    </div>
-                </CardContent>
-                <CardFooter>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                        Save Quiz
-                    </Button>
-                </CardFooter>
-            </form>
-        </Card>
-    </div>
-  );
+                        <div>
+                            <Label htmlFor="questions">Questions & Answers</Label>
+                             <div className="p-3 mt-2 bg-muted/50 rounded-lg border border-dashed text-xs text-muted-foreground">
+                                <p className="font-bold mb-1">Formatting Instructions:</p>
+                                <p>• Start each question with `Q:`</p>
+                                <p>• Mark the correct answer with `*A:`</p>
+                                <p>• Mark other options with `O:`</p>
+                                <p>• Separate each question block with `---`</p>
+                                <p className="mt-2 font-bold">Example:</p>
+                                <pre className="mt-1">
+            Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of France?{'\n'}*A: Paris{'\n'}O: London
+                                </pre>
+                            </div>
+                            <Textarea
+                                ref={manualQuestionsRef}
+                                id="questions"
+                                name="questions"
+                                placeholder="Enter your questions here or generate them with AI above..."
+                                className="min-h-[250px] font-mono text-sm mt-2"
+                                required
+                            />
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" className="w-full" disabled={saveLoading}>
+                            {saveLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                            Save Quiz
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Card>
+        </div>
+    );
 }
