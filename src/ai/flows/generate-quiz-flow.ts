@@ -1,12 +1,14 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 import { GenerateQuizInputSchema, type GenerateQuizInput } from '@/ai/schemas';
 
 const prompt = ai.definePrompt(
     {
         name: 'generateQuizPrompt',
+        model: googleAI.model('gemini-1.5-flash-latest'),
         input: { schema: GenerateQuizInputSchema },
         output: {
             format: 'text',
