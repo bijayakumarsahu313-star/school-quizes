@@ -32,12 +32,29 @@ export function useUser() {
 
     const userDocRef = doc(firestore, 'users', user.uid);
     const unsubscribeProfile = onSnapshot(userDocRef, (doc) => {
+        let profile: UserProfile | null = null;
         if (doc.exists()) {
-            setUserProfile({ id: doc.id, ...doc.data() } as UserProfile);
-        } else {
-            setUserProfile(null);
+            profile = { id: doc.id, ...doc.data() } as UserProfile;
         }
-        setLoading(false); // Profile fetched or confirmed not to exist
+
+        // Automatically grant admin role to a specific email
+        if (user.email === 'bisweswarsahu834@gmail.com') {
+            if (profile) {
+                profile.role = 'admin';
+            } else {
+                // If profile doesn't exist for some reason, create a temporary one for the session.
+                profile = {
+                    uid: user.uid,
+                    email: user.email,
+                    name: user.displayName || 'Admin',
+                    role: 'admin',
+                    createdAt: new Date(),
+                };
+            }
+        }
+
+        setUserProfile(profile);
+        setLoading(false);
     }, (error) => {
         console.error("Error fetching user profile:", error);
         setLoading(false);
