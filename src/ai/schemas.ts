@@ -14,6 +14,16 @@ export const GenerateQuizInputSchema = z.object({
 
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
+
+export const QuizQuestionSchema = z.object({
+    question: z.string().describe("The text of the quiz question."),
+    options: z.array(z.string()).min(2).describe("An array of possible answers."),
+    correctAnswer: z.string().describe("The correct answer from the options."),
+});
+export const QuizQuestionsSchema = z.array(QuizQuestionSchema);
+export type QuizQuestion = z.infer<typeof QuizQuestionSchema>;
+
+
 // Schemas for Practice Quiz
 export const GeneratePracticeQuizInputSchema = z.object({
   topic: z.string().describe('The topic for the quiz.'),
@@ -25,7 +35,7 @@ export type GeneratePracticeQuizInput = z.infer<typeof GeneratePracticeQuizInput
 const PracticeQuizQuestionSchema = z.object({
     question: z.string().describe("The text of the quiz question."),
     options: z.array(z.string()).min(2).describe("An array of possible answers."),
-    answer: z.string().describe("The correct answer from the options."),
+    correctAnswer: z.string().describe("The correct answer from the options."),
     explanation: z.string().describe("A brief AI-generated explanation for why the answer is correct."),
 });
 

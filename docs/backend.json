@@ -23,6 +23,7 @@
         "subject": { "type": "string" },
         "school": { "type": "string" },
         "class": { "type": "string" },
+        "published": { "type": "boolean", "description": "Indicates if the quiz is visible to students." },
         "questions": {
           "type": "array",
           "items": {
@@ -33,9 +34,9 @@
                 "type": "array",
                 "items": { "type": "string" }
               },
-              "answer": { "type": "string" }
+              "correctAnswer": { "type": "string" }
             },
-            "required": ["question", "options", "answer"]
+            "required": ["question", "options", "correctAnswer"]
           }
         },
         "creatorId": { "type": "string", "description": "UID of the teacher who created the quiz." },
@@ -44,7 +45,7 @@
           "format": "date-time"
         }
       },
-      "required": ["title", "subject", "questions", "school", "class", "creatorId", "createdAt"]
+      "required": ["title", "subject", "questions", "school", "class", "creatorId", "createdAt", "published"]
     },
     "Submission": {
         "title": "Quiz Submission",

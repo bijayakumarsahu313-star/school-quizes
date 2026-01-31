@@ -2,63 +2,26 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
-    function isSignedIn() {
-      return request.auth != null;
+    // Only admin can manage quizzes
+    // Students can only read quizzes that are published
+    match /quizzes/{quizId} {
+      allow read: if resource.data.published == true;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // IMPORTANT: Replace 'YOUR_ADMIN_UID' with your actual Firebase Admin User ID from the Firebase Console.
-    function isAdmin() {
-      return request.auth.uid == 'YOUR_ADMIN_UID';
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    function isTeacher() {
-        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-
-    function isStudent() {
-        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    // Students can create submissions for themselves
+    match /submissions/{submissionId} {
+        allow create: if request.auth.uid == request.resource.data.userId;
     }
     
-    // --- User Profiles ---
-    // WARNING: Read access is public for demonstration purposes.
-    // In production, restrict this to authenticated admins.
+    // Users can manage their own profile
     match /users/{userId} {
-      // Admins have full write access.
-      allow write: if isAdmin();
-      // For demo, anyone can read user data.
-      allow read: if true;
-      // Users can create their own profile.
-      allow create: if isSignedIn() && isOwner(userId);
-      // Users can update their own profile.
-      allow update: if isSignedIn() && isOwner(userId);
+        allow read, write: if request.auth.uid == userId;
     }
 
-    // --- Quizzes ---
-    // WARNING: Read access is public for demonstration purposes.
-    match /quizzes/{quizId} {
-        // Admins have full write access.
-        allow write: if isAdmin();
-        // For demo, anyone can read quizzes.
-        allow read: if true;
-        // Teachers can create quizzes and can only update/delete their own.
-        allow create: if isTeacher();
-        allow update, delete: if isTeacher() && resource.data.creatorId == request.auth.uid;
-    }
-
-    // --- Submissions ---
-    // WARNING: Read access is public for demonstration purposes.
-    match /submissions/{submissionId} {
-        // Admins have full write access.
-        allow write: if isAdmin();
-        // For demo, anyone can read submissions.
-        allow read: if true;
-        // Students can create their own submissions.
-        allow create: if isStudent() && request.resource.data.userId == request.auth.uid;
+    // Fallback rule to block all other access
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

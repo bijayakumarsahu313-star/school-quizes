@@ -16,7 +16,7 @@ import { useBadges } from '@/hooks/use-badges';
 type PracticeQuestion = {
   question: string;
   options: string[];
-  answer: string;
+  correctAnswer: string;
   explanation?: string; // Explanation is now part of the data
 };
 
@@ -166,7 +166,7 @@ export default function PracticeQuizPage() {
     const currentQuestion = shuffledQuestions[currentQuestionIndex];
     const selectedAnswer = selectedAnswers[currentQuestionIndex];
 
-    if (selectedAnswer === currentQuestion.answer) {
+    if (selectedAnswer === currentQuestion.correctAnswer) {
         setAnswerStatus('correct');
         setCorrectAnswersCount(prev => prev + 1);
     } else {
@@ -257,7 +257,7 @@ export default function PracticeQuizPage() {
                 >
                     {currentQuestion.options.map((option, i) => {
                          const isSelected = selectedAnswers[currentQuestionIndex] === option;
-                         const isCorrect = currentQuestion.answer === option;
+                         const isCorrect = currentQuestion.correctAnswer === option;
                          let variantClass = "border-border bg-background hover:border-primary/50";
    
                          if (answerStatus !== 'unanswered') {
@@ -298,7 +298,7 @@ export default function PracticeQuizPage() {
                             {answerStatus === 'correct' ? <CheckCircle className="text-green-600" /> : <XCircle className="text-red-600" />}
                             {answerStatus === 'correct' ? 'Correct!' : 'Incorrect'}
                         </h4>
-                        <p className="text-muted-foreground">The correct answer is: <strong className="text-foreground">{currentQuestion.answer}</strong></p>
+                        <p className="text-muted-foreground">The correct answer is: <strong className="text-foreground">{currentQuestion.correctAnswer}</strong></p>
                         {currentQuestion.explanation && (
                             <p className="mt-2 text-sm">
                                 <strong>AI Explanation:</strong> {currentQuestion.explanation}

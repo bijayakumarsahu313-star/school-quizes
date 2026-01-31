@@ -54,7 +54,7 @@ export default function QuizPage() {
                 questions: data.questions
              } as QuizData);
         } else {
-            alert('Quiz not found!');
+            alert('Quiz not found or not published!');
             router.push('/student-zone');
         }
         setLoading(false);
@@ -69,7 +69,7 @@ export default function QuizPage() {
     
     let correct = 0;
     quiz.questions.forEach((q, index) => {
-        if (q.answer === selectedAnswers[index]) {
+        if (q.correctAnswer === selectedAnswers[index]) {
             correct++;
         }
     });
@@ -94,7 +94,7 @@ export default function QuizPage() {
     const currentQuestion = quiz.questions[currentQuestionIndex];
     const selectedAnswer = selectedAnswers[currentQuestionIndex];
 
-    if (selectedAnswer === currentQuestion.answer) {
+    if (selectedAnswer === currentQuestion.correctAnswer) {
         setAnswerStatus('correct');
         setCorrectAnswersCount(prev => prev + 1);
     } else {
@@ -168,7 +168,7 @@ export default function QuizPage() {
                 >
                     {currentQuestion.options.map((option, i) => {
                        const isSelected = selectedAnswers[currentQuestionIndex] === option;
-                       const isCorrect = currentQuestion.answer === option;
+                       const isCorrect = currentQuestion.correctAnswer === option;
                        let variantClass = "border-border bg-background hover:border-primary/50";
 
                        if (answerStatus !== 'unanswered') {

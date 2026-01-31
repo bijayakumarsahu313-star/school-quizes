@@ -16,44 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { generateQuiz } from '@/ai/flows/generate-quiz-flow';
 import type { GenerateQuizInput } from '@/ai/schemas';
 
-function parseManualQuestions(content: string): Question[] {
-    const questions: Question[] = [];
-    const questionBlocks = content.trim().split('---');
-
-    for (const block of questionBlocks) {
-        if (block.trim() === '') continue;
-
-        const lines = block.trim().split('\n');
-        const questionTextLine = lines.find(line => line.trim().toUpperCase().startsWith('Q:'));
-        if (!questionTextLine) continue;
-
-        const question: Partial<Question> = {
-            question: questionTextLine.substring(2).trim(),
-            options: [],
-        };
-
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.toUpperCase().startsWith('*A:')) {
-                const answer = trimmedLine.substring(3).trim();
-                question.answer = answer;
-                question.options?.push(answer);
-            } else if (trimmedLine.toUpperCase().startsWith('A:') || trimmedLine.toUpperCase().startsWith('O:')) {
-                question.options?.push(trimmedLine.substring(2).trim());
-            }
-        }
-        
-        if (question.options) {
-            question.options = question.options.sort(() => Math.random() - 0.5);
-        }
-
-        if (question.question && question.options && question.options.length > 1 && question.answer) {
-            questions.push(question as Question);
-        }
-    }
-    return questions;
-}
-
 export default function CreateQuizPage() {
     const [saveLoading, setSaveLoading] = useState(false);
     const [generateLoading, setGenerateLoading] = useState(false);
@@ -132,9 +94,9 @@ export default function CreateQuizPage() {
         };
     
         try {
-            const generatedContent = await generateQuiz(input);
+            const generatedQuestions = await generateQuiz(input);
             if (manualQuestionsRef.current) {
-                manualQuestionsRef.current.value = generatedContent;
+                manualQuestionsRef.current.value = JSON.stringify(generatedQuestions, null, 2);
             }
             toast({ title: "Quiz Generated!", description: "Review the questions below and save the quiz." });
         } catch (error) {
@@ -168,9 +130,9 @@ export default function CreateQuizPage() {
        }
 
         try {
-            const questions = parseManualQuestions(questionsContent);
-            if (questions.length === 0) {
-                toast({ title: "Invalid Format", description: "Could not find any valid questions. Please check the format instructions.", variant: "destructive" });
+            const questions = JSON.parse(questionsContent) as Question[];
+            if (!Array.isArray(questions) || questions.length === 0) {
+                toast({ title: "Invalid Format", description: "Could not find any valid questions. Please ensure the content is a valid JSON array.", variant: "destructive" });
                 setSaveLoading(false);
                 return;
             }
@@ -182,16 +144,21 @@ export default function CreateQuizPage() {
                 school,
                 class: className,
                 creatorId: creatorId,
-                createdAt: serverTimestamp()
+                createdAt: serverTimestamp(),
+                published: false
             };
 
             await addDoc(collection(db, "quizzes"), quizData)
-            toast({ title: "Success!", description: "Quiz created successfully." });
+            toast({ title: "Success!", description: "Quiz created and saved as a draft." });
             router.push('/dashboard/quizzes');
 
         } catch (error: any) {
             console.error("Error creating quiz:", error);
-            toast({ title: "Error creating quiz", description: "An unexpected error occurred.", variant: "destructive" });
+            if (error.name === 'SyntaxError') {
+                 toast({ title: "Invalid JSON", description: "The questions content is not valid JSON. Please check the format.", variant: "destructive" });
+            } else {
+                toast({ title: "Error creating quiz", description: error.message || "An unexpected error occurred.", variant: "destructive" });
+            }
         } finally {
             setSaveLoading(false);
         }
@@ -292,7 +259,7 @@ export default function CreateQuizPage() {
                 <CardHeader>
                     <CardTitle>Review & Save Quiz</CardTitle>
                     <CardDescription>
-                        Review the generated questions or enter them manually, then save the quiz.
+                        Review the generated questions or enter them manually, then save the quiz. The quiz will be saved as a draft.
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSaveQuiz}>
@@ -318,23 +285,26 @@ export default function CreateQuizPage() {
                             </div>
                         </div>
                         <div>
-                            <Label htmlFor="questions">Questions & Answers</Label>
+                            <Label htmlFor="questions">Questions & Answers (JSON Format)</Label>
                              <div className="p-3 mt-2 bg-muted/50 rounded-lg border border-dashed text-xs text-muted-foreground">
-                                <p className="font-bold mb-1">Formatting Instructions:</p>
-                                <p>• Start each question with `Q:`</p>
-                                <p>• Mark the correct answer with `*A:`</p>
-                                <p>• Mark other options with `O:`</p>
-                                <p>• Separate each question block with `---`</p>
+                                <p className="font-bold mb-1">Instructions:</p>
+                                <p>The questions must be in a valid JSON array format. The AI generator will produce this format automatically.</p>
                                 <p className="mt-2 font-bold">Example:</p>
-                                <pre className="mt-1">
-            Q: What is 2+2?{'\n'}*A: 4{'\n'}O: 3{'\n'}O: 5{'\n'}---{'\n'}Q: Capital of France?{'\n'}*A: Paris{'\n'}O: London
+                                <pre className="mt-1 text-xs">
+{`[
+  {
+    "question": "What is 2+2?",
+    "options": ["3", "4", "5"],
+    "correctAnswer": "4"
+  }
+]`}
                                 </pre>
                             </div>
                             <Textarea
                                 ref={manualQuestionsRef}
                                 id="questions"
                                 name="questions"
-                                placeholder="Enter your questions here or generate them with AI above..."
+                                placeholder="Enter your questions here as a JSON array, or generate them with AI above..."
                                 className="min-h-[250px] font-mono text-sm mt-2"
                                 required
                             />
@@ -343,7 +313,7 @@ export default function CreateQuizPage() {
                     <CardFooter>
                         <Button type="submit" className="w-full" disabled={saveLoading}>
                             {saveLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                            Save Quiz
+                            Save Quiz as Draft
                         </Button>
                     </CardFooter>
                 </form>

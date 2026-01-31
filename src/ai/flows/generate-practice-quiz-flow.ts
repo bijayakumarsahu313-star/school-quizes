@@ -20,8 +20,8 @@ Difficulty: ${input.difficulty}
 
 - The title should be concise and relevant to the topic.
 - The subject should be a single, general category.
-- Each question must have a 'question', 'options', 'answer', and a helpful 'explanation'.
-- The 'answer' must be one of the strings present in the 'options' array.
+- Each question must have a 'question', 'options', 'correctAnswer', and a helpful 'explanation'.
+- The 'correctAnswer' must be one of the strings present in the 'options' array.
 `;
 
         const llmResponse = await ai.generate({
