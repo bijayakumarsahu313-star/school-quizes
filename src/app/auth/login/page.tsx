@@ -24,8 +24,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<'idle' | 'email' | 'google'>('idle');
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
@@ -42,23 +41,33 @@ export default function LoginPage() {
   
   const handleRedirect = async (uid: string) => {
     if (!firestore) return;
-    const userDoc = await getDoc(doc(firestore, 'users', uid));
-    if (userDoc.exists()) {
-      const userProfile = userDoc.data() as UserProfile;
-      if (userProfile.role === 'teacher') {
-        router.push('/dashboard');
-      } else {
-        router.push('/student-zone');
-      }
-    } else {
-      // This case handles users who signed up with Google but didn't complete the profile.
-      router.push('/auth/signup'); 
+    try {
+        const userDoc = await getDoc(doc(firestore, 'users', uid));
+        if (userDoc.exists()) {
+          const userProfile = userDoc.data() as UserProfile;
+          if (userProfile.role === 'teacher') {
+            router.push('/dashboard');
+          } else {
+            router.push('/student-zone');
+          }
+        } else {
+          // This case handles users who signed up with Google but didn't complete the profile.
+          router.push('/auth/signup'); 
+        }
+    } catch (error) {
+        console.error("Redirection failed:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Redirection Failed',
+            description: 'Could not retrieve user role. Please try again.',
+        });
+        // Redirect to a neutral page if role check fails
+        router.push('/');
     }
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-
+    setIsSubmitting('email');
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
@@ -75,13 +84,12 @@ export default function LoginPage() {
             ? 'Invalid email or password.'
             : (error.message || 'An unexpected error occurred. Please try again.'),
       });
-    } finally {
-      setIsLoading(false);
+      setIsSubmitting('idle');
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true);
+    setIsSubmitting('google');
     const provider = new GoogleAuthProvider();
 
     try {
@@ -104,8 +112,7 @@ export default function LoginPage() {
         });
         router.push('/auth/signup');
       }
-    } catch (error: any)
-     {
+    } catch (error: any) {
       console.error(error);
       if (error.code === 'auth/account-exists-with-different-credential') {
         toast({
@@ -120,8 +127,7 @@ export default function LoginPage() {
           description: error.message || 'Could not sign in with Google. Please try again.',
         });
       }
-    } finally {
-      setIsGoogleLoading(false);
+      setIsSubmitting('idle');
     }
   };
 
@@ -141,7 +147,7 @@ export default function LoginPage() {
                     <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                            <Input type="email" placeholder="m@example.com" {...field} />
+                            <Input type="email" placeholder="m@example.com" {...field} disabled={isSubmitting !== 'idle'} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -156,21 +162,21 @@ export default function LoginPage() {
                             </Link>
                         </div>
                         <FormControl>
-                            <Input type="password" {...field} />
+                            <Input type="password" {...field} disabled={isSubmitting !== 'idle'} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                 )}/>
             
-                <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button type="submit" className="w-full" disabled={isSubmitting !== 'idle'}>
+                    {isSubmitting === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Login
                 </Button>
             </form>
           </Form>
 
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isLoading}>
-              {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isSubmitting !== 'idle'}>
+              {isSubmitting === 'google' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login with Google
           </Button>
           

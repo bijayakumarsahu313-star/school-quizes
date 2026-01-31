@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile, User } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -54,21 +54,43 @@ const formSchema = z.object({
     }
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
+const boards = [
+    'CBSE', 'ICSE', 'IB', 'IGCSE', 'Maharashtra State Board', 'Tamil Nadu Board of Secondary Education', 'West Bengal Board of Secondary Education', 'UP Board', 'Other',
+];
+
+const buildUserProfile = (user: User, values: FormValues) => {
+    const profile: any = {
+        uid: user.uid,
+        email: user.email!,
+        fullName: values.fullName || user.displayName!,
+        displayName: values.fullName || user.displayName!,
+        photoURL: user.photoURL || null,
+        role: values.role,
+        school: values.school,
+        plan: 'free',
+    };
+
+    if (values.role === 'student') {
+        profile.classLevel = values.classLevel;
+        profile.board = values.board;
+    } else if (values.role === 'teacher') {
+        profile.subject = values.subject;
+    }
+    
+    return profile;
+};
 
 export default function SignupPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<'idle' | 'email' | 'google'>('idle');
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
   const firestore = useFirestore();
   const authImage = PlaceHolderImages.find((img) => img.id === "auth-signup");
 
-  const boards = [
-    'CBSE', 'ICSE', 'IB', 'IGCSE', 'Maharashtra State Board', 'Tamil Nadu Board of Secondary Education', 'West Bengal Board of Secondary Education', 'UP Board', 'Other',
-  ];
-
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       role: 'student',
@@ -89,32 +111,15 @@ export default function SignupPage() {
       }
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-
+  const onSubmit = async (values: FormValues) => {
+    setIsSubmitting('email');
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
       await updateProfile(user, { displayName: values.fullName });
 
-      const userProfile: any = {
-        uid: user.uid,
-        email: values.email,
-        fullName: values.fullName,
-        displayName: values.fullName,
-        photoURL: user.photoURL,
-        role: values.role,
-        school: values.school,
-        plan: 'free',
-      };
-      
-      if (values.role === 'student') {
-        userProfile.classLevel = values.classLevel;
-        userProfile.board = values.board;
-      } else if (values.role === 'teacher') {
-        userProfile.subject = values.subject;
-      }
+      const userProfile = buildUserProfile(user, values);
 
       await setDoc(doc(firestore, 'users', user.uid), userProfile);
       
@@ -133,8 +138,7 @@ export default function SignupPage() {
             ? 'This email is already in use. Please login.'
             : (error.message || 'An unexpected error occurred. Please try again.'),
       });
-    } finally {
-      setIsLoading(false);
+      setIsSubmitting('idle');
     }
   };
 
@@ -149,7 +153,7 @@ export default function SignupPage() {
         return;
     }
       
-    setIsGoogleLoading(true);
+    setIsSubmitting('google');
     const provider = new GoogleAuthProvider();
 
     try {
@@ -157,24 +161,10 @@ export default function SignupPage() {
       const user = result.user;
       
       const values = form.getValues();
-
-      const userProfile: any = {
-        uid: user.uid,
-        email: user.email!,
-        fullName: user.displayName!,
-        displayName: user.displayName!,
-        photoURL: user.photoURL!,
-        role: values.role,
-        school: values.school,
-        plan: 'free',
-      };
+      // For Google sign-in, we use the display name from Google if the form field is empty.
+      const formValuesForProfile = { ...values, fullName: values.fullName || user.displayName || '' };
       
-      if (values.role === 'student') {
-        userProfile.classLevel = values.classLevel;
-        userProfile.board = values.board;
-      } else if (values.role === 'teacher') {
-        userProfile.subject = values.subject;
-      }
+      const userProfile = buildUserProfile(user, formValuesForProfile);
       
       await setDoc(doc(firestore, 'users', user.uid), userProfile, { merge: true });
 
@@ -199,8 +189,7 @@ export default function SignupPage() {
           description: error.message || 'Could not sign up with Google. Please try again.',
         });
       }
-    } finally {
-      setIsGoogleLoading(false);
+      setIsSubmitting('idle');
     }
   };
 
@@ -230,13 +219,13 @@ export default function SignupPage() {
                                     >
                                     <FormItem className="flex items-center space-x-2 space-y-0">
                                         <FormControl>
-                                        <RadioGroupItem value="student" />
+                                        <RadioGroupItem value="student" disabled={isSubmitting !== 'idle'} />
                                         </FormControl>
                                         <FormLabel className="font-normal">Student</FormLabel>
                                     </FormItem>
                                     <FormItem className="flex items-center space-x-2 space-y-0">
                                         <FormControl>
-                                        <RadioGroupItem value="teacher" />
+                                        <RadioGroupItem value="teacher" disabled={isSubmitting !== 'idle'} />
                                         </FormControl>
                                         <FormLabel className="font-normal">Teacher</FormLabel>
                                     </FormItem>
@@ -251,7 +240,7 @@ export default function SignupPage() {
                         <FormItem>
                             <FormLabel>Full Name</FormLabel>
                             <FormControl>
-                                <Input placeholder="Max Robinson" {...field} />
+                                <Input placeholder="Max Robinson" {...field} disabled={isSubmitting !== 'idle'} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -261,7 +250,7 @@ export default function SignupPage() {
                         <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input type="email" placeholder="m@example.com" {...field} />
+                                <Input type="email" placeholder="m@example.com" {...field} disabled={isSubmitting !== 'idle'} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -271,7 +260,7 @@ export default function SignupPage() {
                         <FormItem>
                             <FormLabel>School</FormLabel>
                             <FormControl>
-                                <Input placeholder="Springfield High School" {...field} />
+                                <Input placeholder="Springfield High School" {...field} disabled={isSubmitting !== 'idle'} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -283,7 +272,7 @@ export default function SignupPage() {
                             <FormItem>
                                 <FormLabel>Class</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="10" {...field} value={field.value ?? ''} onChange={e => field.onChange(parseInt(e.target.value, 10) || '')} />
+                                    <Input type="number" placeholder="10" {...field} value={field.value ?? ''} onChange={e => field.onChange(parseInt(e.target.value, 10) || '')} disabled={isSubmitting !== 'idle'} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -291,7 +280,7 @@ export default function SignupPage() {
                         <FormField control={form.control} name="board" render={({ field }) => (
                             <FormItem>
                             <FormLabel>Board</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting !== 'idle'}>
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select your board" />
@@ -316,7 +305,7 @@ export default function SignupPage() {
                             <FormItem>
                                 <FormLabel>Subject</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="e.g., Physics, History" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="e.g., Physics, History" {...field} value={field.value ?? ''} disabled={isSubmitting !== 'idle'} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -327,19 +316,19 @@ export default function SignupPage() {
                         <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <Input type="password" {...field} />
+                                <Input type="password" {...field} disabled={isSubmitting !== 'idle'} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}/>
 
-                    <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Button type="submit" className="w-full" disabled={isSubmitting !== 'idle'}>
+                        {isSubmitting === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Create an account
                     </Button>
 
-                    <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isLoading}>
-                        {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isSubmitting !== 'idle'}>
+                        {isSubmitting === 'google' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Sign up with Google
                     </Button>
                 </form>
