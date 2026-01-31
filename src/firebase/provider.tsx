@@ -8,14 +8,14 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import type { UserProfile } from '@/lib/data';
 import { doc, onSnapshot } from 'firebase/firestore';
 
-// Define the config directly in the provider
+// Hardcoded Firebase configuration to definitively resolve initialization errors.
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  apiKey: "AIzaSyCrYs-SDa1MS5grPC5vOAaiTzpyeaxqyK8",
+  authDomain: "studio-8531319632-2a07c.firebaseapp.com",
+  projectId: "studio-8531319632-2a07c",
+  storageBucket: "studio-8531319632-2a07c.appspot.com",
+  messagingSenderId: "715607628631",
+  appId: "1:715607628631:web:0182fd7af9a6568c073c12"
 };
 
 
@@ -36,10 +36,6 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const { app, auth, firestore } = useMemo(() => {
-    // Ensure the config has values before initializing
-    if (!firebaseConfig.projectId) {
-      throw new Error("Firebase config is not loaded. Please check your .env.local file.");
-    }
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const auth = getAuth(app);
     const firestore = getFirestore(app);
