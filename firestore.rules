@@ -25,36 +25,40 @@ service cloud.firestore {
     }
     
     // --- User Profiles ---
+    // WARNING: Read access is public for demonstration purposes.
+    // In production, restrict this to authenticated admins.
     match /users/{userId} {
-      // Admins have full access.
-      allow read, write: if isAdmin();
+      // Admins have full write access.
+      allow write: if isAdmin();
+      // For demo, anyone can read user data.
+      allow read: if true;
       // Users can create their own profile.
       allow create: if isSignedIn() && isOwner(userId);
-      // Users can read and update their own profile.
-      allow read, update: if isSignedIn() && isOwner(userId);
+      // Users can update their own profile.
+      allow update: if isSignedIn() && isOwner(userId);
     }
 
     // --- Quizzes ---
+    // WARNING: Read access is public for demonstration purposes.
     match /quizzes/{quizId} {
-        // Admins have full access.
-        allow read, write: if isAdmin();
-        // Any signed-in user can read quizzes.
-        allow read: if isSignedIn();
+        // Admins have full write access.
+        allow write: if isAdmin();
+        // For demo, anyone can read quizzes.
+        allow read: if true;
         // Teachers can create quizzes and can only update/delete their own.
         allow create: if isTeacher();
         allow update, delete: if isTeacher() && resource.data.creatorId == request.auth.uid;
     }
 
     // --- Submissions ---
+    // WARNING: Read access is public for demonstration purposes.
     match /submissions/{submissionId} {
-        // Admins have full access.
-        allow read, write: if isAdmin();
+        // Admins have full write access.
+        allow write: if isAdmin();
+        // For demo, anyone can read submissions.
+        allow read: if true;
         // Students can create their own submissions.
         allow create: if isStudent() && request.resource.data.userId == request.auth.uid;
-        // Students can read their own submissions.
-        // A teacher can read submissions for quizzes they created.
-        allow read: if (isStudent() && resource.data.userId == request.auth.uid) ||
-                     (isTeacher() && get(/databases/$(database)/documents/quizzes/$(resource.data.quizId)).data.creatorId == request.auth.uid);
     }
   }
 }
