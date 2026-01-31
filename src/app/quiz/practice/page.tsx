@@ -2,15 +2,30 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Question, Quiz } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Clock, Trophy, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Clock, Trophy, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Define types locally to match the practice quiz structure
+type PracticeQuestion = {
+  question: string;
+  options: string[];
+  answer: string;
+  explanation?: string; // Explanation is now part of the data
+};
+
+type PracticeQuiz = {
+  title: string;
+  subject: string;
+  duration: number; // in minutes
+  questions: PracticeQuestion[];
+};
+
 
 // Helper function to shuffle an array
 function shuffle(array: any[]) {
@@ -34,8 +49,8 @@ function formatTime(seconds: number) {
 export default function PracticeQuizPage() {
   const router = useRouter();
 
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
+  const [quiz, setQuiz] = useState<PracticeQuiz | null>(null);
+  const [shuffledQuestions, setShuffledQuestions] = useState<PracticeQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isFinished, setIsFinished] = useState(false);
@@ -50,7 +65,7 @@ export default function PracticeQuizPage() {
     const quizDataString = sessionStorage.getItem('practiceQuiz');
     if (quizDataString) {
       try {
-        const quizData: Quiz = JSON.parse(quizDataString);
+        const quizData: PracticeQuiz = JSON.parse(quizDataString);
         quizData.questions = shuffle([...quizData.questions]);
         setQuiz(quizData);
         setShuffledQuestions(quizData.questions);
@@ -228,7 +243,7 @@ export default function PracticeQuizPage() {
                 <Progress value={progress} className="w-full mt-2" />
             </CardHeader>
             <CardContent>
-                <p className="text-xl font-semibold mb-6">{currentQuestion.text}</p>
+                <p className="text-xl font-semibold mb-6">{currentQuestion.question}</p>
                 <RadioGroup
                     value={selectedAnswers[currentQuestionIndex] || ""}
                     onValueChange={handleAnswerSelect}
@@ -279,9 +294,11 @@ export default function PracticeQuizPage() {
                             {answerStatus === 'correct' ? 'Correct!' : 'Incorrect'}
                         </h4>
                         <p className="text-muted-foreground">The correct answer is: <strong className="text-foreground">{currentQuestion.answer}</strong></p>
-                        <p className="mt-2 text-sm">
-                            <strong>AI Explanation:</strong> Our AI confirms this is the correct answer based on established knowledge in {quiz.subject}. Keep up the great work!
-                        </p>
+                        {currentQuestion.explanation && (
+                            <p className="mt-2 text-sm">
+                                <strong>AI Explanation:</strong> {currentQuestion.explanation}
+                            </p>
+                        )}
                     </div>
                 )}
             </CardContent>
