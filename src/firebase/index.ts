@@ -5,6 +5,8 @@
 
 // Main provider and core hooks
 export { FirebaseProvider, useFirebase, useAuth, useFirestore, useFirebaseApp } from '@/firebase/provider';
+export { FirebaseClientProvider } from '@/firebase/client-provider';
+
 
 // Feature-specific hooks
 export { useUser } from '@/firebase/auth/use-user';
