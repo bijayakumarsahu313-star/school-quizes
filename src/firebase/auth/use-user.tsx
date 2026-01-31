@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { type User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { auth, firestore } from '@/firebase/provider';
+import { auth, firestore } from '@/firebase/client';
 import type { UserProfile } from '@/lib/data';
 
 export function useUser() {

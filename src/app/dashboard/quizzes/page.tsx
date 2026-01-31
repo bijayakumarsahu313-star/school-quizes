@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { firestore as db } from "@/firebase/provider";
+import { firestore as db } from "@/firebase/client";
 import { useUser } from "@/firebase/auth/use-user";
 import type { Quiz, UserProfile } from '@/lib/data';
 import { useState, useEffect } from "react";
@@ -43,7 +43,7 @@ export default function QuizzesPage() {
     };
     
     fetchQuizzes(user.uid, userProfile);
-  }, [user, userProfile, db]);
+  }, [user, userProfile]);
 
   return (
     <Card>

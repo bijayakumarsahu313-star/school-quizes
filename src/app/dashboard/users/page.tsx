@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { collection, query, getDocs } from 'firebase/firestore';
-import { firestore as db } from "@/firebase/provider";
+import { firestore as db } from "@/firebase/client";
 import { useUser } from "@/firebase/auth/use-user";
 import type { UserProfile } from '@/lib/data';
 import { useState, useEffect } from "react";
@@ -35,7 +35,7 @@ export default function UsersPage() {
     };
     
     fetchUsers();
-  }, [userProfile, db]);
+  }, [userProfile]);
 
   if (userProfile?.role !== 'admin') {
       return (

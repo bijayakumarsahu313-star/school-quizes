@@ -29,7 +29,7 @@ import { Separator } from './ui/separator';
 import { signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useUser } from '@/firebase/auth/use-user';
-import { auth, firestore as db } from '@/firebase/provider';
+import { auth, firestore as db } from '@/firebase/client';
 import { useEffect, useState } from 'react';
 
 
@@ -72,7 +72,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
         });
         return () => unsub();
     }
-  }, [user, userProfile, db]);
+  }, [user, userProfile]);
   
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },

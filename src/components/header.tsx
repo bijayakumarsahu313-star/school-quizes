@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { signOut } from 'firebase/auth';
 import { useUser } from '@/firebase/auth/use-user';
-import { auth } from '@/firebase/provider';
+import { auth } from '@/firebase/client';
 import { Skeleton } from './ui/skeleton';
 import {
   DropdownMenu,

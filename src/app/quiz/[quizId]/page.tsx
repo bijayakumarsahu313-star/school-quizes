@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Trophy, CheckCircle, XCircle } from 'lucide-react';
 import { useUser } from '@/firebase/auth/use-user';
-import { firestore as db } from '@/firebase/provider';
+import { firestore as db } from '@/firebase/client';
 import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
@@ -62,7 +62,7 @@ export default function QuizPage() {
     };
 
     fetchQuiz();
-  }, [quizId, router, db]);
+  }, [quizId, router]);
 
 
   const handleSubmitQuiz = useCallback(async () => {
@@ -95,7 +95,7 @@ export default function QuizPage() {
         setIsSubmitting(false);
     }
 
-  }, [isSubmitting, user, quiz, selectedAnswers, db]);
+  }, [isSubmitting, user, quiz, selectedAnswers]);
 
   const handleAnswerSelect = (option: string) => {
     if (answerStatus !== 'unanswered') return;

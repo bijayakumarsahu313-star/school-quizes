@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { firestore as db } from "@/firebase/provider";
+import { firestore as db } from "@/firebase/client";
 import { useUser } from "@/firebase/auth/use-user";
 import type { Quiz } from "@/lib/data";
 import { Header } from "@/components/header";
@@ -45,7 +45,7 @@ export default function StudentQuizzesPage() {
         };
 
         fetchQuizzes();
-    }, [userProfile, userLoading, db]);
+    }, [userProfile, userLoading]);
 
     const getSubjectIcon = (subject: string) => {
         const s = subject.toLowerCase();
