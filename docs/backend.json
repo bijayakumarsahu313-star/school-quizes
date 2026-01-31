@@ -15,18 +15,9 @@
           "format": "email",
           "description": "The user's email address."
         },
-        "fullName": {
+        "name": {
           "type": "string",
           "description": "The user's full name."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "The user's display name, often from a social provider."
-        },
-        "photoURL": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL of the user's profile picture."
         },
         "role": {
           "type": "string",
@@ -37,35 +28,16 @@
           "type": "string",
           "description": "The name of the user's school."
         },
-        "classLevel": {
-          "type": "number",
-          "description": "The class level of the student."
-        },
-        "board": {
+        "class": {
           "type": "string",
-          "description": "The educational board of the student."
+          "description": "The class of the student."
         },
-        "subject": {
+        "createdAt": {
           "type": "string",
-          "description": "The subject taught by the teacher."
-        },
-        "plan": {
-          "type": "string",
-          "enum": ["free", "pro"],
-          "description": "The user's subscription plan."
-        },
-        "planType": {
-          "type": "string",
-          "enum": ["monthly", "yearly"],
-          "description": "The type of pro plan."
-        },
-        "planExpires": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the pro plan expires."
+          "format": "date-time"
         }
       },
-      "required": ["uid", "email", "fullName", "role", "school"]
+      "required": ["uid", "email", "name", "role", "school", "createdAt"]
     },
     "Quiz": {
       "title": "Quiz",
@@ -73,25 +45,21 @@
       "type": "object",
       "properties": {
         "title": { "type": "string" },
-        "subject": { "type": "string" },
-        "classLevel": { "type": "number" },
-        "board": { "type": "string" },
-        "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
-        "questionType": { "type": "string" },
-        "numberOfQuestions": { "type": "number" },
+        "school": { "type": "string" },
+        "class": { "type": "string" },
         "questions": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "text": { "type": "string" },
+              "question": { "type": "string" },
               "options": {
                 "type": "array",
                 "items": { "type": "string" }
               },
               "answer": { "type": "string" }
             },
-            "required": ["text", "options", "answer"]
+            "required": ["question", "options", "answer"]
           }
         },
         "createdBy": {
@@ -101,51 +69,25 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["Draft", "Published"]
-        },
-        "duration": { "type": "number" }
-      },
-      "required": ["title", "subject", "classLevel", "difficulty", "questions", "createdBy", "createdAt", "status", "duration"]
-    },
-    "QuizResult": {
-      "title": "Quiz Result",
-      "description": "Represents a student's result for a specific quiz.",
-      "type": "object",
-      "properties": {
-        "quizId": { "type": "string" },
-        "userId": { "type": "string" },
-        "studentName": { "type": "string" },
-        "studentAvatar": { "type": "string" },
-        "score": { "type": "number" },
-        "completedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "answers": {
-          "type": "object",
-          "description": "A map of question index to the answer given by the student."
         }
       },
-      "required": ["quizId", "userId", "studentName", "score", "completedAt"]
+      "required": ["title", "questions", "school", "class", "createdBy", "createdAt"]
     },
-    "SchoolInquiry": {
-      "title": "School Inquiry",
-      "description": "Represents a sales inquiry from a school.",
+    "Submission": {
+      "title": "Submission",
+      "description": "Represents a student's submission for a quiz.",
       "type": "object",
       "properties": {
-        "schoolName": { "type": "string" },
-        "schoolAddress": { "type": "string" },
-        "board": { "type": "string" },
-        "principalName": { "type": "string" },
-        "contactName": { "type": "string" },
-        "contactEmail": { "type": "string", "format": "email" },
-        "contactPhone": { "type": "string" },
-        "submittedAt": { "type": "string", "format": "date-time" }
+        "studentId": { "type": "string" },
+        "quizId": { "type": "string" },
+        "answers": { "type": "object" },
+        "score": { "type": "number" },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
-      "required": ["schoolName", "schoolAddress", "board", "principalName", "contactName", "contactEmail", "submittedAt"]
+      "required": ["studentId", "quizId", "answers", "submittedAt"]
     }
   },
   "auth": {
@@ -160,13 +102,9 @@
       "schema": { "$ref": "#/entities/Quiz" },
       "description": "Stores all quizzes created by teachers."
     },
-    "/quizzes/{quizId}/results/{resultId}": {
-      "schema": { "$ref": "#/entities/QuizResult" },
-      "description": "Stores the results for each student who took the quiz. The resultId is the student's UID."
-    },
-    "/schoolInquiries/{inquiryId}": {
-      "schema": { "$ref": "#/entities/SchoolInquiry" },
-      "description": "Stores sales inquiries from schools interested in the School Plan."
+    "/submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/Submission" },
+      "description": "Stores student quiz submissions."
     }
   }
 }

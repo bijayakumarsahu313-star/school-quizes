@@ -6,7 +6,6 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
-import { SchoolInquiryDialog } from "@/components/school-inquiry-dialog";
 
 const freeFeatures = [
   "Up to 3 quizzes per month",
@@ -115,9 +114,7 @@ export default function PricingPage() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <SchoolInquiryDialog>
                   <Button className="w-full" variant="secondary">Contact Sales</Button>
-                </SchoolInquiryDialog>
               </CardFooter>
             </Card>
           </div>

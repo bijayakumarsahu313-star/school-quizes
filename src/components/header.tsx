@@ -4,11 +4,13 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
-import { useUser, useDoc, useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/data';
 import { Skeleton } from './ui/skeleton';
+import { useEffect, useState } from 'react';
 
 const navLinks = [
   { href: '/about', label: 'About Us' },
@@ -19,18 +21,35 @@ const navLinks = [
 ];
 
 export function Header() {
-  const { user, loading: userLoading } = useUser();
-  const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(user ? 'users' : null, user ? user.uid : null);
-  const auth = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
+        setUser(authUser);
+        const userDocRef = doc(db, 'users', authUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          setUserProfile(userDocSnap.data() as UserProfile);
+        }
+      } else {
+        setUser(null);
+        setUserProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+
   const handleLogout = async () => {
-    if (!auth) return;
     await signOut(auth);
     router.push('/');
   };
-
-  const isLoading = userLoading || (user && profileLoading);
 
   const getDashboardLink = () => {
     if (userProfile?.role === 'teacher') {
@@ -55,7 +74,7 @@ export function Header() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-4">
-            {isLoading ? (
+            {loading ? (
                 <div className='flex items-center gap-2'>
                     <Skeleton className="h-9 w-20" />
                     <Skeleton className="h-9 w-20" />

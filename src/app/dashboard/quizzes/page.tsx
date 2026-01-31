@@ -4,49 +4,45 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { useUser, useCollection, useFirestore } from '@/firebase';
+import { onAuthStateChanged, User } from "firebase/auth";
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { auth, db } from "@/lib/firebase";
 import type { Quiz } from '@/lib/data';
-import { doc, updateDoc } from "firebase/firestore";
-import { toast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Share2, Eye, EyeOff } from "lucide-react";
 
 export default function QuizzesPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
-  const { data: quizzes, loading } = useCollection<Quiz>(
-    user ? 'quizzes' : null,
-    'createdBy',
-    user?.uid
-  );
+  const [user, setUser] = useState<User | null>(null);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const togglePublishStatus = async (quiz: Quiz) => {
-    const newStatus = quiz.status === 'Published' ? 'Draft' : 'Published';
-    const quizRef = doc(firestore, 'quizzes', quiz.id);
-    try {
-      await updateDoc(quizRef, { status: newStatus });
-      toast({
-        title: 'Quiz Updated',
-        description: `"${quiz.title}" is now ${newStatus.toLowerCase()}.`,
-      });
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Update Failed',
-        description: 'Could not update the quiz status.',
-      });
-    }
-  };
-
-  const shareQuiz = (quizId: string) => {
-    const url = `${window.location.origin}/quiz/${quizId}`;
-    navigator.clipboard.writeText(url);
-    toast({
-      title: 'Link Copied!',
-      description: 'Quiz URL has been copied to your clipboard.',
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      if (authUser) {
+        setUser(authUser);
+        fetchQuizzes(authUser.uid);
+      } else {
+        setUser(null);
+        setQuizzes([]);
+        setLoading(false);
+      }
     });
+    return () => unsubscribe();
+  }, []);
+
+  const fetchQuizzes = async (uid: string) => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'quizzes'), where('createdBy', '==', uid));
+      const querySnapshot = await getDocs(q);
+      const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
+      setQuizzes(fetchedQuizzes);
+    } catch (error) {
+      console.error("Error fetching quizzes: ", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,10 +61,9 @@ export default function QuizzesPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
-              <TableHead>Subject</TableHead>
+              <TableHead>School</TableHead>
               <TableHead>Class</TableHead>
               <TableHead className="text-center">Questions</TableHead>
-              <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right">
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -77,7 +72,7 @@ export default function QuizzesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   Loading quizzes...
                 </TableCell>
               </TableRow>
@@ -85,14 +80,9 @@ export default function QuizzesPage() {
               quizzes.map((quiz) => (
                 <TableRow key={quiz.id}>
                   <TableCell className="font-medium">{quiz.title}</TableCell>
-                  <TableCell>{quiz.subject}</TableCell>
-                  <TableCell>{quiz.classLevel}</TableCell>
+                  <TableCell>{quiz.school}</TableCell>
+                  <TableCell>{quiz.class}</TableCell>
                   <TableCell className="text-center">{quiz.questions.length}</TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={quiz.status === 'Published' ? 'default' : 'secondary'}>
-                      {quiz.status}
-                    </Badge>
-                  </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -102,17 +92,7 @@ export default function QuizzesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                           <Link href={`/dashboard/quizzes/${quiz.id}/results`} className="w-full justify-start cursor-pointer flex items-center">Results</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => togglePublishStatus(quiz)} className="cursor-pointer">
-                            {quiz.status === 'Published' ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-                            <span>{quiz.status === 'Published' ? 'Unpublish' : 'Publish'}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => shareQuiz(quiz.id)} className="cursor-pointer">
-                           <Share2 className="mr-2 h-4 w-4" />
-                           <span>Share</span>
-                        </DropdownMenuItem>
+                        <DropdownMenuItem>View Submissions</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -120,7 +100,7 @@ export default function QuizzesPage() {
               ))
             ) : (
                <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   You haven't created any quizzes yet.
                 </TableCell>
               </TableRow>

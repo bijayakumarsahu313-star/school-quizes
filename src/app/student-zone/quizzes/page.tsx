@@ -1,128 +1,70 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { auth, db } from "@/lib/firebase";
+import type { Quiz, UserProfile } from "@/lib/data";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pencil, Calculator, Landmark, FlaskConical, BookText, BrainCircuit } from "lucide-react";
-import { useUser, useDoc, useFirestore } from "@/firebase";
-import type { Quiz, UserProfile } from "@/lib/data";
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { useToast } from "@/hooks/use-toast";
+import { Play, Calculator, Landmark, FlaskConical, BookText, BrainCircuit } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function ChangeClassDialog({ user }: { user: any }) {
-    const firestore = useFirestore();
-    const { toast } = useToast();
-    const [isOpen, setIsOpen] = useState(false);
-    const [newClass, setNewClass] = useState('');
-
-    const handleSave = async () => {
-        if (!user || !newClass) return;
-        const classLevel = parseInt(newClass, 10);
-        if (isNaN(classLevel) || classLevel < 1 || classLevel > 12) {
-            toast({
-                variant: 'destructive',
-                title: "Invalid Class",
-                description: "Please enter a number between 1 and 12."
-            });
-            return;
-        }
-
-        const userRef = doc(firestore, 'users', user.uid);
-        await updateDoc(userRef, { classLevel: classLevel });
-        toast({
-            title: "Class Updated!",
-            description: "Your quiz list will now be updated.",
-        });
-        setIsOpen(false);
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5">
-                    <Pencil className="w-3 h-3" />
-                    Change Class
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Update Your Class Level</DialogTitle>
-                    <DialogDescription>
-                        Enter your new class to see relevant quizzes. This will update your profile.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="class-level" className="text-right">
-                            Class
-                        </Label>
-                        <Input
-                            id="class-level"
-                            type="number"
-                            value={newClass}
-                            onChange={(e) => setNewClass(e.target.value)}
-                            className="col-span-3"
-                            placeholder="e.g., 9"
-                        />
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button onClick={handleSave}>Save Changes</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-
 export default function StudentQuizzesPage() {
-    const { user, loading: userLoading } = useUser();
-    const { data: userProfile, loading: profileLoading } = useDoc<UserProfile>(user ? 'users' : null, user?.uid);
+    const [user, setUser] = useState<User | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-    const [loadingQuizzes, setLoadingQuizzes] = useState(true);
-    const firestore = useFirestore();
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (profileLoading || !userProfile?.classLevel) {
-            if (!profileLoading && !userLoading) setLoadingQuizzes(false);
+        const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+            if (authUser) {
+                setUser(authUser);
+                const userDocRef = doc(db, 'users', authUser.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    const profile = userDocSnap.data() as UserProfile;
+                    setUserProfile(profile);
+                    fetchQuizzes(profile);
+                } else {
+                    setLoading(false);
+                }
+            } else {
+                setUser(null);
+                setUserProfile(null);
+                setQuizzes([]);
+                setLoading(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const fetchQuizzes = async (profile: UserProfile) => {
+        if (!profile.school || !profile.class) {
+            setLoading(false);
             return;
         }
-        if (!firestore) return;
-
-        setLoadingQuizzes(true);
-        const fetchQuizzes = async () => {
-            try {
-                const q = query(
-                    collection(firestore, 'quizzes'),
-                    where('classLevel', '==', userProfile.classLevel)
-                );
-
-                const querySnapshot = await getDocs(q);
-                const fetchedQuizzes = querySnapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() } as Quiz))
-                    .filter(quiz => quiz.status === 'Published');
-                
-                setQuizzes(fetchedQuizzes);
-            } catch (error) {
-                console.error("Failed to fetch quizzes:", error);
-                setQuizzes([]);
-            } finally {
-                setLoadingQuizzes(false);
-            }
+        try {
+            const q = query(
+                collection(db, 'quizzes'),
+                where('school', '==', profile.school),
+                where('class', '==', profile.class)
+            );
+            const querySnapshot = await getDocs(q);
+            const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
+            setQuizzes(fetchedQuizzes);
+        } catch (error) {
+            console.error("Failed to fetch quizzes:", error);
+            setQuizzes([]);
+        } finally {
+            setLoading(false);
         }
-
-        fetchQuizzes();
-
-    }, [firestore, userProfile, profileLoading, userLoading]);
+    };
 
     const getSubjectIcon = (subject: string) => {
         const s = subject.toLowerCase();
@@ -132,17 +74,6 @@ export default function StudentQuizzesPage() {
         if (s.includes('english')) return <BookText className="h-6 w-6 text-primary" />;
         return <BrainCircuit className="h-6 w-6 text-primary" />;
     };
-
-    const isLoading = userLoading || profileLoading || loadingQuizzes;
-
-    const difficultyBadgeVariant = (difficulty: 'easy' | 'medium' | 'hard') => {
-        switch (difficulty) {
-            case 'easy': return 'default';
-            case 'medium': return 'secondary';
-            case 'hard': return 'destructive';
-            default: return 'outline';
-        }
-    }
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -157,19 +88,15 @@ export default function StudentQuizzesPage() {
                     </div>
 
                     <div className="flex justify-center mb-12 items-center gap-4">
-                        {userProfile && userProfile.classLevel && (
-                            <>
-                                <p className="text-muted-foreground">
-                                    Showing quizzes for <span className="font-bold text-foreground">Class {userProfile.classLevel}</span>
-                                </p>
-                                {user && <ChangeClassDialog user={user} />}
-                            </>
+                        {userProfile && (
+                            <p className="text-muted-foreground">
+                                Showing quizzes for <span className="font-bold text-foreground">Class {userProfile.class}</span> at <span className="font-bold text-foreground">{userProfile.school}</span>
+                            </p>
                         )}
-                        {(userLoading || profileLoading) && !userProfile?.classLevel && <Skeleton className="h-8 w-48" />}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {isLoading ? (
+                        {loading ? (
                             Array.from({ length: 3 }).map((_, i) => (
                                 <Card key={i} className="overflow-hidden">
                                      <CardHeader className="p-0">
@@ -183,7 +110,6 @@ export default function StudentQuizzesPage() {
                                     </CardHeader>
                                     <CardContent className="p-6 space-y-4">
                                          <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                            <Skeleton className="h-5 w-16" />
                                             <Skeleton className="h-4 w-24" />
                                             <Skeleton className="h-4 w-24" />
                                         </div>
@@ -193,7 +119,7 @@ export default function StudentQuizzesPage() {
                             ))
                         ) : quizzes.length > 0 ? (
                             quizzes.map((quiz) => {
-                                const Icon = getSubjectIcon(quiz.subject);
+                                const Icon = getSubjectIcon(quiz.title);
                                 return (
                                     <Card key={quiz.id} className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col group">
                                         <CardHeader className="p-0">
@@ -203,15 +129,13 @@ export default function StudentQuizzesPage() {
                                                 </div>
                                                 <div>
                                                     <CardTitle className="leading-tight">{quiz.title}</CardTitle>
-                                                    <CardDescription>{quiz.subject}</CardDescription>
+                                                    <CardDescription>{quiz.class}</CardDescription>
                                                 </div>
                                             </div>
                                         </CardHeader>
                                         <CardContent className="p-6 flex flex-col flex-1">
                                              <div className="flex-grow flex justify-between items-center text-sm text-muted-foreground mb-4">
-                                                <Badge variant={difficultyBadgeVariant(quiz.difficulty)} className="capitalize">{quiz.difficulty}</Badge>
                                                 <span>{quiz.questions.length} Questions</span>
-                                                <span>{quiz.duration} min</span>
                                             </div>
                                             <Button asChild className="w-full mt-auto">
                                                 <Link href={`/quiz/${quiz.id}`}>
@@ -225,8 +149,8 @@ export default function StudentQuizzesPage() {
                             })
                         ) : (
                             <div className="col-span-full text-center py-12">
-                                <p className="text-muted-foreground text-lg">No quizzes found for your class.</p>
-                                <p className="text-muted-foreground text-sm">Try changing your class level or check back later!</p>
+                                <p className="text-muted-foreground text-lg">No quizzes found for your school and class.</p>
+                                <p className="text-muted-foreground text-sm">Please check back later!</p>
                             </div>
                         )}
                     </div>

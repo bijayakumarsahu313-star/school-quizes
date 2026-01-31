@@ -26,9 +26,13 @@ import {
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
-import { useCollection, useUser, useAuth, useDoc } from '@/firebase';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import type { Quiz, UserProfile } from '@/lib/data';
-import { signOut } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+
 
 function Header({userProfile}: {userProfile: UserProfile | null}) {
     const { user } = useUser();
@@ -43,11 +47,20 @@ function Header({userProfile}: {userProfile: UserProfile | null}) {
         <div className="flex items-center gap-4">
             <Avatar>
               <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || ''} />
-              <AvatarFallback>{userProfile?.fullName?.charAt(0) || 'T'}</AvatarFallback>
+              <AvatarFallback>{userProfile?.name?.charAt(0) || 'T'}</AvatarFallback>
             </Avatar>
         </div>
       </div>
     );
+}
+
+function useUser() {
+    const [user, setUser] = useState<User | null>(null);
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, setUser);
+        return () => unsubscribe();
+    }, []);
+    return { user };
 }
 
 
@@ -55,25 +68,34 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useUser();
-  const auth = useAuth();
-  const { data: quizzesData, loading: quizzesLoading } = useCollection<Quiz>(
-    user ? 'quizzes' : null,
-    'createdBy',
-    user?.uid
-  );
+  const [quizzesCount, setQuizzesCount] = useState(0);
+  const [loadingQuizzes, setLoadingQuizzes] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (user) {
+        const unsub = onSnapshot(query(collection(db, 'quizzes'), where('createdBy', '==', user.uid)), (snapshot) => {
+            setQuizzesCount(snapshot.size);
+            setLoadingQuizzes(false);
+        });
+        const unsubProfile = onSnapshot(doc(db, "users", user.uid), (doc) => {
+          setUserProfile(doc.data() as UserProfile);
+        })
+        return () => {
+            unsub();
+            unsubProfile();
+        }
+    }
+  }, [user]);
   
-  const { data: userProfile } = useDoc<UserProfile>(user ? 'users' : null, user?.uid);
-
-
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
-    { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes', badge: quizzesLoading ? '...' : (quizzesData?.length ?? 0).toString() },
+    { href: '/dashboard/quizzes', icon: <BookCopy />, label: 'Quizzes', badge: loadingQuizzes ? '...' : quizzesCount.toString() },
     { href: '/dashboard/students', icon: <Users />, label: 'Students' },
     { href: '/dashboard/analytics', icon: <BarChart2 />, label: 'Analytics' },
   ];
 
   const handleLogout = async () => {
-      if (!auth) return;
       await signOut(auth);
       router.push('/');
   }
@@ -124,7 +146,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-            <Header userProfile={userProfile as UserProfile | null}/>
+            <Header userProfile={userProfile}/>
             <main className="flex-1 p-4 md:p-6 lg:p-8">
                 {children}
             </main>

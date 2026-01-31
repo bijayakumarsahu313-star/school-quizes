@@ -1,39 +1,43 @@
-"use client";
+'use client';
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: any) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
+    const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
+    const password = (e.currentTarget.elements.namedItem('password') as HTMLInputElement).value;
+
     try {
-      const userCred = await signInWithEmailAndPassword(
-        auth,
-        e.target.email.value,
-        e.target.password.value
-      );
-      
-      const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
-      if (userDoc.exists()) {
-        const role = userDoc.data()?.role;
-        if (role === 'teacher') {
-          router.push('/dashboard');
-        } else {
-          router.push('/student-zone');
-        }
-      } else {
-        // Fallback if user document doesn't exist for some reason
-        router.push('/');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        throw new Error('User data not found in Firestore.');
       }
 
+      const userData = userDoc.data();
+      if (userData.role === 'teacher') {
+        router.push('/dashboard');
+      } else {
+        router.push('/student-zone');
+      }
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -42,15 +46,34 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '300px', margin: 'auto', paddingTop: '2rem' }}>
-      <h2>Login</h2>
-
-      <input name="email" type="email" placeholder="Email" required style={{ padding: '0.5rem' }}/>
-      <input name="password" type="password" placeholder="Password" required style={{ padding: '0.5rem' }}/>
-
-      <button disabled={loading} style={{ padding: '0.5rem' }}>
-        {loading ? "Logging in..." : "Login"}
-      </button>
-    </form>
+    <div className="flex items-center justify-center py-12">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle>Welcome Back</CardTitle>
+          <CardDescription>
+            Don't have an account?{' '}
+            <Link href="/auth/signup" className="text-primary hover:underline">
+              Sign up
+            </Link>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" name="password" type="password" required />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading ? 'Logging In...' : 'Login'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
