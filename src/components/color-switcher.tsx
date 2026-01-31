@@ -11,6 +11,8 @@ import {
 import { Paintbrush } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+const colorClasses = ['bg-red', 'bg-yellow', 'bg-white', 'bg-black'];
+
 export function ColorSwitcher() {
   const [mounted, setMounted] = useState(false);
 
@@ -18,8 +20,11 @@ export function ColorSwitcher() {
     setMounted(true);
   }, []);
 
-  const setBackgroundColor = (color: string) => {
-    document.body.style.backgroundColor = color;
+  const setBackgroundColor = (colorClass: string) => {
+    document.body.classList.remove(...colorClasses);
+    if (colorClass) {
+      document.body.classList.add(colorClass);
+    }
   };
 
   if (!mounted) {
@@ -37,16 +42,16 @@ export function ColorSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Background Color</DropdownMenuLabel>
-        <DropdownMenuItem onSelect={() => setBackgroundColor('red')}>
+        <DropdownMenuItem onSelect={() => setBackgroundColor('bg-red')}>
           Red
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setBackgroundColor('yellow')}>
+        <DropdownMenuItem onSelect={() => setBackgroundColor('bg-yellow')}>
           Yellow
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setBackgroundColor('white')}>
+        <DropdownMenuItem onSelect={() => setBackgroundColor('bg-white')}>
           White
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setBackgroundColor('black')}>
+        <DropdownMenuItem onSelect={() => setBackgroundColor('bg-black')}>
           Black
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => setBackgroundColor('')}>

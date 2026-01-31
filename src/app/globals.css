@@ -82,4 +82,37 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom background colors from switcher */
+  body.bg-red {
+    background-color: red;
+    color: white;
+  }
+  body.bg-red .text-muted-foreground, body.bg-red a:not([class*="bg-"]) {
+    color: #f0f0f0;
+  }
+
+  body.bg-yellow {
+    background-color: yellow;
+    color: black;
+  }
+  body.bg-yellow .text-muted-foreground, body.bg-yellow a:not([class*="bg-"]) {
+    color: #333;
+  }
+
+  body.bg-white {
+    background-color: white;
+    color: black;
+  }
+  body.bg-white .text-muted-foreground, body.bg-white a:not([class*="bg-"]) {
+    color: #555;
+  }
+
+  body.bg-black {
+    background-color: black;
+    color: white;
+  }
+  body.bg-black .text-muted-foreground, body.bg-black a:not([class*="bg-"]) {
+    color: #ccc;
+  }
 }
