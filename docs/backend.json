@@ -1,6 +1,19 @@
-
 {
   "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user data including their role, school, and class information.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "school": { "type": "string" },
+        "class": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "school", "role", "createdAt"]
+    },
     "Quiz": {
       "title": "Quiz",
       "description": "Represents a quiz created by a teacher.",
@@ -25,18 +38,45 @@
             "required": ["question", "options", "answer"]
           }
         },
+        "creatorId": { "type": "string", "description": "UID of the teacher who created the quiz." },
         "createdAt": {
           "type": "string",
           "format": "date-time"
         }
       },
-      "required": ["title", "subject", "questions", "school", "class", "createdAt"]
+      "required": ["title", "subject", "questions", "school", "class", "creatorId", "createdAt"]
+    },
+    "Submission": {
+        "title": "Quiz Submission",
+        "description": "A student's submission for a quiz.",
+        "type": "object",
+        "properties": {
+            "quizId": { "type": "string" },
+            "userId": { "type": "string" },
+            "school": { "type": "string" },
+            "class": { "type": "string" },
+            "answers": { "type": "object" },
+            "score": { "type": "number" },
+            "submittedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["quizId", "userId", "school", "class", "answers", "score", "submittedAt"]
     }
   },
+  "auth": {
+      "providers": ["google.com"]
+  },
   "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores individual user profiles, keyed by their Firebase Auth UID."
+    },
     "/quizzes/{quizId}": {
       "schema": { "$ref": "#/entities/Quiz" },
       "description": "Stores all quizzes created by teachers."
+    },
+    "/submissions/{submissionId}": {
+        "schema": { "$ref": "#/entities/Submission" },
+        "description": "Stores all quiz submissions from students."
     }
   }
 }

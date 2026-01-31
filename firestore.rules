@@ -1,17 +1,60 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny all writes, allow public reads.
-    match /{document=**} {
-      allow read: if true;
-      allow write: if false;
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Allow anyone to create, update, or delete quizzes.
-    // This is needed because there is no user authentication.
+    // IMPORTANT: Replace 'YOUR_ADMIN_UID' with your actual Firebase Admin User ID from the Firebase Console.
+    function isAdmin() {
+      return request.auth.uid == 'YOUR_ADMIN_UID';
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isTeacher() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    }
+
+    function isStudent() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+    
+    // --- User Profiles ---
+    match /users/{userId} {
+      // Admins have full access.
+      allow read, write: if isAdmin();
+      // Users can create their own profile.
+      allow create: if isSignedIn() && isOwner(userId);
+      // Users can read and update their own profile.
+      allow read, update: if isSignedIn() && isOwner(userId);
+    }
+
+    // --- Quizzes ---
     match /quizzes/{quizId} {
-      allow write: if true;
+        // Admins have full access.
+        allow read, write: if isAdmin();
+        // Any signed-in user can read quizzes.
+        allow read: if isSignedIn();
+        // Teachers can create quizzes and can only update/delete their own.
+        allow create: if isTeacher();
+        allow update, delete: if isTeacher() && resource.data.creatorId == request.auth.uid;
+    }
+
+    // --- Submissions ---
+    match /submissions/{submissionId} {
+        // Admins have full access.
+        allow read, write: if isAdmin();
+        // Students can create their own submissions.
+        allow create: if isStudent() && request.resource.data.userId == request.auth.uid;
+        // Students can read their own submissions.
+        // A teacher can read submissions for quizzes they created.
+        allow read: if (isStudent() && resource.data.userId == request.auth.uid) ||
+                     (isTeacher() && get(/databases/$(database)/documents/quizzes/$(resource.data.quizId)).data.creatorId == request.auth.uid);
     }
   }
 }
