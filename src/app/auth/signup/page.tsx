@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,8 @@ export default function SignupPage() {
   const [role, setRole] = useState('student');
   const { toast } = useToast();
   const router = useRouter();
+  const auth = useAuth();
+  const db = useFirestore();
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -60,10 +63,11 @@ export default function SignupPage() {
       
       toast({
         title: "Signup Successful!",
-        description: "Welcome! You can now log in.",
+        description: "Welcome! You will be logged in automatically.",
       });
 
-      router.push('/');
+      // Hard redirect to ensure all state is fresh.
+      window.location.href = '/';
       
     } catch (err: any) {
        toast({

@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const auth = useAuth();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,10 +30,10 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Login Successful!",
-        description: "Welcome back.",
+        description: "Welcome back. Redirecting...",
       });
-      // The header will automatically update. The user can navigate from there.
-      router.push('/');
+      // Hard redirect to ensure all state is fresh.
+      window.location.href = '/';
     } catch (err: any) {
       toast({
         variant: 'destructive',

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -9,10 +10,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Trophy, CheckCircle, XCircle } from 'lucide-react';
-import { auth, db } from '@/lib/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { onAuthStateChanged, User } from 'firebase/auth';
 import { cn } from '@/lib/utils';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 type QuizData = {
@@ -25,7 +27,8 @@ export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const quizId = params.quizId as string;
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useUser();
+  const db = useFirestore();
   
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,15 +42,10 @@ export default function QuizPage() {
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-      if (authUser) {
-        setUser(authUser);
-      } else {
+    if (!user) {
         router.push('/auth/login');
-      }
-    });
-    return () => unsubscribe();
-  }, [router]);
+    }
+  }, [user, router]);
 
   useEffect(() => {
     if (!quizId) return;
@@ -67,14 +65,13 @@ export default function QuizPage() {
     };
 
     fetchQuiz();
-  }, [quizId, router]);
+  }, [quizId, router, db]);
 
 
   const handleSubmitQuiz = useCallback(async () => {
     if (isSubmitting || !user || !quiz) return;
     setIsSubmitting(true);
     
-    // Final score calculation
     let correct = 0;
     quiz.questions.forEach((q, index) => {
         if (q.answer === selectedAnswers[index]) {
@@ -84,18 +81,30 @@ export default function QuizPage() {
     const finalScore = (correct / quiz.questions.length) * 100;
     setScore(finalScore);
 
-    await addDoc(collection(db, "submissions"), {
+    const submissionData = {
         studentId: user.uid,
         quizId: quiz.id,
         answers: selectedAnswers,
         score: finalScore,
         submittedAt: serverTimestamp(),
-    });
+    };
 
-    setIsFinished(true);
-    setIsSubmitting(false);
+    addDoc(collection(db, "submissions"), submissionData)
+      .then(() => {
+        setIsFinished(true);
+        setIsSubmitting(false);
+      })
+      .catch(serverError => {
+        const permissionError = new FirestorePermissionError({
+            path: '/submissions',
+            operation: 'create',
+            requestResourceData: submissionData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSubmitting(false);
+      });
 
-  }, [isSubmitting, user, quiz, selectedAnswers]);
+  }, [isSubmitting, user, quiz, selectedAnswers, db]);
 
   const handleAnswerSelect = (option: string) => {
     if (answerStatus !== 'unanswered') return;

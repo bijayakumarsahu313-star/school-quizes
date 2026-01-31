@@ -4,46 +4,38 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { onAuthStateChanged, User } from "firebase/auth";
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { auth, db } from "@/lib/firebase";
+import { useFirestore, useUser } from "@/firebase";
 import type { Quiz } from '@/lib/data';
 import { useState, useEffect } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function QuizzesPage() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useUser();
+  const db = useFirestore();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-      if (authUser) {
-        setUser(authUser);
-        fetchQuizzes(authUser.uid);
-      } else {
-        setUser(null);
-        setQuizzes([]);
+    if (!user) return;
+
+    const fetchQuizzes = async (uid: string) => {
+      setLoading(true);
+      try {
+        const q = query(collection(db, 'quizzes'), where('createdBy', '==', uid));
+        const querySnapshot = await getDocs(q);
+        const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
+        setQuizzes(fetchedQuizzes);
+      } catch (error) {
+        console.error("Error fetching quizzes: ", error);
+      } finally {
         setLoading(false);
       }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const fetchQuizzes = async (uid: string) => {
-    setLoading(true);
-    try {
-      const q = query(collection(db, 'quizzes'), where('createdBy', '==', uid));
-      const querySnapshot = await getDocs(q);
-      const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
-      setQuizzes(fetchedQuizzes);
-    } catch (error) {
-      console.error("Error fetching quizzes: ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    
+    fetchQuizzes(user.uid);
+  }, [user, db]);
 
   return (
     <Card>

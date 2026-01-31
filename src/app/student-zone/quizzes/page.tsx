@@ -1,70 +1,51 @@
+
 'use client';
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { auth, db } from "@/lib/firebase";
-import type { Quiz, UserProfile } from "@/lib/data";
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useFirestore, useUser } from "@/firebase";
+import type { Quiz } from "@/lib/data";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Play, Calculator, Landmark, FlaskConical, BookText, BrainCircuit } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentQuizzesPage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const { userProfile, loading: userLoading } = useUser();
+    const db = useFirestore();
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-            if (authUser) {
-                setUser(authUser);
-                const userDocRef = doc(db, 'users', authUser.uid);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    const profile = userDocSnap.data() as UserProfile;
-                    setUserProfile(profile);
-                    fetchQuizzes(profile);
-                } else {
-                    setLoading(false);
-                }
-            } else {
-                setUser(null);
-                setUserProfile(null);
-                setQuizzes([]);
-                setLoading(false);
+        if (userLoading || !userProfile) return;
+
+        const fetchQuizzes = async () => {
+            if (!userProfile.school || !userProfile.class) {
+                setLoadingQuizzes(false);
+                return;
             }
-        });
+            try {
+                const q = query(
+                    collection(db, 'quizzes'),
+                    where('school', '==', userProfile.school),
+                    where('class', '==', userProfile.class)
+                );
+                const querySnapshot = await getDocs(q);
+                const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
+                setQuizzes(fetchedQuizzes);
+            } catch (error) {
+                console.error("Failed to fetch quizzes:", error);
+                setQuizzes([]);
+            } finally {
+                setLoadingQuizzes(false);
+            }
+        };
 
-        return () => unsubscribe();
-    }, []);
-
-    const fetchQuizzes = async (profile: UserProfile) => {
-        if (!profile.school || !profile.class) {
-            setLoading(false);
-            return;
-        }
-        try {
-            const q = query(
-                collection(db, 'quizzes'),
-                where('school', '==', profile.school),
-                where('class', '==', profile.class)
-            );
-            const querySnapshot = await getDocs(q);
-            const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
-            setQuizzes(fetchedQuizzes);
-        } catch (error) {
-            console.error("Failed to fetch quizzes:", error);
-            setQuizzes([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+        fetchQuizzes();
+    }, [userProfile, userLoading, db]);
 
     const getSubjectIcon = (subject: string) => {
         const s = subject.toLowerCase();
@@ -74,6 +55,8 @@ export default function StudentQuizzesPage() {
         if (s.includes('english')) return <BookText className="h-6 w-6 text-primary" />;
         return <BrainCircuit className="h-6 w-6 text-primary" />;
     };
+    
+    const isLoading = userLoading || loadingQuizzes;
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -96,7 +79,7 @@ export default function StudentQuizzesPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {loading ? (
+                        {isLoading ? (
                             Array.from({ length: 3 }).map((_, i) => (
                                 <Card key={i} className="overflow-hidden">
                                      <CardHeader className="p-0">

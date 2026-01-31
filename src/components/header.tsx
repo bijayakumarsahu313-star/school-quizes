@@ -1,14 +1,12 @@
+
 'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import type { UserProfile } from '@/lib/data';
+import { signOut } from 'firebase/auth';
+import { useAuth, useUser } from '@/firebase';
 import { Skeleton } from './ui/skeleton';
-import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,28 +27,8 @@ const navLinks = [
 ];
 
 export function Header() {
-  const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-      if (authUser) {
-        setUser(authUser);
-        const userDocRef = doc(db, 'users', authUser.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-          setUserProfile(userDocSnap.data() as UserProfile);
-        }
-      } else {
-        setUser(null);
-        setUserProfile(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const { user, userProfile, loading } = useUser();
+  const auth = useAuth();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -63,8 +41,8 @@ export function Header() {
     return '/student-zone';
   }
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('');
+  const getInitials = (name: string | undefined) => {
+    return name?.split(' ').map(n => n[0]).join('') || '';
   }
 
   return (
@@ -85,8 +63,8 @@ export function Header() {
         <div className="ml-auto flex items-center gap-4">
             {loading ? (
                 <div className='flex items-center gap-2'>
-                    <Skeleton className="h-9 w-20" />
-                    <Skeleton className="h-9 w-20" />
+                    <Skeleton className="h-9 w-24" />
+                    <Skeleton className="h-9 w-9 rounded-full" />
                 </div>
             ) : user && userProfile ? (
                  <DropdownMenu>

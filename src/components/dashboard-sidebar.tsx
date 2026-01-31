@@ -26,16 +26,14 @@ import {
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
-import type { Quiz, UserProfile } from '@/lib/data';
+import { useAuth, useFirestore, useUser } from '@/firebase';
 import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
 
 
-function Header({userProfile}: {userProfile: UserProfile | null}) {
-    const { user } = useUser();
+function Header() {
+    const { user, userProfile } = useUser();
     return (
       <div className="flex h-16 items-center justify-between border-b px-4 lg:px-6">
         <div className="md:hidden">
@@ -54,23 +52,14 @@ function Header({userProfile}: {userProfile: UserProfile | null}) {
     );
 }
 
-function useUser() {
-    const [user, setUser] = useState<User | null>(null);
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, setUser);
-        return () => unsubscribe();
-    }, []);
-    return { user };
-}
-
-
 export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
+  const auth = useAuth();
+  const db = useFirestore();
   const [quizzesCount, setQuizzesCount] = useState(0);
   const [loadingQuizzes, setLoadingQuizzes] = useState(true);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -78,15 +67,9 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
             setQuizzesCount(snapshot.size);
             setLoadingQuizzes(false);
         });
-        const unsubProfile = onSnapshot(doc(db, "users", user.uid), (doc) => {
-          setUserProfile(doc.data() as UserProfile);
-        })
-        return () => {
-            unsub();
-            unsubProfile();
-        }
+        return () => unsub();
     }
-  }, [user]);
+  }, [user, db]);
   
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard />, label: 'Dashboard' },
@@ -146,7 +129,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-            <Header userProfile={userProfile}/>
+            <Header/>
             <main className="flex-1 p-4 md:p-6 lg:p-8">
                 {children}
             </main>
