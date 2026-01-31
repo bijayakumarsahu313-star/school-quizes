@@ -61,6 +61,7 @@ export default function CreateQuizPage() {
     const { toast } = useToast();
     const manualQuestionsRef = useRef<HTMLTextAreaElement>(null);
     const [school, setSchool] = useState('');
+    const [creatorId, setCreatorId] = useState('');
 
     useEffect(() => {
         const adminDetailsString = sessionStorage.getItem('adminDetails');
@@ -69,6 +70,9 @@ export default function CreateQuizPage() {
                 const admin = JSON.parse(adminDetailsString);
                 if (admin.school) {
                     setSchool(admin.school);
+                }
+                if (admin.adminId) {
+                    setCreatorId(admin.adminId);
                 }
             } catch(e) {
                 console.error("Failed to parse admin details", e);
@@ -157,6 +161,12 @@ export default function CreateQuizPage() {
             return;
         }
 
+        if (!creatorId) {
+            toast({ title: "Error", description: "Creator information not found. Please log in again.", variant: "destructive" });
+            setSaveLoading(false);
+            return;
+       }
+
         try {
             const questions = parseManualQuestions(questionsContent);
             if (questions.length === 0) {
@@ -171,6 +181,7 @@ export default function CreateQuizPage() {
                 questions,
                 school,
                 class: className,
+                creatorId: creatorId,
                 createdAt: serverTimestamp()
             };
 

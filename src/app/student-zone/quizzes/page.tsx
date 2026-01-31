@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function StudentQuizzesPage() {
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const [loadingQuizzes, setLoadingQuizzes] = useState(true);
+    const [studentSchool, setStudentSchool] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchQuizzes = async () => {
@@ -29,15 +30,16 @@ export default function StudentQuizzesPage() {
 
             try {
                 const student = JSON.parse(studentDetailsString);
-                const studentSchool = student.school;
+                const school = student.school;
+                setStudentSchool(school);
 
-                if (!studentSchool) {
+                if (!school) {
                     setQuizzes([]);
                     setLoadingQuizzes(false);
                     return;
                 }
 
-                const q = query(collection(db, 'quizzes'), where("school", "==", studentSchool));
+                const q = query(collection(db, 'quizzes'), where("school", "==", school));
                 const querySnapshot = await getDocs(q);
                 const fetchedQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quiz));
                 setQuizzes(fetchedQuizzes);
@@ -68,9 +70,15 @@ export default function StudentQuizzesPage() {
                 <div className="container mx-auto px-4 py-16">
                     <div className="text-center mb-12">
                         <h1 className="text-4xl font-bold font-headline">Available Quizzes</h1>
-                        <p className="text-lg text-muted-foreground mt-2">
-                            Choose a quiz to test your knowledge.
-                        </p>
+                        {studentSchool ? (
+                            <p className="text-lg text-muted-foreground mt-2">
+                                Showing quizzes for {studentSchool}.
+                            </p>
+                        ) : (
+                             <p className="text-lg text-muted-foreground mt-2">
+                                Choose a quiz to test your knowledge.
+                            </p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
