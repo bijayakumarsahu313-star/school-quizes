@@ -28,7 +28,6 @@ export default function GetStartedPage() {
   const adminIdRef = useRef<HTMLInputElement>(null);
   const schoolRef = useRef<HTMLInputElement>(null);
   const [teacherIdError, setTeacherIdError] = useState('');
-  const ADMIN_ID = '123456';
 
   const handleStudentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -45,15 +44,28 @@ export default function GetStartedPage() {
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const adminId = adminIdRef.current?.value ?? '';
-    const school = schoolRef.current?.value ?? '';
+    const school = schoolRef.current?.value.trim() ?? '';
 
-    if (adminId.trim() === ADMIN_ID) {
+    if (!school) {
+        setTeacherIdError('School name is required.');
+        return;
+    }
+
+    const adminIdNum = Number(adminId);
+
+    if (
+      adminId &&
+      !isNaN(adminIdNum) &&
+      Number.isInteger(adminIdNum) &&
+      adminIdNum >= 1 &&
+      adminIdNum <= 1000000000
+    ) {
       sessionStorage.setItem('isTeacherAuthenticated', 'true');
-      sessionStorage.setItem('adminDetails', JSON.stringify({ adminId: adminId.trim(), school }));
+      sessionStorage.setItem('adminDetails', JSON.stringify({ adminId, school }));
       setIsTeacherDialogOpen(false);
       router.push('/teacher-tools');
     } else {
-      setTeacherIdError('Invalid Admin No. Please try again.');
+      setTeacherIdError('Please enter a valid Admin No. (a number from 1 to 1,000,000,000).');
     }
   };
 
@@ -98,13 +110,13 @@ export default function GetStartedPage() {
                 <form onSubmit={handleTeacherSubmit}>
                   <div className="grid gap-4 py-4">
                      <p className="text-sm text-center text-muted-foreground">
-                      For demonstration, the Admin No. is: <strong className="text-foreground">{ADMIN_ID}</strong>
+                      Enter any number from 1 to 1,000,000,000 to proceed.
                     </p>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="adminId" className="text-right">
                         Admin No.
                       </Label>
-                      <Input ref={adminIdRef} id="adminId" onChange={() => { setTeacherIdError(''); }} className="col-span-3" required />
+                      <Input ref={adminIdRef} id="adminId" type="number" onChange={() => { setTeacherIdError(''); }} className="col-span-3" required />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="school" className="text-right">
